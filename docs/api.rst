@@ -3,5 +3,8 @@ API Documentation
 
 .. autosummary::
    :toctree: autosummary
+   :recursive:
 
-   qa.canvas
+   qa.process
+   qa.predict
+   qa.plot

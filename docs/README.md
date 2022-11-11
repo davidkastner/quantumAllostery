@@ -1,24 +1,42 @@
-# Compiling quantumAllostery's Documentation
+# quantumAllostery's Complete Build Documentation (Devs)
 
-The docs for this project are built with [Sphinx](http://www.sphinx-doc.org/en/master/).
-To compile the docs, first ensure that Sphinx and the ReadTheDocs theme are installed.
-
-
+## Creating python environment
 ```bash
-conda install sphinx sphinx_rtd_theme 
+conda create -n qa
+conda activate qa
 ```
 
+## Install useful packages
+```bash
+conda create --name package_name
+conda activate package_name
+conda install numpy
+conda install -c conda-forge matplotlib
+conda install -c conda-forge scipy
+conda install cookiecutter
+conda install -c conda-forge git
+conda install -c conda-forge black
+conda install -c conda-forge mypy
+conda install -c conda-forge flake8
+conda install -c conda-forge pytest
+conda install -c conda-forge pydantic
+pip install pytest-cov
+pip install sphinx sphinx_rtd_theme
+pip install https://github.com/revitron/revitron-sphinx-theme/archive/master.zip
+```
 
-Once installed, you can use the `Makefile` in this directory to compile static HTML pages by
+## Build from MOLSSI scientific standards
+```bash
+cookiecutter gh:molssi/cookiecutter-cms
+```
+
+## Setup developing environment
+```bash
+cd quantumAllostery
+pip install -e .
+```
+
+## Compile static HTML pages
 ```bash
 make html
 ```
-
-The compiled docs will be in the `_build` directory and can be viewed by opening `index.html` (which may itself 
-be inside a directory called `html/` depending on what version of Sphinx is installed).
-
-
-A configuration file for [Read The Docs](https://readthedocs.org/) (readthedocs.yaml) is included in the top level of the repository. To use Read the Docs to host your documentation, go to https://readthedocs.org/ and connect this repository. You may need to change your default branch to `main` under Advanced Settings for the project.
-
-If you would like to use Read The Docs with `autodoc` (included automatically) and your package has dependencies, you will need to include those dependencies in your documentation yaml file (`docs/requirements.yaml`).
-
