@@ -5,7 +5,6 @@ quantumAllostery
 [![codecov](https://codecov.io/gh/davidkastner/quantumAllostery/branch/main/graph/badge.svg?token=lGnUIVeGit)](https://codecov.io/gh/davidkastner/quantumAllostery)
 
 
-# quantumAllostery Package
 ## Table of Contents
 1. **Overview**
     * Introduction
