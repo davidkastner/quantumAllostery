@@ -2,7 +2,7 @@ quantumAllostery
 ==============================
 [//]: # (Badges)
 [![Documentation Status](https://readthedocs.org/projects/quantumallostery/badge/?version=latest)](https://quantumallostery.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/REPLACE_WITH_OWNER_ACCOUNT/quantumAllostery/branch/main/graph/badge.svg)](https://codecov.io/gh/REPLACE_WITH_OWNER_ACCOUNT/quantumAllostery/branch/main)
+[![codecov](https://codecov.io/gh/davidkastner/quantumAllostery/branch/main/graph/badge.svg?token=lGnUIVeGit)](https://codecov.io/gh/davidkastner/quantumAllostery)
 
 
 # quantumAllostery Package
