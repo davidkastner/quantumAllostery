@@ -20,6 +20,8 @@ quantumAllostery
 4. **Documentation**
     * Read the Docs
     * Examples
+5. **Developer Guide**
+    * GitHub refresher
 
 
 ## Overview
@@ -37,8 +39,9 @@ conda env create -f environment.yml
 ```
 
 ### Setup developing environment
+Remember to update your GitHub [ssh keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 ```bash
-git clone https://github.com/davidkastner/quantumAllostery.git
+git clone git@github.com:davidkastner/quantumAllostery.git
 cd quantumAllostery
 pip install -e .
 ```
@@ -60,7 +63,18 @@ pip install -e .
 ## Documentation
 ### Update the docs
 ```bash
+make clean
 make html
+```
+
+
+## Developer guide
+### GitHub refresher
+```bash
+git status
+git add .
+git commit -m "Change a specific functionality"
+git push -u origin main
 ```
 
 
