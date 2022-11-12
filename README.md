@@ -24,11 +24,11 @@ quantumAllostery
     * GitHub refresher
 
 
-## Overview
+## 1. Overview
 The quantumAllostery package was designed to automate the identification of charge-transfer events in ab-initio molecular dynamics simulations. Routine tasks can be easily automated using the functionality contained in the library.
 
 
-## Installation
+## 2. Installation
 Install the package by running the follow commands inside the repository. This will perform a developmental version install. It is good practice to do this inside of a virtual environment. A yaml environmental file has been created to automate the installation of dependencies.
 
 ### Creating python environment
@@ -46,7 +46,7 @@ cd quantumAllostery
 pip install -e .
 ```
 
-## What is included?
+## 3. What is included?
 ### File structure
 ```
 .
@@ -60,7 +60,7 @@ pip install -e .
 ```
 
 
-## Documentation
+## 4. Documentation
 ### Update the docs
 ```bash
 make clean
@@ -68,7 +68,7 @@ make html
 ```
 
 
-## Developer guide
+## 5. Developer guide
 ### GitHub refresher
 ```bash
 git status
