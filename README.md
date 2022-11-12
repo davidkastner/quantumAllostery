@@ -1,3 +1,4 @@
+![Graphical Summary of README](docs/_static/header.webp)
 quantumAllostery
 ==============================
 [//]: # (Badges)
