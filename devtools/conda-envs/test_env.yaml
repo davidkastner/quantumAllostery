@@ -6,7 +6,6 @@ dependencies:
     # Base depends
   - python
   - pip
-
     # Testing
   - pytest
   - pytest-cov
@@ -17,7 +16,7 @@ dependencies:
   - matplotlib
   - pandas
   - seaborn
-  - sklearn
+  - scikit-learn
 
     # Pip-only installs
   #- pip:

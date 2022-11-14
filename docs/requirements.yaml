@@ -11,7 +11,7 @@ dependencies:
   - matplotlib
   - pandas
   - seaborn
-  - sklearn
+  - scikit-learn
 
     # Pip-only installs
   - pip:
