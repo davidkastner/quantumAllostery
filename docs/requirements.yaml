@@ -4,11 +4,14 @@ dependencies:
     # Base depends
   - python
   - pip
-
     # Package depends
   - numpy
   - matplotlib
   - pandas
+  - matplotlib
+  - pandas
+  - seaborn
+  - sklearn
 
     # Pip-only installs
   - pip:
