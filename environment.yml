@@ -1,14 +1,3 @@
-
-conda install numpy
-
-conda install -c conda-forge scipy
-conda install -c conda-forge 
-conda install -c conda-forge pytest
-conda install -c conda-forge pydantic
-pip install pytest-cov
-pip install sphinx sphinx_rtd_theme
-pip install https://github.com/revitron/revitron-sphinx-theme/archive/master.zip
-
 name: qa
 channels:
   - conda-forge
@@ -20,11 +9,14 @@ dependencies:
   - git
   - matplotlib
   - mypy
-  -
-  -
-
+  - scipy
+  - numpy
+  - pytest
   - pandas
-
+  - pandas
+  - pydantic
+  - pytest-cov
+  - sphinx_rtd_theme
   - pip
   - pip:
-    - git+https://github.com/blaze/dask.git#egg=dask[complete]
+    - https://github.com/revitron/revitron-sphinx-theme/archive/master.zip
