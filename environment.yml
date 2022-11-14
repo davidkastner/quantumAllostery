@@ -3,20 +3,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - black
-  - cookiecutter
-  - flake8
-  - git
   - matplotlib
-  - mypy
   - scipy
   - numpy
-  - pytest
   - pandas
-  - pandas
-  - pydantic
-  - pytest-cov
-  - sphinx_rtd_theme
-  - pip
-  - pip:
-    - https://github.com/revitron/revitron-sphinx-theme/archive/master.zip
+  - seaborn
+  - scikit-learn
