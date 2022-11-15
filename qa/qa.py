@@ -1,8 +1,9 @@
 """Provide the primary functions."""
 
-import qa.process as process
-import qa.predict as predict
-import qa.plot as plot
+import process
+import predict
+import plot
+
 
 def cli():
     """
@@ -44,10 +45,7 @@ def process():
         Compiled string including quote and optional attribution.
     """
 
-    quote = "The code is but a canvas to our imagination."
-    if with_attribution:
-        quote += "\n\t- Adapted from Henry David Thoreau"
-    return quote
+    return
 
 
 if __name__ == "__main__":
