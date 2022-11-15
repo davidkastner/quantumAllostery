@@ -9,72 +9,60 @@ import seaborn as sns
 from sklearn.feature_selection import mutual_info_regression
 
 
-def consolidate(file_type: str):
+def xyz_consolidator():
     """
-    Collects either charges or coordinates into single xls and xyz files.
-
-    Likely the first executed function after generating the raw AIMD data.
-    The trajectories were likely generated over multiple runs.
-    The function will combined all coordinate and charge data for each run.
-
-    Parameters
-    ----------
-    file_type : string
-        Whether to combine charge or xyz data e.g., "charge" or "coors".
-
-    Notes
-    -----
-    Runs from inside the top-level directory of a TeraChem calculation
+    Collects all charges and coordinates into single csv and xyz files.
 
     """
 
-    # Set variables
-    ext = ".xls" if file_type == "charge" else ext == ".xyz"  # Set extension
+    filelist = glob.glob("*out*")
+    print(filelist)
+    fileinfo = []
+    for files in filelist:
+        myfile = open(files, "r").readlines()
+        counter = 0
+        for line in range(0, len(myfile)):
+            if "MD STEP" in myfile[line]:
+                if counter == 0:
+                    fileinfo.append([int(myfile[line].split()[4]), files])
+                    counter = 1
+
+    fileinfosort = sorted(fileinfo)
+    scrdir = glob.glob("safe/*/")
+    scrdir.sort(key=os.path.getmtime)
+
+    for lines in range(0, len(fileinfosort)):
+        fileinfosort[lines].append(scrdir[lines])
     nat = 306
 
-    # Collect all qmscript.out files
-    out_files = glob.glob("./**/qmscript.out", recursive=True)
-    run_info: list[list[int, str, str]] = []
+    for lines in range(0, len(fileinfosort)):
+        chargefile = open(fileinfosort[lines][2] + "charge.xls", "r").readlines()
+        coorsfile = open(fileinfosort[lines][2] + "coors.xyz", "r").readlines()
+        allcharge = open("safe/allcharge.xls", "a")
+        allcoors = open("safe/allcoors.xyz", "a")
 
-    # Get the first MD step from out_files to identify where each job restarted
-    # Restarting occurs from the last restart point not the last frame
-    for out_file in out_files:
-        out_content = open(out_file, "r").readlines()
-        for line in out_content:
-            if "MD STEP" in line:
-                # A list of info about each run [start step, file, scr dir]
-                md_step = int(line.split()[4])
-                run_info.append([md_step, out_file])
-                break
-    # Sort the restart points to get the run segments
-    run_info_sorted = sorted(run_info)
+        if lines == 0:
+            for line2 in range(0, fileinfosort[lines + 1][0] + 1):
+                allcharge.write(chargefile[line2])
+            for line3 in range(0, fileinfosort[lines + 1][0] * nat):
+                allcoors.write(coorsfile[line3])
 
-    # Get all src directories in safe, one for each restart attempt
-    scrdir = glob.glob("./**/scr*/", recursive=True)
-    scrdir.sort(key=os.path.getmtime)  # Sort by modification date
+        if lines < len(fileinfosort) - 1:
+            if lines != 0:
+                for line2 in range(
+                    1, fileinfosort[lines + 1][0] - fileinfosort[lines][0] + 1
+                ):
+                    allcharge.write(chargefile[line2])
+                for line3 in range(
+                    0, (fileinfosort[lines + 1][0] - fileinfosort[lines][0]) * nat
+                ):
+                    allcoors.write(coorsfile[line3])
 
-    # Add the name of the scr directory location to the run_info list
-    for index, step in enumerate(run_info_sorted):
-        step.append(scrdir[index])
-
-    # Use the run_info to open the charge and coordinate files
-    for run, index in enumerate(run_info_sorted):
-        data_file = open(f"{run[2]}{file_type}{ext}", "r").readlines()
-        # Create new files that combined all coordinate and charge data
-        allcharge = open(f"safe/all{file_type}{ext}", "a")
-
-        # If it is the first run
-        if index == 0:
-            for line in range(0, run_info_sorted[index + 1][0] + 1):
-                allcharge.write(data_file[line])
-        # If it is an intermediate run
-        elif (index < len(run_info_sorted) - 1) and index != 0:
-            for line in range(1, run_info_sorted[index + 1][0] - run[0] + 1):
-                allcharge.write(data_file[line])
-        # If it is the final run
-        else:
-            for line in range(1, len(data_file)):
-                allcharge.write(data_file[line])
+        if lines == len(fileinfosort) - 1:
+            for line2 in range(1, len(chargefile)):
+                allcharge.write(chargefile[line2])
+            for line3 in range(0, len(coorsfile)):
+                allcoors.write(coorsfile[line3])
 
 
 def charge_grab():

@@ -9,6 +9,32 @@ def cli():
     """
     The overall command-line interface (CLI) that interacts with the rest of the package.
 
+    Notes
+    -----
+    Expecting the following file structure:
+    .
+    ├── variant 1
+    │   ├── replicate 1
+    │   │   ├── segment 1
+    │   │   ├── segment 2
+    │   │   └── ...
+    │   ├── replicate 2
+    │   │   ├── segment 1
+    │   │   ├── segment 2
+    │   │   └── ...
+    │   └── ...
+    ├── variant 2
+    │   ├── replicate 1
+    │   │   ├── segment 1
+    │   │   ├── segment 2
+    │   │   └── ...
+    │   ├── replicate 2
+    │   │   ├── segment 1
+    │   │   ├── segment 2
+    │   │   └── ...
+    │   └── ...
+    └── ...
+
     """
     # Ask the user what task to perform with quantumAllostery
     prompt = "What would you like to do (e.g., 1, 2, or 3)?\n"
@@ -26,26 +52,6 @@ def cli():
         plot()
     else:
         print("Select one of the available options.")
-
-
-def process():
-    """
-    Placeholder function to show example docstring (NumPy format).
-
-    Replace this function and doc string for your own project.
-
-    Parameters
-    ----------
-    with_attribution : bool, Optional, default: True
-        Set whether or not to display who the quote is from.
-
-    Returns
-    -------
-    quote : str
-        Compiled string including quote and optional attribution.
-    """
-
-    return
 
 
 if __name__ == "__main__":
