@@ -28,26 +28,6 @@ def cli():
         print("Select one of the available options.")
 
 
-def process():
-    """
-    Placeholder function to show example docstring (NumPy format).
-
-    Replace this function and doc string for your own project.
-
-    Parameters
-    ----------
-    with_attribution : bool, Optional, default: True
-        Set whether or not to display who the quote is from.
-
-    Returns
-    -------
-    quote : str
-        Compiled string including quote and optional attribution.
-    """
-
-    return
-
-
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
     cli()

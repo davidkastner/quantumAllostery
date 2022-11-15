@@ -90,6 +90,7 @@ def charge_grab():
     atwbblist = []
     atwsclist = []
     atscolist = []
+    
     for lines in range(0, len(pdbfile)):
         if "ATOM" in pdbfile[lines]:
             if pdbfile[lines].split()[5] != oldresi:
@@ -171,8 +172,8 @@ def charge_grab():
         print(
             f"{reslist[resi]} {maxchgbb[resi]} {minchgbb[resi]} {maxchgbb[resi] - minchgbb[resi]} {avgchgbb[resi]} {stdchgbb[resi]}"
         )
+    
     chargemat = open("chargematbb.csv", "w")
-
     for resx in range(0, len(reslist)):
         for resy in range(0, len(reslist)):
             if resy == len(reslist) - 1:
@@ -181,14 +182,14 @@ def charge_grab():
                 extra = ","
             chargemat.write(str(corrcoef[resx][resy]) + extra)
         chargemat.write("\n")
-
     print("SC stats below.")
+
     for resi in range(0, len(reslist)):
         print(
             f"{reslist[resi]} {maxchgsc[resi]} {minchgsc[resi]} {maxchgsc[resi]-minchgsc[resi]} {avgchgsc[resi]} {stdchgsc[resi]}"
         )
+    
     chargemat = open("chargematsc.csv", "w")
-
     for resx in range(0, len(reslist)):
         for resy in range(0, len(reslist)):
             if resy == len(reslist) - 1:
