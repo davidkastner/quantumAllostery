@@ -11,35 +11,26 @@ import time
 from sklearn.feature_selection import mutual_info_regression
 
 
-def consolidate(file_type: str):
+def all_runs():
     """
-    Collects either charges or coordinates into single xls and xyz files.
+    Collects all charges or coordinates into single xls and xyz files.
 
     Likely the first executed function after generating the raw AIMD data.
-    The trajectories were likely generated over multiple runs.
-    The function will combined all coordinate and charge data for each run.
-
-    Parameters
-    ----------
-    file_type : string
-        Whether to combine charge or xyz data e.g., "charge" or "coors".
+    Trajectories were likely generated over multiple runs.
+    This function combines all coordinate and charge data for each run.
 
     Notes
     -----
-    Runs from inside the top-level directory of a TeraChem calculation
+    Runs from inside the top-level directory of a TeraChem calculation.
 
     """
 
-    # Check that the proper values have been given
-    if file_type not in ("charge", "coors"):
-        raise ValueError("Only charge or coors can be used as parameters.")
-
-    # Variables
-    start_time = time.time() # Used to report the speed of each function
-    ext = ".xls" if file_type == "charge" else ext == ".xyz"  # Set extension
-    consolidated_file = f"all{file_type}{ext}"
+    # The files where all the charges and coors will be combined
+    all_charges = f"all_charges.xls"
+    all_coors = f"all_coors.xyz"
+    start_time = time.time() # Used to report the executation speed
     frame_count = -1 # Report to user with -1 to account for header
-    nat = 489 # Get the number of atoms to generated the combined coors file
+    atoms = 489 # The number of atoms + 2 for header lines
 
     # Collect all qmscript.out files
     out_files = glob.glob("./**/qmscript.out", recursive=True)
@@ -56,45 +47,54 @@ def consolidate(file_type: str):
                 md_step = int(line.split()[4])
                 run_info.append([md_step, out_file])
                 break
-    # Sort the restart points to get the run segments
-    run_info_sorted = sorted(run_info)
 
     # Get all src directories in safe, one for each restart attempt
     scrdir = glob.glob("./**/scr*/", recursive=True)
     scrdir.sort()  # Sort by modification date
-
     # Add the name of the scr directory location to the run_info list
-    for index, step in enumerate(run_info_sorted):
+    run_info.sort()
+    for index, step in enumerate(run_info):
         step.append(scrdir[index])
 
-    # Clean any old files so we can begin appending
-    os.remove(consolidated_file)
-    # Use the run_info to open the charge and coordinate files
-    for index, run in enumerate(run_info_sorted):
-        data_contents = open(f"{run[2]}{file_type}{ext}", "r").readlines()
-        # Create new files that combined all coordinate and charge data
-        all_data = open(consolidated_file, "a")
+    # Delete so we don't append to a previous version
+    if os.path.exists(all_charges):
+        os.remove(all_charges) 
+    if os.path.exists(all_coors):
+        os.remove(all_coors)
 
-        # If it is the first run
+    # Use the run_info to open the charge and coordinate files
+    for index, run in enumerate(run_info):
+        charge_file = open(f"{run[2]}charge.xls", "r").readlines()
+        coors_file = open(f"{run[2]}coors.xyz", "r").readlines()
+        # Combined charge and coors files
+        all_charges_file = open(all_charges, "a")
+        all_coors_file = open(all_coors, "a")
+
+        # Parse runs differently based on if first, intermediate, or last
         if index == 0:
-            for line in range(0, run_info_sorted[index + 1][0] + 1):
-                all_data.write(data_contents[line])
+            for charge in range(0, run_info[index + 1][0] + 1):
+                all_charges_file.write(charge_file[charge])
                 frame_count += 1
-        # If it is an intermediate run
-        elif (index < len(run_info_sorted) - 1) and index != 0:
-            for line in range(1, run_info_sorted[index + 1][0] - run[0] + 1):
-                all_data.write(data_contents[line])
+            for coor in range(0, run_info[index + 1][0] * atoms):
+                all_coors_file.write(coors_file[coor])
+        elif (index < len(run_info) - 1) and index != 0:
+            for charge in range(1, run_info[index + 1][0] - run[0] + 1):
+                all_charges_file.write(charge_file[charge])
                 frame_count += 1
-        # If it is the final run
+            for coor in range(0, (run_info[index + 1][0] - run_info[index][0]) * atoms):
+                all_coors_file.write(coors_file[coor])
         else:
-            for line in range(1, len(data_contents)):
-                all_data.write(data_contents[line])
+            for charge in range(1, len(charge_file)):
+                all_charges_file.write(charge_file[charge])
                 frame_count += 1
+            for coor in range(0, len(coors_file)):
+                all_coors_file.write(coors_file[coor])
     
     total_time = round(time.time() - start_time, 3) # Seconds to run the function
     print(f"""
-        \t--------------------------CONSOLIDATE RUN END-----------------------
-        \tRESULT: Combined {frame_count} {file_type} frames from {out_files_count} runs.
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Combined {frame_count} frames from {out_files_count} runs.
+        \tOUTPUT: Generated {all_charges} and {all_coors}.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """)
@@ -236,4 +236,4 @@ def charge_grab():
 
 if __name__ == "__main__":
     # Run when executed as a script
-    consolidate("charge")
+    all_runs()
