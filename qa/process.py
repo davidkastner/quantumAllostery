@@ -2,10 +2,12 @@
 
 import os
 import sys
+import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import time
 from sklearn.feature_selection import mutual_info_regression
 
 
@@ -28,12 +30,20 @@ def consolidate(file_type: str):
 
     """
 
-    # Set variables
+    # Check that the proper values have been given
+    if file_type not in ("charge", "coors"):
+        raise ValueError("Only charge or coors can be used as parameters.")
+
+    # Variables
+    start_time = time.time() # Used to report the speed of each function
     ext = ".xls" if file_type == "charge" else ext == ".xyz"  # Set extension
-    nat = 306
+    consolidated_file = f"all{file_type}{ext}"
+    frame_count = -1 # Report to user with -1 to account for header
+    nat = 489 # Get the number of atoms to generated the combined coors file
 
     # Collect all qmscript.out files
     out_files = glob.glob("./**/qmscript.out", recursive=True)
+    out_files_count = len(out_files) # Will report this to user
     run_info: list[list[int, str, str]] = []
 
     # Get the first MD step from out_files to identify where each job restarted
@@ -51,30 +61,43 @@ def consolidate(file_type: str):
 
     # Get all src directories in safe, one for each restart attempt
     scrdir = glob.glob("./**/scr*/", recursive=True)
-    scrdir.sort(key=os.path.getmtime)  # Sort by modification date
+    scrdir.sort()  # Sort by modification date
 
     # Add the name of the scr directory location to the run_info list
     for index, step in enumerate(run_info_sorted):
         step.append(scrdir[index])
 
+    # Clean any old files so we can begin appending
+    os.remove(consolidated_file)
     # Use the run_info to open the charge and coordinate files
-    for run, index in enumerate(run_info_sorted):
-        data_file = open(f"{run[2]}{file_type}{ext}", "r").readlines()
+    for index, run in enumerate(run_info_sorted):
+        data_contents = open(f"{run[2]}{file_type}{ext}", "r").readlines()
         # Create new files that combined all coordinate and charge data
-        allcharge = open(f"safe/all{file_type}{ext}", "a")
+        all_data = open(consolidated_file, "a")
 
         # If it is the first run
         if index == 0:
             for line in range(0, run_info_sorted[index + 1][0] + 1):
-                allcharge.write(data_file[line])
+                all_data.write(data_contents[line])
+                frame_count += 1
         # If it is an intermediate run
         elif (index < len(run_info_sorted) - 1) and index != 0:
             for line in range(1, run_info_sorted[index + 1][0] - run[0] + 1):
-                allcharge.write(data_file[line])
+                all_data.write(data_contents[line])
+                frame_count += 1
         # If it is the final run
         else:
-            for line in range(1, len(data_file)):
-                allcharge.write(data_file[line])
+            for line in range(1, len(data_contents)):
+                all_data.write(data_contents[line])
+                frame_count += 1
+    
+    total_time = round(time.time() - start_time, 3) # Seconds to run the function
+    print(f"""
+        \t--------------------------CONSOLIDATE RUN END-----------------------
+        \tRESULT: Combined {frame_count} {file_type} frames from {out_files_count} runs.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """)
 
 
 def charge_grab():
@@ -210,3 +233,7 @@ def charge_grab():
                 extra = ","
             chargemat.write(str(corrcoefsc[resx][resy]) + extra)
         chargemat.write("\n")
+
+if __name__ == "__main__":
+    # Run when executed as a script
+    consolidate("charge")

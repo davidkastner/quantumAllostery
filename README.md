@@ -4,7 +4,6 @@ quantumAllostery
 [//]: # (Badges)
 [![GitHub Actions Build Status](https://github.com/davidkastner/quantumAllostery/workflows/CI/badge.svg)](https://github.com/davidkastner/quantumAllostery/actions?query=workflow%3ACI)
 [![Documentation Status](https://readthedocs.org/projects/quantumallostery/badge/?version=latest)](https://quantumallostery.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/davidkastner/quantumAllostery/branch/main/graph/badge.svg?token=lGnUIVeGit)](https://codecov.io/gh/davidkastner/quantumAllostery)
 
 
 ## Table of Contents
