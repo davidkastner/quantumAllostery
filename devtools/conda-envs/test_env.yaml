@@ -15,7 +15,6 @@ dependencies:
   - pytest-cov
   - seaborn
   - scikit-learn
-  - time
 
     # Pip-only installs
   #- pip:
