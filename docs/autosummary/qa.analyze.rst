@@ -1,7 +1,7 @@
-﻿qa.process
+﻿qa.analyze
 ==========
 
-.. automodule:: qa.process
+.. automodule:: qa.analyze
 
    
    
@@ -13,7 +13,7 @@
 
    .. autosummary::
    
-      all_runs
+      charge_matrices
    
    
 

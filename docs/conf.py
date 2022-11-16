@@ -23,8 +23,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'quantumAllostery'
-copyright = ("2022, David W. Kastner. Project structure based on the "
-             "Computational Molecular Science Python Cookiecutter version 1.1")
+copyright = ("2022, David W. Kastner")
 author = 'David W. Kastner'
 
 # The short X.Y version
@@ -43,6 +42,7 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'autoapi.extension',
     'sphinx.ext.autosummary',
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
@@ -64,6 +64,7 @@ autoapi_options = ['members',
                    'show-inheritance',
                    'show-module-summary',
                    'imported-members']
+
 napoleon_google_docstring = False
 napoleon_use_param = False
 napoleon_use_ivar = True
@@ -123,7 +124,7 @@ html_theme_options = {
 }
 
 html_logo = '_static/logo-white.svg'
-html_title = 'eden'
+html_title = 'quantumAllostery'
 html_favicon = '_static/favicon.ico'
 
 html_context = {
@@ -145,6 +146,7 @@ html_context = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_logo = '_static/logo-white.svg'
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

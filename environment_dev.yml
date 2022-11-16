@@ -9,15 +9,16 @@ dependencies:
   - git
   - matplotlib
   - mypy
-  - scipy
   - numpy
-  - pytest
   - pandas
-  - pydantic
-  - pytest-cov
-  - sphinx_rtd_theme
   - pip
-  - seaborn
+  - pydantic
+  - pytest
+  - pytest-cov
   - scikit-learn
+  - scipy
+  - seaborn
+  - sphinx-autoapi
+  - sphinx_rtd_theme
   - pip:
     - https://github.com/revitron/revitron-sphinx-theme/archive/master.zip

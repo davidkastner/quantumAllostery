@@ -2,37 +2,75 @@ Getting Started
 ===============
 
 Welcome to quantumAllostery!
-A workflow for identify quantum allostery trends in molecular dynamics data.
 
-Installation
+1 Overview
+----------
+
+The quantumAllostery package was designed to automate the identification of charge-transfer events in ab-initio molecular dynamics simulations. Routine tasks can be easily automated using the functionality contained in the library.
+
+2 Installation
 ------------
-quantumAllostery is build as a library for automating data generation and analysis.
+
+Install the package by running the follow commands inside the repository. This will perform a developmental version install. It is good practice to do this inside of a virtual environment. A yaml environmental file has been created to automate the installation of dependencies.
+
+**Creating a Conda environment**
+
+All the dependencies can be loaded together using the prebuilt environment.yml files.
+We provide two YAML files. The dev version contains additional packages for code maintenance.
 
 ::
 
-    $ conda create --name qa
-    $ conda activate qa
+    conda env create -f environment.yml
 
-Install dependencies
---------------------
+If you are going to be developing the package run:
+
 ::
 
-    $ conda install -c anaconda requests
-    $ conda install -c anaconda beautifulsoup4
-    $ conda install -c anaconda pandas
-    $ conda install -c plotly plotly_express
-    $ pip install sphinx sphinx_rtd_theme
-    $ conda install -c conda-forge sphinx-autoapi
-    $ pip install https://github.com/revitron/revitron-sphinx-theme/archive/master.zip
+    conda env create -f environment_dev.yml
 
-Install package
----------------
+**Setup developing environment**
+
 ::
 
-    $ pip install -e .
+    git clone git@github.com:davidkastner/quantumAllostery.git
+    cd quantumAllostery
+    pip install -e .
 
-Run a pipeline
---------------
+
+3 What is included?
+-------------------
+
 ::
     
-    $ python pipelines.py
+    .
+    ├── docs
+    ├── qa
+    │   ├── qa           # Top-level script that interacts with the rest of the package
+    │   ├── process      # Processes the raw AIMD data
+    │   ├── predict      # Machine learning analysis
+    │   └── plot         # Automated plotting and vizualization 
+    └── ...
+
+
+4 Documentation
+---------------
+
+Update ReadtheDocs.
+
+::
+
+    cd docs
+    make clean
+    make html
+
+5 Developer guide
+
+**GitHub Refresher**
+
+::
+
+    git status
+    git add .
+    git commit -m "Change a specific functionality"
+    git push -u origin main
+

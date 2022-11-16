@@ -51,12 +51,6 @@ cd quantumAllostery
 pip install -e .
 ```
 
-###
-You can add the following line to your bashrc to easily access the main quantumAllostery CLI.
-```bash
-alias qa="python /this/is/the/absolute/path/of/qa.py"
-```
-
 
 ## 3. What is included?
 ### File structure
