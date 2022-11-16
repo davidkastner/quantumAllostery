@@ -7,17 +7,14 @@ dependencies:
   - python
   - pip
     # Testing
+  - codecov
+  - matplotlib
+  - numpy
+  - pandas
   - pytest
   - pytest-cov
-  - codecov
-  - numpy
-  - matplotlib
-  - pandas
-  - matplotlib
-  - pandas
   - seaborn
   - scikit-learn
-  - glob
   - time
 
     # Pip-only installs
