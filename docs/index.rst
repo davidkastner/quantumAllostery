@@ -3,8 +3,8 @@
 
 .. image:: _static/logo-white.svg
 
-Project Eden
-============
+quantumAllostery
+================
 
 .. container:: .large
 

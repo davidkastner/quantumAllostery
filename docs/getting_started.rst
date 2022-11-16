@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-Welcome to quantumAllostery!
+*Welcome to quantumAllostery!*
 
 1 Overview
 ----------
@@ -64,6 +64,7 @@ Update ReadtheDocs.
     make html
 
 5 Developer guide
+-----------------
 
 **GitHub Refresher**
 
