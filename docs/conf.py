@@ -135,9 +135,6 @@ html_context = {
         }, {
             'title': 'User Guide',
             'url': 'https://quantumallostery.readthedocs.io/en/latest/getting_started.html'
-        }, {
-            'title': '♡ Sponsor',
-            'url': 'https://www.buymeacoffee.com/kastner'
         }]
     }
 }

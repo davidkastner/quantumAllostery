@@ -34,7 +34,7 @@ def charge_matrices():
         sys.exit('No PDB files was found.')
     
     # Set variables
-    chargefile = open("all_charges.xls", "r").readlines()
+    charge_file = open("all_charges.xls", "r").readlines()
     oldresn = "NON"
     oldresi = "0"
     oldressc = "0"
@@ -69,22 +69,22 @@ def charge_matrices():
     # Sidechains
     bbchargearray = []
     scchargearray = []
-    print(len(chargefile) * 0.0005, "ps collected so far")
-    for line2 in range(1, len(chargefile)):
+    print(len(charge_file) * 0.0005, "ps collected so far")
+    for line2 in range(1, len(charge_file)):
         bbchargearray.append([])
         scchargearray.append([])
         for resat in range(0, len(atwbblist)):
             rescharge = 0.00
             for atwbbs in range(0, len(atwbblist[resat])):
                 rescharge += float(
-                    chargefile[line2].split()[int(atwbblist[resat][atwbbs]) - 1]
+                    charge_file[line2].split()[int(atwbblist[resat][atwbbs]) - 1]
                 )
             bbchargearray[line2 - 1].append(rescharge)
         for resat in range(0, len(atwsclist)):
             ressccharge = 0.00
             for atwscs in range(0, len(atwsclist[resat])):
                 ressccharge += float(
-                    chargefile[line2].split()[int(atwsclist[resat][atwscs]) - 1]
+                    charge_file[line2].split()[int(atwsclist[resat][atwscs]) - 1]
                 )
             scchargearray[line2 - 1].append(ressccharge)
 
