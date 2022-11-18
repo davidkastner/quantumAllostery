@@ -13,7 +13,8 @@
 
    .. autosummary::
    
-      canvas
+      format_plot
+      heatmap
    
    
 
