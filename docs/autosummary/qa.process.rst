@@ -13,6 +13,7 @@
 
    .. autosummary::
    
+      all_replicates
       all_runs
    
    
