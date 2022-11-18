@@ -6,6 +6,7 @@ import glob
 import numpy as np
 import time
 from sklearn.feature_selection import mutual_info_regression
+from joblib import parallel_backend
 
 
 def charge_matrices():
@@ -28,12 +29,13 @@ def charge_matrices():
     pdbfiles = glob.glob("./**/*.pdb", recursive=True)
     if len(pdbfiles) == 1:
         pdbfile = pdbfiles[0]
+        print(f"Using {pdbfile} as the template PDB.")
     elif pdbfiles > 1:
         sys.exit('More the one PDB file was found.')
     else:
         sys.exit('No PDB files was found.')
-    
-    with open("mc6.pdb","r") as pdbfile:
+
+    with open(pdbfile,"r") as pdbfile:
         pdbfile_lines = pdbfile.readlines()
         # Set variables
         oldresi = "0"
@@ -180,6 +182,7 @@ def charge_matrices():
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """)
+
 
 if __name__ == "__main__":
     # Run when executed as a script

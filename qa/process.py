@@ -4,6 +4,7 @@ import os
 import sys
 import glob
 import time
+import shutil
 
 
 def all_runs():
@@ -16,7 +17,7 @@ def all_runs():
 
     Notes
     -----
-    Runs from inside the top-level directory of a TeraChem calculation.
+    Run from the directory that contains the run fragments.
 
     """
 
@@ -96,7 +97,53 @@ def all_runs():
         """
     )
 
+def all_replicates():
+    """
+    Collects charges or coordinates into a xls and xyz file across replicates.
+
+    Notes
+    -----
+    Run from the directory that contains the replicates.
+    Run all_runs() first for if each replicated was run across multiple runs.
+    Generalized to combine any number of replicates.
+
+    """
+
+    # General variables
+    start_time = time.time()  # Used to report the executation speed
+    files = ["all_charges.xls", "all_coors.xyz"] # Files to be concatonated
+    charge_files: list[str] = [] # List of the charge file locations
+    coors_files: list[str] = [] # List of the coors file locations
+    root = os.getcwd()
+    dirs = sorted(glob.glob(f"{root}/*/")) # glob to efficiently grab only dirs
+    replicates = len(dirs) # Only used to report to user
+
+    # Loop through all directories containing replicates
+    for dir in dirs:
+        if os.path.isfile(f"{dir}{files[0]}") and os.path.isfile(f"{dir}{files[1]}"):
+            charge_files.append(f"{dir}{files[0]}")
+            coors_files.append(f"{dir}{files[1]}")
+
+    file_locations = [charge_files, coors_files]
+    # Loop over the file names and their locations
+    for (file_name, file_location) in zip(files, file_locations):
+        # Open a new file where we will right the concatonated output
+        with open(file_name, "wb") as outfile:
+            for loc in file_location:
+                with open(loc, "rb") as infile:
+                    print(f"Combining {loc}")
+                    shutil.copyfileobj(infile, outfile)
+
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Combined {replicates} replicates.
+        \tOUTPUT: Generated {files[0]} and {files[1]}.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """)
 
 if __name__ == "__main__":
     # Run when executed as a script
-    all_runs()
+    all_replicates()
