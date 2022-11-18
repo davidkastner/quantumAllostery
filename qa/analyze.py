@@ -1,4 +1,4 @@
-"""Analyze a AIMD trajectory."""
+"""Analyze an AIMD trajectory."""
 
 import os
 import sys
@@ -27,21 +27,23 @@ def charge_matrices():
     # Search for the reference PDB
     start_time = time.time() # Used to report the executation speed
     pdbfiles = glob.glob("./**/*.pdb", recursive=True)
+    pdbfile = pdbfiles[0]
     if len(pdbfiles) == 1:
-        pdbfile = pdbfiles[0]
         print(f"Using {pdbfile} as the template PDB.")
-    elif pdbfiles > 1:
-        sys.exit('More the one PDB file was found.')
+    elif len(pdbfiles) > 1:
+        print(f"More the one PDB file found -> Using {pdbfile}.")
     else:
-        sys.exit('No PDB files was found.')
+        sys.exit("No PDB files was found to use as a template.")
 
+    # Set variables
+    oldresi = "0"
+    reslist = []
+    atwbblist = []
+    atwsclist = []
+    
+    # Search for the reference PDB
     with open(pdbfile,"r") as pdbfile:
         pdbfile_lines = pdbfile.readlines()
-        # Set variables
-        oldresi = "0"
-        reslist = []
-        atwbblist = []
-        atwsclist = []
 
         for line in pdbfile_lines:
             if "ATOM" not in line:
@@ -49,21 +51,22 @@ def charge_matrices():
 
             line_pieces = line.split()
 
-            if line_pieces[5] != oldresi:
+            if line_pieces[4] != oldresi:
                 reslist.append(line_pieces[3])
-                oldresi = line_pieces[5]
-                atwbblist.append(line_pieces[1])
+                oldresi = line_pieces[4]
+                atwbblist.append([line_pieces[1]])
                 atwsclist.append([])
                 atom = line_pieces[2]
 
                 if atom not in ["N", "O", "C", "H"]:
-                    atwsclist.append(line_pieces[1])
+                    atwsclist.append([line_pieces[1]])
             else:
                 atwbblist[int(oldresi) - 1].append(line_pieces[1])
                 atom = line_pieces[2]
 
                 if atom not in ["N", "O", "C", "H"]:
                     atwsclist[int(oldresi) - 1].append(line_pieces[1])
+    print(len(atwbblist))
 
     with open("all_charges.xls", "r") as charge_file:
         # charge_file = open("all_charges.xls", "r").readlines()
@@ -77,7 +80,6 @@ def charge_matrices():
         print(charge_file_length * 0.0005, "ps collected so far")
 
         for line2 in range(1, charge_file_length):
-            print(line2)
             charge_file_line_pieces = charge_file_lines[line2].split()
             bbchargearray.append([])
             scchargearray.append([])
@@ -108,7 +110,7 @@ def charge_matrices():
     MI_mat = []
     bbchargearray_length = len(bbchargearray[0])
 
-    print(f"Start looping through {str(bbchargearray_length)}")
+    print(f"Start looping through {bbchargearray_length}")
     
     for i in range(0, bbchargearray_length):
         print("rowMI", i)

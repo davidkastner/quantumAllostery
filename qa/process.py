@@ -124,15 +124,33 @@ def all_replicates():
             charge_files.append(f"{dir}{files[0]}")
             coors_files.append(f"{dir}{files[1]}")
 
+    new_file_names = ["raw_all_charges.xls", "all_coors.xyz"]
     file_locations = [charge_files, coors_files]
     # Loop over the file names and their locations
-    for (file_name, file_location) in zip(files, file_locations):
+    for (file_name, file_location) in zip(new_file_names, file_locations):
         # Open a new file where we will right the concatonated output
         with open(file_name, "wb") as outfile:
             for loc in file_location:
                 with open(loc, "rb") as infile:
-                    print(f"Combining {loc}")
                     shutil.copyfileobj(infile, outfile)
+    
+    # The combined charge file now has multiple header lines
+    first_line = True
+    with open(new_file_names[0], "r") as raw_charge_file:
+        with open(files[0], "w") as clean_charge_file:
+            for line in raw_charge_file:
+                # We want the first line to have the header
+                if first_line == True:
+                    clean_charge_file.write(line)
+                    first_line = False
+                # After the first, no lines should contain atom names
+                else:
+                    if "H" in line:
+                        continue
+                    else:
+                        clean_charge_file.write(line)
+    # Delete the charge file with the extra headers to keep the dir clean
+    os.remove(new_file_names[0])
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
