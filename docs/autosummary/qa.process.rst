@@ -13,8 +13,11 @@
 
    .. autosummary::
    
-      all_replicates
-      all_runs
+      combine_replicates
+      combine_runs
+      get_pdb
+      get_xyz
+      xyz_pdb_convert
    
    
 

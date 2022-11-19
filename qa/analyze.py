@@ -7,42 +7,27 @@ import numpy as np
 import time
 from sklearn.feature_selection import mutual_info_regression
 from joblib import parallel_backend
+import process
 
 
 def charge_matrices():
     """
-    Placeholder function to show example docstring (NumPy format).
+    Generates mutual information and corss-correlation matrices.
 
-    Parameters
-    ----------
-    with_attribution : bool, Optional, default: True
-        Set whether or not to display who the quote is from.
-
-    Returns
-    -------
-    quote : str
-        Compiled string including quote and optional attribution.
     """
 
+    start_time = time.time()  # Used to report the executation speed
     # Search for the reference PDB
-    start_time = time.time() # Used to report the executation speed
-    pdbfiles = glob.glob("./**/*.pdb", recursive=True)
-    pdbfile = pdbfiles[0]
-    if len(pdbfiles) == 1:
-        print(f"Using {pdbfile} as the template PDB.")
-    elif len(pdbfiles) > 1:
-        print(f"More the one PDB file found -> Using {pdbfile}.")
-    else:
-        sys.exit("No PDB files was found to use as a template.")
+    pdbfile = process.get_pdb()
 
     # Set variables
     oldresi = "0"
     reslist = []
     atwbblist = []
     atwsclist = []
-    
+
     # Search for the reference PDB
-    with open(pdbfile,"r") as pdbfile:
+    with open(pdbfile, "r") as pdbfile:
         pdbfile_lines = pdbfile.readlines()
 
         for line in pdbfile_lines:
@@ -66,7 +51,6 @@ def charge_matrices():
 
                 if atom not in ["N", "O", "C", "H"]:
                     atwsclist[int(oldresi) - 1].append(line_pieces[1])
-    print(len(atwbblist))
 
     with open("all_charges.xls", "r") as charge_file:
         # charge_file = open("all_charges.xls", "r").readlines()
@@ -111,13 +95,11 @@ def charge_matrices():
     bbchargearray_length = len(bbchargearray[0])
 
     print(f"Start looping through {bbchargearray_length}")
-    
+
     for i in range(0, bbchargearray_length):
         print("rowMI", i)
         rowMI = mutual_info_regression(bbchargemutinf.transpose(), bbchargemutinf[i])
         MI_mat.append(rowMI)
-
-    print(MI_mat)
 
     with open("mimatbb.csv", "w") as mimat:
         for resx in range(0, len(reslist)):
@@ -176,16 +158,18 @@ def charge_matrices():
 
             chargemat.write("\n")
 
-    total_time = round(time.time() - start_time, 3) # Seconds to run the function
-    print(f"""
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
         \t-------------------------CHARGE MATRICES END--------------------------
         \tRESULT: Generated matrices.
         \tOUTPUT: Generated files.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
-        """)
+        """
+    )
 
 
 if __name__ == "__main__":
     # Run when executed as a script
-   charge_matrices()
+    charge_matrices()
