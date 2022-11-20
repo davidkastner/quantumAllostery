@@ -23,7 +23,7 @@ def format_plot():
     plt.rcParams["ytick.direction"] = "in"
 
 
-def heatmap(csv):
+def heatmap(csv: str, delete: list[int]):
     """
     Generates formatted heat maps.
 
@@ -34,6 +34,7 @@ def heatmap(csv):
     # General styling variables
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
+    remove: list[int] = []
     residues = [
         "ACE1",
         "ASP2",
@@ -70,6 +71,11 @@ def heatmap(csv):
     # Generate dataset
     matrix = np.genfromtxt(csv, delimiter=",")
     np.fill_diagonal(matrix, 0)
+    # Remove specific rows and columns from non-residues
+    for index in delete:
+        matrix = np.delete(matrix, index, 0) # deletes row 
+        matrix = np.delete(matrix, index, 1) # deletes the desired column at index
+
     df = pd.DataFrame(matrix)
     df.columns = residues
     df.index = residues

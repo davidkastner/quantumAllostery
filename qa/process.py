@@ -24,8 +24,8 @@ def get_pdb() -> str:
     # A list of all PDB's found after recursive search
     pdb_files = sorted(glob.glob("./**/*.pdb", recursive=True))
     for index,pdb in enumerate(pdb_files):
-        # Trajectory PDB's should be marked as ensemble
-        if "ensemble" in pdb:
+        # Trajectory PDB's should be marked as ensemble or traj
+        if "ensemble" in pdb or "traj" in PDB:
             continue
         else:
             pdb_file = pdb_files[index]
@@ -249,7 +249,7 @@ def combine_replicates(
     )
 
 
-def xyz_pdb_convert():
+def xyz2pdb_traj():
     """
     Converts an xyz trajectory file into a pdb trajectory file.
 
@@ -257,6 +257,52 @@ def xyz_pdb_convert():
     ----
     Assumes that the only TER flag is at the end.
 
+    """
+
+    # Search for the XYZ and PDB files names
+    start_time = time.time()  # Used to report the executation speed
+    pdb_name = get_pdb()
+    xyz_name = get_xyz()
+    # Remove the extension to get the protein name to use as the PDB header
+    protein_name = pdb_name.split("/")[-1][:-4]
+    new_pdb_name = f"{protein_name}_traj.pdb"
+
+    # Open files for reading
+    xyz_file = open(xyz_name, "r").readlines()
+    pdb_file = open(pdb_name, "r").readlines()
+    max_atom = int(pdb_file[len(pdb_file) - 3].split()[1])
+    new_file = open(new_pdb_name, "w")
+
+    atom = -1 # Start at -1 to skip the XYZ header
+    for line in xyz_file:
+        if atom > 0:
+            atom += 1
+            x, y, z = line.strip("\n").split()[1:5] # Coordinates from xyz file
+            pdb_line = pdb_file[atom - 2] # PDB is two behind the xyz
+            new_file.write(f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}\n")
+        else:
+            atom += 1
+        if atom > max_atom:
+            atom = -1
+            new_file.write("END\n")
+
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Converted {xyz_name} to {pdb_name}.
+        \tOUTPUT: Generated {pdb_name} in the current directory.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
+
+def xyz2pdb_ensemble():
+    """
+    Converts an xyz trajectory file into a pdb trajectory file.
+    Note
+    ----
+    Assumes that the only TER flag is at the end.
     """
 
     # Search for the XYZ and PDB files names
@@ -307,4 +353,4 @@ def xyz_pdb_convert():
 
 if __name__ == "__main__":
     # Run when executed as a script
-    xyz_pdb_convert()
+    xyz2pdb_traj()
