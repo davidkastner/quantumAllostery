@@ -7,7 +7,6 @@ import numpy as np
 import time
 from sklearn.feature_selection import mutual_info_regression
 from joblib import parallel_backend
-import process
 
 
 def charge_matrices():

@@ -23,60 +23,39 @@ def format_plot():
     plt.rcParams["ytick.direction"] = "in"
 
 
-def heatmap(csv: str, delete: list[int]):
+def heatmap(csv: str, protein: str, delete: list[int] = [], out_file: str = "heatmap.svg", cmap="RdBu"):
     """
     Generates formatted heat maps.
 
     Uses the Kulik Lab figure formatting standards.
 
     """
-
+    
     # General styling variables
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
     remove: list[int] = []
-    residues = [
-        "ACE1",
-        "ASP2",
-        "GLU3",
-        "GLN4",
-        "GLN5",
-        "LEU6",
-        "HIS7",
-        "SER8",
-        "GLN9",
-        "LYS10",
-        "ARG11",
-        "LYS12",
-        "ILE13",
-        "THR14",
-        "LEU15",
-        "NHE16",
-        "ACE17",
-        "ASP18",
-        "GLU19",
-        "GLN20",
-        "GLN21",
-        "LEU22",
-        "SER23",
-        "SER24",
-        "GLN25",
-        "LYS26",
-        "ARG27",
-        "NHE28",
-        "HEME",
-        "FE",
-    ]
+    residues = lib.sequence(protein)
 
-    # Generate dataset
-    matrix = np.genfromtxt(csv, delimiter=",")
-    np.fill_diagonal(matrix, 0)
-    # Remove specific rows and columns from non-residues
-    for index in delete:
-        matrix = np.delete(matrix, index, 0) # deletes row 
-        matrix = np.delete(matrix, index, 1) # deletes the desired column at index
+    # Identify matrix format and read in
+    contents = open(csv, "r").readlines()
+    contents_joined = " ".join(contents) # Create a single string for parsing
+    if "," in contents_joined:  # If CSV
+        matrix = np.genfromtxt(csv, delimiter=",")
+    elif " " in contents_joined:  # If a dat file
+        matrix = []
+        for line in contents:
+            matrix.append(line.split())
+        matrix = [[float(j) for j in i] for i in matrix] # Strings to float
+        matrix = np.array(matrix)
+
+    np.fill_diagonal(matrix, 0)  # Set the diagonal to zero as they are trivial
 
     df = pd.DataFrame(matrix)
+    # Remove specific rows and columns from non-residues
+    if len(delete) > 0:
+        df = df.drop(df.columns[delete], axis=0)
+        df = df.drop(df.columns[delete], axis=1)
     df.columns = residues
     df.index = residues
 
@@ -86,9 +65,9 @@ def heatmap(csv: str, delete: list[int]):
     # Generate plot
     ax = sns.heatmap(
         df,
-        cmap="RdBu",
-        vmin=-0.5,
-        vmax=0.5,
+        cmap=cmap,
+        vmin=-1,
+        vmax=1,
         xticklabels=True,
         yticklabels=True,
         linewidth=0.03,
@@ -105,13 +84,14 @@ def heatmap(csv: str, delete: list[int]):
     ax.hlines([5, 10, 15, 20, 25], colors=dark_gray, *ax.get_xlim(), linewidth=1.5)
     ax.vlines([5, 10, 15, 20, 25], colors=dark_gray, *ax.get_ylim(), linewidth=1.5)
     # Add broders
-    ax.hlines([0, 30], colors="k", *ax.get_xlim(), linewidth=3.5)
-    ax.vlines([0, 30], colors="k", *ax.get_ylim(), linewidth=3.5)
+    ax.hlines([0, len(residues)], colors="k", *ax.get_xlim(), linewidth=3.5)
+    ax.vlines([0, len(residues)], colors="k", *ax.get_ylim(), linewidth=3.5)
 
-    # plt.savefig("final.png", bbox_inches="tight", format="png", dpi=300)
-    plt.savefig("final.svg", bbox_inches="tight", format="svg")
+    ext = out_file.split(".")[-1] # Determine the output file type
+    plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
 
 
 if __name__ == "__main__":
     # Do something if this file is invoked on its own
-    heatmap("chargematbb.csv")
+    #  delete = [0,15,16,27,28,29]
+    heatmap(csv="cacovar.dat", protein="mc6sa", out_file="matrix_geom.png")

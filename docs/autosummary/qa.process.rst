@@ -17,7 +17,9 @@
       combine_runs
       get_pdb
       get_xyz
-      xyz_pdb_convert
+      remove_incomplete_xyz
+      xyz2pdb_ensemble
+      xyz2pdb_traj
    
    
 

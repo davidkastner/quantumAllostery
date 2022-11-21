@@ -25,7 +25,7 @@ def get_pdb() -> str:
     pdb_files = sorted(glob.glob("./**/*.pdb", recursive=True))
     for index,pdb in enumerate(pdb_files):
         # Trajectory PDB's should be marked as ensemble or traj
-        if "ensemble" in pdb or "traj" in PDB:
+        if "ensemble" in pdb or "traj" in pdb or "top" in pdb:
             continue
         else:
             pdb_file = pdb_files[index]
@@ -71,9 +71,7 @@ def get_xyz() -> str:
     return xyz_name
 
 
-def combine_runs(
-    all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
-):
+def combine_runs(all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz", atom_count=493):
     """
     Collects all charges or coordinates into single xls and xyz files.
 
@@ -87,6 +85,8 @@ def combine_runs(
         The name of the file containing all charges in xls format.
     all_coors.xyz : str
         The name of the file containing the coordinates in xyz format.
+    atom_count : int
+        The number of atoms +2 to account for the header lines.
 
     Notes
     -----
@@ -99,7 +99,6 @@ def combine_runs(
     # The files where all the charges and coors will be combined
     start_time = time.time()  # Used to report the executation speed
     frame_count = -1  # Report to user with -1 to account for header
-    atom_count = 489  # The number of atoms + 2 for header lines
 
     # Collect all qmscript.out files
     out_files = glob.glob("./**/qmscript.out", recursive=True)
@@ -209,7 +208,7 @@ def combine_replicates(
             charge_files.append(f"{dir}{files[0]}")
             coors_files.append(f"{dir}{files[1]}")
 
-    new_file_names = [f"raw_{all_charges}", f"raw_{all_coors}"]
+    new_file_names = [f"raw_{all_charges}", all_coors]
     file_locations = [charge_files, coors_files]
     # Loop over the file names and their locations
     for (file_name, file_location) in zip(new_file_names, file_locations):
@@ -274,10 +273,16 @@ def xyz2pdb_traj():
     new_file = open(new_pdb_name, "w")
 
     atom = -1 # Start at -1 to skip the XYZ header
+    line_count = 0
     for line in xyz_file:
+        line_count += 1
         if atom > 0:
             atom += 1
-            x, y, z = line.strip("\n").split()[1:5] # Coordinates from xyz file
+            try:
+                x, y, z = line.strip("\n").split()[1:5] # Coordinates from xyz file
+            except:
+                print(f"Script died at {line_count} -> '{line}'")
+                quit()
             pdb_line = pdb_file[atom - 2] # PDB is two behind the xyz
             new_file.write(f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}\n")
         else:
@@ -290,8 +295,8 @@ def xyz2pdb_traj():
     print(
         f"""
         \t----------------------------ALL RUNS END----------------------------
-        \tRESULT: Converted {xyz_name} to {pdb_name}.
-        \tOUTPUT: Generated {pdb_name} in the current directory.
+        \tRESULT: Converted {xyz_name} to {new_pdb_name}.
+        \tOUTPUT: Generated {new_pdb_name} in the current directory.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """
@@ -300,6 +305,7 @@ def xyz2pdb_traj():
 def xyz2pdb_ensemble():
     """
     Converts an xyz trajectory file into a pdb trajectory file.
+
     Note
     ----
     Assumes that the only TER flag is at the end.
@@ -343,13 +349,62 @@ def xyz2pdb_ensemble():
     print(
         f"""
         \t----------------------------ALL RUNS END----------------------------
-        \tRESULT: Converted {xyz_name} to {pdb_name}.
-        \tOUTPUT: Generated {pdb_name} in the current directory.
+        \tRESULT: Converted {xyz_name} to {new_pdb_name}.
+        \tOUTPUT: Generated {new_pdb_name} in the current directory.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """
     )
 
+def remove_incomplete_xyz():
+    """
+    For removing incomplete frames during troublshooting.
+
+    """
+
+    start_time = time.time()  # Used to report the executation speed
+    orig_file = "all_coors.xyz"
+    new_file = "all_coors_clean.xyz"
+    incomplete = 0 # Only used to create user status report at end
+
+    with open(new_file, "w") as coors_file_new:
+        with open(orig_file, "r") as coors_file:
+
+            section_delim = coors_file.readline().strip() # First line
+            section = [] # Stores the lines for each section
+            first_line = True # The first line is a unique case
+
+            for line in coors_file:
+                # Write out the first line no matter what
+                if first_line:
+                    section.append(line)
+                    first_line = False
+                else:
+                    # Reached the end of a section?
+                    if line[:len(section_delim)] == section_delim:
+                        # Check if the section has all the atoms it should
+                        if len(section) == int(section_delim) + 2:
+                            # Write the section out to the new file if complete
+                            for line in section:
+                                coors_file_new.write(line)
+                        else:
+                            incomplete += 1
+                        # Start a new section
+                        section = []
+                        section.append(line)
+                    else:
+                        section.append(line)
+
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Found {incomplete} incomplete sections.
+        \tOUTPUT: Generated {new_file} in the current directory.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
 
 if __name__ == "__main__":
     # Run when executed as a script

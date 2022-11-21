@@ -9,3 +9,4 @@ API Documentation
    qa.analyze
    qa.predict
    qa.plot
+   qa.lib
