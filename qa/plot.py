@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import numpy as np
+import lib
 
 
 def format_plot():
@@ -94,4 +95,4 @@ def heatmap(csv: str, protein: str, delete: list[int] = [], out_file: str = "hea
 if __name__ == "__main__":
     # Do something if this file is invoked on its own
     #  delete = [0,15,16,27,28,29]
-    heatmap(csv="cacovar.dat", protein="mc6sa", out_file="matrix_geom.png")
+    heatmap(csv="cacovar.dat", protein="mc6sa", out_file="matrix_geom.svg")
