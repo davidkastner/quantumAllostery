@@ -24,7 +24,7 @@ def format_plot():
     plt.rcParams["ytick.direction"] = "in"
 
 
-def heatmap(csv: str, protein: str, delete: list[int] = [], out_file: str = "heatmap.svg", cmap="RdBu"):
+def heatmap(csv: str, protein: str, delete: list(int) = [], out_file: str = "heatmap.svg", cmap="RdBu"):
     """
     Generates formatted heat maps.
 
