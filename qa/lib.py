@@ -1,10 +1,10 @@
 """Library of data patterns."""
 
 
-def sequence(protein):
+def sequence(protein) -> list[str]:
     """
     Generates mutual information and corss-correlation matrices.
-    
+
     """
 
     if protein == "mc6":

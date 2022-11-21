@@ -10,7 +10,7 @@ from joblib import parallel_backend
 import process
 
 
-def charge_matrices():
+def charge_matrices() -> None:
     """
     Generates mutual information and corss-correlation matrices.
 

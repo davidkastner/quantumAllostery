@@ -23,7 +23,7 @@ def get_pdb() -> str:
     """
     # A list of all PDB's found after recursive search
     pdb_files = sorted(glob.glob("./**/*.pdb", recursive=True))
-    for index,pdb in enumerate(pdb_files):
+    for index, pdb in enumerate(pdb_files):
         # Trajectory PDB's should be marked as ensemble or traj
         if "ensemble" in pdb or "traj" in pdb or "top" in pdb:
             continue
@@ -71,7 +71,11 @@ def get_xyz() -> str:
     return xyz_name
 
 
-def combine_runs(all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz", atom_count=493):
+def combine_runs(
+    all_charges: str = "all_charges.xls",
+    all_coors: str = "all_coors.xyz",
+    atom_count=493,
+) -> None:
     """
     Collects all charges or coordinates into single xls and xyz files.
 
@@ -174,7 +178,7 @@ def combine_runs(all_charges: str = "all_charges.xls", all_coors: str = "all_coo
 
 def combine_replicates(
     all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
-):
+) -> None:
     """
     Collects charges or coordinates into a xls and xyz file across replicates.
 
@@ -248,7 +252,7 @@ def combine_replicates(
     )
 
 
-def xyz2pdb_traj():
+def xyz2pdb_traj() -> None:
     """
     Converts an xyz trajectory file into a pdb trajectory file.
 
@@ -272,19 +276,21 @@ def xyz2pdb_traj():
     max_atom = int(pdb_file[len(pdb_file) - 3].split()[1])
     new_file = open(new_pdb_name, "w")
 
-    atom = -1 # Start at -1 to skip the XYZ header
+    atom = -1  # Start at -1 to skip the XYZ header
     line_count = 0
     for line in xyz_file:
         line_count += 1
         if atom > 0:
             atom += 1
             try:
-                x, y, z = line.strip("\n").split()[1:5] # Coordinates from xyz file
+                x, y, z = line.strip("\n").split()[1:5]  # Coordinates from xyz file
             except:
                 print(f"Script died at {line_count} -> '{line}'")
                 quit()
-            pdb_line = pdb_file[atom - 2] # PDB is two behind the xyz
-            new_file.write(f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}\n")
+            pdb_line = pdb_file[atom - 2]  # PDB is two behind the xyz
+            new_file.write(
+                f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}\n"
+            )
         else:
             atom += 1
         if atom > max_atom:
@@ -302,7 +308,8 @@ def xyz2pdb_traj():
         """
     )
 
-def xyz2pdb_ensemble():
+
+def xyz2pdb_ensemble() -> None:
     """
     Converts an xyz trajectory file into a pdb trajectory file.
 
@@ -325,17 +332,19 @@ def xyz2pdb_ensemble():
     max_atom = int(pdb_file[len(pdb_file) - 3].split()[1])
     new_file = open(new_pdb_name, "w")
 
-    atom = -1 # Start at -1 to skip the XYZ header
+    atom = -1  # Start at -1 to skip the XYZ header
     model_number = 2
-    new_file.write(f"{protein_name}\n") # PDB header line
-    new_file.write(f'MODEL        1\n') # The first line will always be MODEL 1
+    new_file.write(f"{protein_name}\n")  # PDB header line
+    new_file.write(f"MODEL        1\n")  # The first line will always be MODEL 1
 
     for line in xyz_file:
         if atom > 0:
             atom += 1
-            x, y, z = line.strip("\n").split()[1:5] # Coordinates from xyz file
-            pdb_line = pdb_file[atom - 2] # PDB is two behind the xyz
-            new_file.write(f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}\n")
+            x, y, z = line.strip("\n").split()[1:5]  # Coordinates from xyz file
+            pdb_line = pdb_file[atom - 2]  # PDB is two behind the xyz
+            new_file.write(
+                f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}\n"
+            )
         else:
             atom += 1
         if atom > max_atom:
@@ -356,7 +365,8 @@ def xyz2pdb_ensemble():
         """
     )
 
-def remove_incomplete_xyz():
+
+def remove_incomplete_xyz() -> None:
     """
     For removing incomplete frames during troublshooting.
 
@@ -365,14 +375,14 @@ def remove_incomplete_xyz():
     start_time = time.time()  # Used to report the executation speed
     orig_file = "all_coors.xyz"
     new_file = "all_coors_clean.xyz"
-    incomplete = 0 # Only used to create user status report at end
+    incomplete = 0  # Only used to create user status report at end
 
     with open(new_file, "w") as coors_file_new:
         with open(orig_file, "r") as coors_file:
 
-            section_delim = coors_file.readline().strip() # First line
-            section = [] # Stores the lines for each section
-            first_line = True # The first line is a unique case
+            section_delim = coors_file.readline().strip()  # First line
+            section = []  # Stores the lines for each section
+            first_line = True  # The first line is a unique case
 
             for line in coors_file:
                 # Write out the first line no matter what
@@ -381,7 +391,7 @@ def remove_incomplete_xyz():
                     first_line = False
                 else:
                     # Reached the end of a section?
-                    if line[:len(section_delim)] == section_delim:
+                    if line[: len(section_delim)] == section_delim:
                         # Check if the section has all the atoms it should
                         if len(section) == int(section_delim) + 2:
                             # Write the section out to the new file if complete
@@ -405,6 +415,7 @@ def remove_incomplete_xyz():
         \t--------------------------------------------------------------------\n
         """
     )
+
 
 if __name__ == "__main__":
     # Run when executed as a script

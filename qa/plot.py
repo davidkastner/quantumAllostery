@@ -5,10 +5,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import numpy as np
+
 # import lib
 
 
-def format_plot():
+def format_plot() -> None:
     """
     General plotting parameters for the Kulik Lab.
 
@@ -24,30 +25,36 @@ def format_plot():
     plt.rcParams["ytick.direction"] = "in"
 
 
-def heatmap(csv: str, protein: str, delete: list(int) = [], out_file: str = "heatmap.svg", cmap="RdBu"):
+def heatmap(
+    csv: str,
+    protein: str,
+    delete: list[int] = [],
+    out_file: str = "heatmap.svg",
+    cmap="RdBu",
+) -> None:
     """
     Generates formatted heat maps.
 
     Uses the Kulik Lab figure formatting standards.
 
     """
-    
+
     # General styling variables
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
-    remove: list[int] = []
+    remove: list(int) = []
     residues = lib.sequence(protein)
 
     # Identify matrix format and read in
     contents = open(csv, "r").readlines()
-    contents_joined = " ".join(contents) # Create a single string for parsing
+    contents_joined = " ".join(contents)  # Create a single string for parsing
     if "," in contents_joined:  # If CSV
         matrix = np.genfromtxt(csv, delimiter=",")
     elif " " in contents_joined:  # If a dat file
         matrix = []
         for line in contents:
             matrix.append(line.split())
-        matrix = [[float(j) for j in i] for i in matrix] # Strings to float
+        matrix = [[float(j) for j in i] for i in matrix]  # Strings to float
         matrix = np.array(matrix)
 
     np.fill_diagonal(matrix, 0)  # Set the diagonal to zero as they are trivial
@@ -88,7 +95,7 @@ def heatmap(csv: str, protein: str, delete: list(int) = [], out_file: str = "hea
     ax.hlines([0, len(residues)], colors="k", *ax.get_xlim(), linewidth=3.5)
     ax.vlines([0, len(residues)], colors="k", *ax.get_ylim(), linewidth=3.5)
 
-    ext = out_file.split(".")[-1] # Determine the output file type
+    ext = out_file.split(".")[-1]  # Determine the output file type
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
 
 
