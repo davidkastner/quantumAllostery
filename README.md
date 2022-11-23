@@ -25,7 +25,7 @@ quantumAllostery
 
 
 ## 1. Overview
-The quantumAllostery package was designed to automate the identification of charge-transfer events in ab-initio molecular dynamics simulations. Routine tasks can be easily automated using the functionality contained in the library.
+The quantumAllostery package was designed to automate the identification of charge-transfer events in ab-initio molecular dynamics (AIMD) simulations. Routine tasks can be easily automated using the functionality contained in the library.
 
 
 ## 2. Installation
