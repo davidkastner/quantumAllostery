@@ -67,7 +67,7 @@ pip install -e .
 
 
 ## 4. Documentation
-### Update the docs
+### Run the following commands to update the ReadTheDocs
 ```bash
 make clean
 make html
@@ -75,7 +75,7 @@ make html
 
 
 ## 5. Developer guide
-### GitHub refresher
+### GitHub refresher for those who would like to contribute
 ```bash
 git status
 git add .
