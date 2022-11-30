@@ -67,7 +67,7 @@ pip install -e .
 
 
 ## 4. Documentation
-### Run the following commands to update the ReadTheDocs
+### Run the following commands to update the ReadTheDocs site
 ```bash
 make clean
 make html
@@ -89,5 +89,4 @@ Copyright (c) 2022, David W. Kastner
 
 
 #### Acknowledgements
-Project based on the 
-[Computational Molecular Science Python Cookiecutter](https://github.com/molssi/cookiecutter-cms) version 1.1.
+[MolSSI](https://github.com/molssi/cookiecutter-cms) version 1.1.
