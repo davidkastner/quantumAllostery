@@ -5,6 +5,8 @@ def sequence(protein) -> list[str]:
     """
     Generates mutual information and corss-correlation matrices.
 
+    Add additonal sequences to this function as lists.
+
     """
 
     if protein == "mc6":

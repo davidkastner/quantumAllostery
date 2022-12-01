@@ -1,4 +1,4 @@
-"""Analyze an AIMD trajectory."""
+"""Functions for analyzing an AIMD trajectory."""
 
 import os
 import sys

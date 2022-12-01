@@ -25,7 +25,7 @@ def format_plot() -> None:
 
 
 # def heatmap(csv: str, protein: str, delete: list[int]=[], out_file: str="heatmap.svg", cmap="RdBu") -> None:
-def heatmap(csv, protein, delete, out_file, cmap):
+def heatmap(csv, protein, delete, out_file, cmap) -> None:
     """
     Generates formatted heat maps.
 
