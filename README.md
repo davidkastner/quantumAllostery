@@ -13,10 +13,8 @@ quantumAllostery
 2. **Installation**
     * Installing quantumAllostery
     * Prerequisites
-    * File structure
 3. **What is included?**
-    * Library
-    * Functionality
+    * File structure
 4. **Documentation**
     * Read the Docs
     * Examples
