@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 import numpy as np
+
 # import lib
 
 
@@ -32,7 +33,7 @@ def heatmap(csv, protein, delete, out_file, cmap) -> None:
     Uses the Kulik Lab figure formatting standards.
 
     """
-    
+
     # General styling variables
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
@@ -41,14 +42,14 @@ def heatmap(csv, protein, delete, out_file, cmap) -> None:
 
     # Identify matrix format and read in
     contents = open(csv, "r").readlines()
-    contents_joined = " ".join(contents) # Create a single string for parsing
+    contents_joined = " ".join(contents)  # Create a single string for parsing
     if "," in contents_joined:  # If CSV
         matrix = np.genfromtxt(csv, delimiter=",")
     elif " " in contents_joined:  # If a dat file
         matrix = []
         for line in contents:
             matrix.append(line.split())
-        matrix = [[float(j) for j in i] for i in matrix] # Strings to float
+        matrix = [[float(j) for j in i] for i in matrix]  # Strings to float
         matrix = np.array(matrix)
 
     np.fill_diagonal(matrix, 0)  # Set the diagonal to zero as they are trivial
@@ -89,7 +90,7 @@ def heatmap(csv, protein, delete, out_file, cmap) -> None:
     ax.hlines([0, len(residues)], colors="k", *ax.get_xlim(), linewidth=3.5)
     ax.vlines([0, len(residues)], colors="k", *ax.get_ylim(), linewidth=3.5)
 
-    ext = out_file.split(".")[-1] # Determine the output file type
+    ext = out_file.split(".")[-1]  # Determine the output file type
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
 
 
