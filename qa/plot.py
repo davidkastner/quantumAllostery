@@ -92,6 +92,35 @@ def heatmap(csv, protein, delete, out_file, cmap) -> None:
 
     ext = out_file.split(".")[-1]  # Determine the output file type
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
+    
+def get_parity_plot():
+    """
+    General set up to create an attractive parity plot.
+    """
+    # User defined values
+    format_plot()
+    xlabel = 'UB3LYP/def2-TZVP'
+    ylabel = 'UB3LYP/LACVP*'
+    x = [0.00,7.39,20.62,0.00,3.16,25.82,0.00,14.37,17.15,0.00,5.08,17.78,0.00,3.88,32.40,0.00,6.85,35.26,0.00,6.14,27.07,0.00,-1.06,33.19]
+    y = [0.00,7.63,21.88,0.00,6.79,25.05,0.00,14.50,17.83,0.00,6.73,18.80,0.00,2.77,30.52,0.00,7.06,31.66,0.00,5.84,25.29,0.00,0.15,30.92]
+
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    ax.set_aspect('equal', adjustable='box') # Parity plots should be square
+    # Create the identity line
+    plt.plot([-2,40],[-2,40], color="r", linewidth=2, zorder=0)
+    # Create scatter plot of data
+    plt.scatter(x, y, marker="o", color="k", zorder=1)
+    plt.xlabel(xlabel, fontsize=10, weight="bold")
+    plt.ylabel(ylabel, fontsize=10, weight="bold")
+    plt.tick_params(which="both", bottom=True, top=True, left=True, right=True)
+    # Force the axes to be the same
+    plt.xticks(np.arange(0, 36, 5))
+    plt.yticks(np.arange(0, 36, 5))
+    ax.set_xlim(0,37)
+    ax.set_ylim(0,37)
+    # Create the plot
+    plt.savefig("parity.png", format="png", dpi=300, bbox_inches='tight', transparent=True)
 
 
 if __name__ == "__main__":
