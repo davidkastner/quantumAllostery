@@ -118,7 +118,7 @@ def get_parity_plot():
     ax.set_xlim(0,37)
     ax.set_ylim(0,37)
     # Create the plot
-    plt.savefig("parity.png", format="png", dpi=300, bbox_inches='tight', transparent=True)
+    plt.savefig("parity.png", format="png", dpi=600, bbox_inches='tight', transparent=True)
 
 
 if __name__ == "__main__":
