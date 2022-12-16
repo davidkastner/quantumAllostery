@@ -21,6 +21,7 @@ def format_plot() -> None:
     plt.rcParams["ytick.major.width"] = 2
     plt.rcParams["xtick.direction"] = "out"
     plt.rcParams["ytick.direction"] = "in"
+    plt.rcParams['svg.fonttype'] = 'none'
 
 
 # def heatmap(csv: str, protein: str, delete: list[int]=[], out_file: str="heatmap.svg", cmap="RdBu") -> None:
