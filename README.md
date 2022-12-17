@@ -74,13 +74,21 @@ make html
 
 ## 5. Developer guide
 ### GitHub refresher for those who would like to contribute
+#### Push new changes
 ```bash
 git status
+git pull
 git add .
 git commit -m "Change a specific functionality"
 git push -u origin main
 ```
 
+#### Handle merge conflict
+```bash
+git stash push --include-untracked
+git stash drop
+git pull
+```
 
 ### Copyright
 Copyright (c) 2022, David W. Kastner
