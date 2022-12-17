@@ -169,6 +169,50 @@ def charge_matrices() -> None:
         """
     )
 
+    return
+
+
+def get_joint_qres(res_x, res_y):
+    """
+    Calculates the joint net partial charge sum on each residue, q(RES).
+
+    Parameters
+    ----------
+    res_x : str
+        The amino acid to be represented on the x-axis
+    res_y : str
+        The amino acid to be represented on the y-axis
+
+    Returns
+    -------
+
+    Notes
+    -----
+    Big picture flow of function.
+        1. Read charges.xls in as a pd dataframe
+        2. Get atom indices for requested atoms from get_res_indices()
+        3. Extract and sum residue columns
+        4. Save as a csv
+        5. Return as a pandas dataframe
+        6. Use joint_plot() to plot the results
+
+    """
+
+    start_time = time.time()  # Used to report the executation speed
+
+
+
+
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t-------------------------GET JOINT qRES END---------------------------
+        \tRESULT: 
+        \tOUTPUT: 
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
 
 if __name__ == "__main__":
     # Run when executed as a script
