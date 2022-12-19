@@ -530,6 +530,9 @@ def get_res_atom_indices(res, scheme="all") -> list[int]:
     # Indices for all residues or for just the backbone
     residue_df = ppdb[(ppdb["residue_name"] == aa_name) & (ppdb["residue_number"] == aa_num)]
     atom_index_list = residue_df.index.tolist()
+    print(residue_df)
+    print(atom_index_list)
+    # Use if you only want the backbone atoms summed
     if scheme == "backbone":
         print("Retrieving only backbone indices.")
         bb_atoms = ["N", "H", "C", "O"]
@@ -546,4 +549,4 @@ def get_res_atom_indices(res, scheme="all") -> list[int]:
 
 if __name__ == "__main__":
     # Run when executed as a script
-    get_res_atom_indices("ASP2", scheme="backbone")
+    get_res_atom_indices("Lys8")

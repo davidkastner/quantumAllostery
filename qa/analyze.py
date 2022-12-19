@@ -219,25 +219,24 @@ def get_joint_qres(res_x, res_y):
         # Add the summed residue to the new dataframe
         joint_df[res] = summed_charges
 
-    plot.get_charge_distributions(joint_df, f"{res_x}_{res_y}_dist.png", "png")
-
-    return joint_df
-
-
-        
-
+    ext = "png"
+    plot_name = f"{res_x}_{res_y}_dist.{ext}"
+    plot.get_charge_distributions(joint_df, plot_name, ext)
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
         f"""
         \t-------------------------GET JOINT qRES END---------------------------
-        \tRESULT: 
-        \tOUTPUT: 
+        \tRESULT: Extracted and computed the joint charge distribution.
+        \tOUTPUT: Created the charge distribution plot: {plot_name}.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """
     )
 
+
+    return joint_df
+
 if __name__ == "__main__":
     # Run when executed as a script
-    get_joint_qres("Ser20", "Asp1")
+    get_joint_qres("Lys8", "Asp1")
