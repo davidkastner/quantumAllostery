@@ -502,7 +502,7 @@ def check_valid_resname(res) -> tuple[str, int]:
     return aa_name, aa_num
 
 
-def get_res_atom_indices(res, type="all") -> list[int]:
+def get_res_atom_indices(res, scheme="all") -> list[int]:
     """
     For a residue get the atom indices of all atoms in the residue.
 
@@ -526,14 +526,24 @@ def get_res_atom_indices(res, type="all") -> list[int]:
     aa_name, aa_num = check_valid_resname(res)
     # Convert the pdb to a pandas dataframe
     ppdb = PandasPdb().read_pdb(pdb).df["ATOM"]
-    atom_index_list = ppdb.index[(ppdb["residue_name"] == aa_name) & (ppdb["residue_number"] == aa_num)].tolist()
+
+    # Indices for all residues or for just the backbone
+    residue_df = ppdb[(ppdb["residue_name"] == aa_name) & (ppdb["residue_number"] == aa_num)]
+    atom_index_list = residue_df.index.tolist()
+    if scheme == "backbone":
+        print("Retrieving only backbone indices.")
+        bb_atoms = ["N", "H", "C", "O"]
+        backbone_df = residue_df[residue_df["atom_name"].isin(bb_atoms)]
+        atom_index_list = backbone_df.index.tolist()
+    if scheme != "all" and scheme != "backbone":
+        raise ValueError("Scheme not recognized. Select all or backbone.")
     # Alert the user if the list comes out empty
     if len(atom_index_list) == 0:
-        print("ERROR: No atom indices were found. Verify that it exists.")
+        raise ValueError("ERROR: No atom indices were found. Verify that it exists.")
 
     return atom_index_list
 
 
 if __name__ == "__main__":
     # Run when executed as a script
-    get_res_atom_indices("ASP2")
+    get_res_atom_indices("ASP2", scheme="backbone")

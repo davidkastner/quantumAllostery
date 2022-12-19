@@ -240,4 +240,4 @@ def get_joint_qres(res_x, res_y):
 
 if __name__ == "__main__":
     # Run when executed as a script
-    get_joint_qres("Aib23", "Asp18")
+    get_joint_qres("Ser20", "Asp1")
