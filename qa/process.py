@@ -74,9 +74,39 @@ def get_xyz() -> str:
         xyz_name = xyz_names[0]
         print(f"Found more than one XYZ, using {xyz_name}.")
     else:
-        xyz_name = input("No PDB was found. What is the path to your PDB? ")
+        xyz_name = input("No XYZ was found. What is the path to your XYZ? ")
 
     return xyz_name
+
+def get_charge_file() -> str:
+    """
+    Searches all directories for a charge xls file.
+
+    If more than one .xls file is found it will use the first one.
+    If no .xls file was found it will prompt the user for the .xls file path.
+    This is the standard charge output for TeraChem.
+
+    Returns
+    -------
+    charge_file : str
+        The path of a charge .xls file within the current directory.
+
+    """
+
+    # Get the xyz from the current directory
+    charge_files = sorted(glob.glob("*.xls"))
+
+    # Check the results to confirm that there was only one .xls file found
+    if len(charge_files) == 1:
+        charge_file = charge_files[0]
+        print(f"Found the charge file {charge_file}.")
+    elif len(charge_files) > 1:
+        charge_file = charge_files[0]
+        print(f"Found more than one .xls, using {charge_file}.")
+    else:
+        charge_file = input("No .xls was found. What is the path to your .xls? ")
+
+    return charge_file
 
 
 def combine_runs(
@@ -428,7 +458,7 @@ def remove_incomplete_xyz() -> None:
     )
 
 
-def check_valid_resname(res) -> bool:
+def check_valid_resname(res) -> tuple[str, int]:
     """
     Checks if a valid resname has been identified.
 
@@ -472,7 +502,7 @@ def check_valid_resname(res) -> bool:
     return aa_name, aa_num
 
 
-def get_res_atom_indices(res) -> list[int]:
+def get_res_atom_indices(res, type="all") -> list[int]:
     """
     For a residue get the atom indices of all atoms in the residue.
 
@@ -480,9 +510,11 @@ def get_res_atom_indices(res) -> list[int]:
     ----------
     res : str
         Name of a residue of the form e.g. Ala1, Gly12.
+    type :str
+        The type of atom indices to retrieve e.g., all, backbone
 
-    Retur
-    ------
+    Returns
+    -------
     residue_indices : list
         A list of all atom indices for a given residue.
 
@@ -495,6 +527,9 @@ def get_res_atom_indices(res) -> list[int]:
     # Convert the pdb to a pandas dataframe
     ppdb = PandasPdb().read_pdb(pdb).df["ATOM"]
     atom_index_list = ppdb.index[(ppdb["residue_name"] == aa_name) & (ppdb["residue_number"] == aa_num)].tolist()
+    # Alert the user if the list comes out empty
+    if len(atom_index_list) == 0:
+        print("ERROR: No atom indices were found. Verify that it exists.")
 
     return atom_index_list
 

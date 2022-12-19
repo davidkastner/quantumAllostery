@@ -31,6 +31,11 @@ def heatmap(csv, protein, delete, out_file, cmap) -> None:
 
     Uses the Kulik Lab figure formatting standards.
 
+    Examples
+    --------
+    delete = [0,15,16,27,28,29]
+    heatmap(csv="cacovar.dat", protein="mc6sa", out_file="matrix_geom.svg")
+
     """
 
     # General styling variables
@@ -100,6 +105,8 @@ def get_parity_plot():
     format_plot()
     xlabel = 'UB3LYP/def2-TZVP'
     ylabel = 'UB3LYP/LACVP*'
+
+    # This is just example data, replace it with your own
     x = [0.00,7.39,20.62,0.00,3.16,25.82,0.00,14.37,17.15,0.00,5.08,17.78,0.00,3.88,32.40,0.00,6.85,35.26,0.00,6.14,27.07,0.00,-1.06,33.19]
     y = [0.00,7.63,21.88,0.00,6.79,25.05,0.00,14.50,17.83,0.00,6.73,18.80,0.00,2.77,30.52,0.00,7.06,31.66,0.00,5.84,25.29,0.00,0.15,30.92]
 
@@ -122,7 +129,43 @@ def get_parity_plot():
     plt.savefig("parity.png", format="png", dpi=600, bbox_inches='tight', transparent=True)
 
 
+def get_charge_distributions(charge_df, out_file, ext):
+    """
+    Creates a charge distribution plot with one residue on each axis.
+
+    Parameters
+    ----------
+    charge_pd : pd.DataFrame
+        A dataframe with two columns, each corresponding to a residue.
+
+    Examples
+    --------
+
+    """
+
+    # Apply Kulik plotting format
+    format_plot()
+
+    # Define the bins, how grainy the distribution plot will look
+    x_min = charge_df[charge_df.columns[0]].min()
+    x_max = charge_df[charge_df.columns[0]].max()
+    y_min = charge_df[charge_df.columns[1]].min()
+    y_max = charge_df[charge_df.columns[1]].max()
+
+    x_bins = np.linspace(x_min, x_max, 50)
+    y_bins = np.linspace(y_min, y_max, 50)
+
+    # Extract the data from the dataframe
+    x = charge_df[charge_df.columns[0]]
+    y = charge_df[charge_df.columns[1]]
+
+    # Create the plot
+    fig, ax = plt.subplots(figsize =(10, 10))
+    plt.hist2d(x, y, bins =[x_bins, y_bins])
+    plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
+
+
 if __name__ == "__main__":
     # Do something if this file is invoked on its own
-    #  delete = [0,15,16,27,28,29]
-    heatmap(csv="cacovar.dat", protein="mc6sa", out_file="matrix_geom.svg")
+    get_charge_distributions(joint_df, f"{res_x}_{res_y}_dist.png", "png")
+

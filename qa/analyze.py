@@ -8,6 +8,8 @@ import time
 from sklearn.feature_selection import mutual_info_regression
 from joblib import parallel_backend
 import process
+import pandas as pd
+import plot
 
 
 def charge_matrices() -> None:
@@ -199,13 +201,30 @@ def get_joint_qres(res_x, res_y):
     """
 
     start_time = time.time()  # Used to report the executation speed
-    # Get the indices of the atoms to parse the charge.xls file
+
+    # Create a new data frame to append the two residues of interest
     residues = [res_x, res_y]
+    joint_df = pd.DataFrame(columns=residues)
+
+    # Get the indices of the atoms to parse the charge.xls file
     for res in residues:
+        # Search for a .xls file and read it in
+        charge_file = process.get_charge_file()
+        charge_df = pd.read_csv(charge_file, sep='\t')
+
+        # Get the atom indices of the residue
         atom_indices = process.get_res_atom_indices(res)
-        with open("")
+        # Sum the charges of the atoms of the requested residues
+        summed_charges = charge_df[charge_df.columns[atom_indices]].sum(axis=1).tolist()
+        # Add the summed residue to the new dataframe
+        joint_df[res] = summed_charges
+
+    plot.get_charge_distributions(joint_df, f"{res_x}_{res_y}_dist.png", "png")
+
+    return joint_df
 
 
+        
 
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
@@ -221,4 +240,4 @@ def get_joint_qres(res_x, res_y):
 
 if __name__ == "__main__":
     # Run when executed as a script
-    get_joint_qres("Gln18", "Asp15")
+    get_joint_qres("Aib23", "Asp18")
