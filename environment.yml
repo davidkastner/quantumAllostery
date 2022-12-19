@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - matplotlib
+  - biopandas
   - scipy
   - numpy
   - pandas

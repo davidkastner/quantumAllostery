@@ -6,6 +6,8 @@ import sys
 import glob
 import time
 import shutil
+import lib
+from biopandas.pdb import PandasPdb
 
 
 def get_pdb() -> str:
@@ -19,6 +21,12 @@ def get_pdb() -> str:
     -------
     pdb_file : str
         The path of a PDB file within the current directory (recursive).
+
+    Notes
+    -----
+    Currently it uses the name to distinguish single structures,
+    ensembles, and trajectories.
+    In the future, this function should check the contents to confirm.
 
     """
     # A list of all PDB's found after recursive search
@@ -370,6 +378,9 @@ def remove_incomplete_xyz() -> None:
     """
     For removing incomplete frames during troublshooting.
 
+    It seems that sometimes an frame was not written out incompletely.
+    In these cases, the best course is to remove them.
+
     """
 
     start_time = time.time()  # Used to report the executation speed
@@ -417,6 +428,77 @@ def remove_incomplete_xyz() -> None:
     )
 
 
+def check_valid_resname(res) -> bool:
+    """
+    Checks if a valid resname has been identified.
+
+    Excepts a resname of the form e.g. Ala1, A1, Gly12, G12.
+    If an incorrect resname is supplied the fuction will exit with an warning.
+
+    Parameters
+    ----------
+    res : str
+        Name of a residue of the form e.g. Ala1, Gly12.
+
+    Return
+    ------
+    aa_name : str
+        The requested amino acid's three letter code.
+    aa_nume : int
+        The requested amino acid's position in the sequence.
+    
+    """
+    # Get amino acid identifier information from library module
+    aa_identifiers = lib.get_aa_identifiers()
+    # Check if one or three letter code provided by counting letters
+    letter_count = sum(map(str.isalpha, res))
+
+    if letter_count == 1:
+        aa_name = res[0].upper().strip() # clean the input
+        aa_num = int(res[1:])
+        # Check if the provided one-letter code matches a known amino acid
+        if not any([True for k,v in aa_identifiers.items() if v[0] == aa_name]):
+            raise ValueError("The provided one-letter code is unknown.")
+    
+    if letter_count == 3:
+        aa_name = res[:3].upper().strip() # clean the input
+        aa_num = int(res[3:])
+        # Check if the provided three-letter code matches a known amino acid
+        if not any([True for k,v in aa_identifiers.items() if v[1] == aa_name]):
+            raise ValueError("The provided three-letter code is unknown.")
+
+    print(f"Reqesting amino acid {aa_name} at index {aa_num}.")
+
+    return aa_name, aa_num
+
+
+def get_res_atom_indices(res) -> list[int]:
+    """
+    For a residue get the atom indices of all atoms in the residue.
+
+    Parameters
+    ----------
+    res : str
+        Name of a residue of the form e.g. Ala1, Gly12.
+
+    Retur
+    ------
+    residue_indices : list
+        A list of all atom indices for a given residue.
+
+    """
+
+    # Function that gets the path of a PDB file
+    pdb = get_pdb()
+    # Check if the requested resname is valid
+    aa_name, aa_num = check_valid_resname(res)
+    # Convert the pdb to a pandas dataframe
+    ppdb = PandasPdb().read_pdb(pdb).df["ATOM"]
+    atom_index_list = ppdb.index[(ppdb["residue_name"] == aa_name) & (ppdb["residue_number"] == aa_num)].tolist()
+
+    return atom_index_list
+
+
 if __name__ == "__main__":
     # Run when executed as a script
-    xyz2pdb_traj()
+    get_res_atom_indices("ASP2")

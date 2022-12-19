@@ -36,6 +36,14 @@ def cli():
     └── ...
 
     """
+
+    # User welcome header
+    print("\n.----------------------------------.")
+    print("| WELCOME TO QUANTUM ALLOSTERY (QA)|")
+    print(".----------------------------------.\n")
+    print("\tGitHub: https://github.com/davidkastner/quantumAllostery")
+    print("\tDocumenation: https://quantumallostery.readthedocs.io/en/latest/\n")
+
     # Ask the user what task to perform with quantumAllostery
     prompt = "What would you like to do (e.g., 1, 2, or 3)?\n"
     option_1 = "\t1) Process raw files\n"

@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - black
+  - biopandas
   - cookiecutter
   - flake8
   - git

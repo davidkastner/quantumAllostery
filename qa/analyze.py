@@ -199,6 +199,11 @@ def get_joint_qres(res_x, res_y):
     """
 
     start_time = time.time()  # Used to report the executation speed
+    # Get the indices of the atoms to parse the charge.xls file
+    residues = [res_x, res_y]
+    for res in residues:
+        atom_indices = process.get_res_atom_indices(res)
+        with open("")
 
 
 
@@ -216,4 +221,4 @@ def get_joint_qres(res_x, res_y):
 
 if __name__ == "__main__":
     # Run when executed as a script
-    charge_matrices()
+    get_joint_qres("Gln18", "Asp15")
