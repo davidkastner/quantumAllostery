@@ -15,7 +15,7 @@ def get_pdb() -> str:
     Searches all directories recursively for a PDB file.
 
     If more than one PDB is found it will use the first one.
-    If no PDB file was found it will prompt the user for the PDB file path.
+    If no PDB file was found, it will prompt the user for a PDB file path.
 
     Returns
     -------
