@@ -7,6 +7,7 @@ dependencies:
   - python
   - pip
     # Testing
+  - biopandas
   - codecov
   - matplotlib
   - numpy
@@ -16,7 +17,7 @@ dependencies:
   - seaborn
   - scikit-learn
 
-    # Pip-only installs
+  # Pip-only installs
   #- pip:
   #  - codecov
 
