@@ -2,7 +2,7 @@ name: docs
 channels:
 dependencies:
     # Base depends
-  - python=3.10
+  - python
   - pip
     # Package depends
   - biopandas
