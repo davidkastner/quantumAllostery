@@ -3,10 +3,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from demystifying import feature_extraction as fe, visualization
-from demystifying import relevance_propagation as relprop
-
-# from sklearn.utils import shuffle
+# from demystifying import feature_extraction as fe, visualization
+# from demystifying import relevance_propagation as relprop
+from sklearn.utils import shuffle
 import logging
 
 logger = logging.getLogger("Trp")

@@ -8,8 +8,8 @@ import time
 from sklearn.feature_selection import mutual_info_regression
 from joblib import parallel_backend
 import pandas as pd
-from .process import get_pdb, get_charge_file, get_res_atom_indices
-from .plot import get_charge_distributions
+from qa.process import get_pdb, get_charge_file, get_res_atom_indices
+from qa.plot import get_charge_distributions
 
 
 def charge_matrices() -> None:

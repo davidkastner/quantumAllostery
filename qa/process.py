@@ -7,7 +7,7 @@ import glob
 import time
 import shutil
 from biopandas.pdb import PandasPdb
-from .lib import get_aa_identifiers
+from qa.lib import get_aa_identifiers
 
 
 def get_pdb() -> str:

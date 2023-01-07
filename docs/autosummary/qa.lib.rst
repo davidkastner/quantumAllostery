@@ -13,6 +13,7 @@
 
    .. autosummary::
    
+      get_aa_identifiers
       sequence
    
    

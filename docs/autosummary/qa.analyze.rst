@@ -14,6 +14,7 @@
    .. autosummary::
    
       charge_matrices
+      get_joint_qres
    
    
 
