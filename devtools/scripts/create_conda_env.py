@@ -64,7 +64,7 @@ python_replacement_string = "python {}*".format(args.python)
 
 try:
     for dep_index, dep_value in enumerate(yaml_script['dependencies']):
-        if re.match('python([ ><=*]+[0-9.[1-9][0-9]*]*)?$', dep_value):  # Match explicitly 'python' and its formats
+        if re.match('python([ ><=*]+[0-9.*]*)?$', dep_value):  # Match explicitly 'python' and its formats
             yaml_script['dependencies'].pop(dep_index)
             break  # Making the assumption there is only one Python entry, also avoids need to enumerate in reverse
 except (KeyError, TypeError):
