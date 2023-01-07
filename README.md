@@ -63,6 +63,12 @@ pip install -e .
 └── ...
 ```
 
+### Command Line Interface
+The contents of the library are designed to be navigated through the commandline interface.
+```
+python qa.py
+```
+
 
 ## 4. Documentation
 ### Run the following commands to update the ReadTheDocs site

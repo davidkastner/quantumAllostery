@@ -1,8 +1,8 @@
 """Library of data patterns."""
 
-def get_aa_identifiers():
+def get_aa_identifiers() -> dict[str, list[str, str, str, float]]:
     """
-    Stores the different amino acid naming conventions.
+    Amino acid naming conventions and basic features.
 
     Contains the full name, the one letter code, three-letter code,
     molecular formula, and molecular weight.
@@ -38,12 +38,13 @@ def get_aa_identifiers():
 
 def sequence(protein) -> list[str]:
     """
-    Generates mutual information and corss-correlation matrices.
+    Returns the sequence of one of the mimochromes.
 
     Add additonal sequences to this function as lists.
 
     """
-
+    
+    # Sequence of mimochrome MC6
     if protein == "mc6":
         seq = [
             "ASP1",
@@ -72,6 +73,7 @@ def sequence(protein) -> list[str]:
             "ARG24",
         ]
 
+    # Sequence of mimochrome MC6*
     if protein == "mc6s":
         seq = [
             "ASP1",
@@ -100,6 +102,7 @@ def sequence(protein) -> list[str]:
             "ARG24",
         ]
 
+    # Sequence of mimochrome MC6*a
     if protein == "mc6sa":
         seq = [
             "ASP1",
