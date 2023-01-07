@@ -7,9 +7,9 @@ import numpy as np
 import time
 from sklearn.feature_selection import mutual_info_regression
 from joblib import parallel_backend
-import process
 import pandas as pd
-import plot
+from .process import get_pdb, get_charge_file, get_res_atom_indices
+from .plot import get_charge_distributions
 
 
 def charge_matrices() -> None:
@@ -210,7 +210,7 @@ def get_joint_qres(res_x, res_y):
     for res in residues:
         # Search for a .xls file and read it in
         charge_file = process.get_charge_file()
-        charge_df = pd.read_csv(charge_file, sep='\t')
+        charge_df = pd.read_csv(charge_file, sep="\t")
 
         # Get the atom indices of the residue
         atom_indices = process.get_res_atom_indices(res)
@@ -234,8 +234,8 @@ def get_joint_qres(res_x, res_y):
         """
     )
 
-
     return joint_df
+
 
 if __name__ == "__main__":
     # Run when executed as a script

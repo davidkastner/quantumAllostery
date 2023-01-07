@@ -5,6 +5,7 @@ dependencies:
   - python
   - pip
     # Package depends
+  - biopandas
   - numpy
   - matplotlib
   - pandas

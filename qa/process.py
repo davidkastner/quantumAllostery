@@ -6,8 +6,8 @@ import sys
 import glob
 import time
 import shutil
-import lib
 from biopandas.pdb import PandasPdb
+from .lib import get_aa_identifiers
 
 
 def get_pdb() -> str:
@@ -77,6 +77,7 @@ def get_xyz() -> str:
         xyz_name = input("No XYZ was found. What is the path to your XYZ? ")
 
     return xyz_name
+
 
 def get_charge_file() -> str:
     """
@@ -476,7 +477,7 @@ def check_valid_resname(res) -> tuple[str, int]:
         The requested amino acid's three letter code.
     aa_nume : int
         The requested amino acid's position in the sequence.
-    
+
     """
     # Get amino acid identifier information from library module
     aa_identifiers = lib.get_aa_identifiers()
@@ -484,17 +485,17 @@ def check_valid_resname(res) -> tuple[str, int]:
     letter_count = sum(map(str.isalpha, res))
 
     if letter_count == 1:
-        aa_name = res[0].upper().strip() # clean the input
+        aa_name = res[0].upper().strip()  # clean the input
         aa_num = int(res[1:])
         # Check if the provided one-letter code matches a known amino acid
-        if not any([True for k,v in aa_identifiers.items() if v[0] == aa_name]):
+        if not any([True for k, v in aa_identifiers.items() if v[0] == aa_name]):
             raise ValueError("The provided one-letter code is unknown.")
-    
+
     if letter_count == 3:
-        aa_name = res[:3].upper().strip() # clean the input
+        aa_name = res[:3].upper().strip()  # clean the input
         aa_num = int(res[3:])
         # Check if the provided three-letter code matches a known amino acid
-        if not any([True for k,v in aa_identifiers.items() if v[1] == aa_name]):
+        if not any([True for k, v in aa_identifiers.items() if v[1] == aa_name]):
             raise ValueError("The provided three-letter code is unknown.")
 
     print(f"Reqesting amino acid {aa_name} at index {aa_num}.")
@@ -528,7 +529,9 @@ def get_res_atom_indices(res, scheme="all") -> list[int]:
     ppdb = PandasPdb().read_pdb(pdb).df["ATOM"]
 
     # Indices for all residues or for just the backbone
-    residue_df = ppdb[(ppdb["residue_name"] == aa_name) & (ppdb["residue_number"] == aa_num)]
+    residue_df = ppdb[
+        (ppdb["residue_name"] == aa_name) & (ppdb["residue_number"] == aa_num)
+    ]
     atom_index_list = residue_df.index.tolist()
     print(residue_df)
     print(atom_index_list)

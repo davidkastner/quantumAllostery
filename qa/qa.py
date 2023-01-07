@@ -1,8 +1,8 @@
 """Command-line interface entry point."""
 
-import qa.process as process
-import qa.predict as predict
-import qa.plot as plot
+import process
+import predict
+import plot
 
 
 def cli():

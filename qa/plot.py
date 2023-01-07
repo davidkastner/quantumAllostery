@@ -21,7 +21,7 @@ def format_plot() -> None:
     plt.rcParams["ytick.major.width"] = 2
     plt.rcParams["xtick.direction"] = "out"
     plt.rcParams["ytick.direction"] = "in"
-    plt.rcParams['svg.fonttype'] = 'none'
+    plt.rcParams["svg.fonttype"] = "none"
 
 
 # def heatmap(csv: str, protein: str, delete: list[int]=[], out_file: str="heatmap.svg", cmap="RdBu") -> None:
@@ -96,25 +96,76 @@ def heatmap(csv, protein, delete, out_file, cmap) -> None:
 
     ext = out_file.split(".")[-1]  # Determine the output file type
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
-    
+
+
 def get_parity_plot():
     """
     General set up to create an attractive parity plot.
     """
     # User defined values
     format_plot()
-    xlabel = 'UB3LYP/def2-TZVP'
-    ylabel = 'UB3LYP/LACVP*'
+    xlabel = "UB3LYP/def2-TZVP"
+    ylabel = "UB3LYP/LACVP*"
 
     # This is just example data, replace it with your own
-    x = [0.00,7.39,20.62,0.00,3.16,25.82,0.00,14.37,17.15,0.00,5.08,17.78,0.00,3.88,32.40,0.00,6.85,35.26,0.00,6.14,27.07,0.00,-1.06,33.19]
-    y = [0.00,7.63,21.88,0.00,6.79,25.05,0.00,14.50,17.83,0.00,6.73,18.80,0.00,2.77,30.52,0.00,7.06,31.66,0.00,5.84,25.29,0.00,0.15,30.92]
+    x = [
+        0.00,
+        7.39,
+        20.62,
+        0.00,
+        3.16,
+        25.82,
+        0.00,
+        14.37,
+        17.15,
+        0.00,
+        5.08,
+        17.78,
+        0.00,
+        3.88,
+        32.40,
+        0.00,
+        6.85,
+        35.26,
+        0.00,
+        6.14,
+        27.07,
+        0.00,
+        -1.06,
+        33.19,
+    ]
+    y = [
+        0.00,
+        7.63,
+        21.88,
+        0.00,
+        6.79,
+        25.05,
+        0.00,
+        14.50,
+        17.83,
+        0.00,
+        6.73,
+        18.80,
+        0.00,
+        2.77,
+        30.52,
+        0.00,
+        7.06,
+        31.66,
+        0.00,
+        5.84,
+        25.29,
+        0.00,
+        0.15,
+        30.92,
+    ]
 
     fig = plt.figure()
     ax = fig.add_subplot()
-    ax.set_aspect('equal', adjustable='box') # Parity plots should be square
+    ax.set_aspect("equal", adjustable="box")  # Parity plots should be square
     # Create the identity line
-    plt.plot([-2,40],[-2,40], color="r", linewidth=2, zorder=0)
+    plt.plot([-2, 40], [-2, 40], color="r", linewidth=2, zorder=0)
     # Create scatter plot of data
     plt.scatter(x, y, marker="o", color="k", zorder=1)
     plt.xlabel(xlabel, fontsize=10, weight="bold")
@@ -123,10 +174,12 @@ def get_parity_plot():
     # Force the axes to be the same
     plt.xticks(np.arange(0, 36, 5))
     plt.yticks(np.arange(0, 36, 5))
-    ax.set_xlim(0,37)
-    ax.set_ylim(0,37)
+    ax.set_xlim(0, 37)
+    ax.set_ylim(0, 37)
     # Create the plot
-    plt.savefig("parity.png", format="png", dpi=600, bbox_inches='tight', transparent=True)
+    plt.savefig(
+        "parity.png", format="png", dpi=600, bbox_inches="tight", transparent=True
+    )
 
 
 def get_charge_distributions(charge_df, out_file, ext):
@@ -160,12 +213,11 @@ def get_charge_distributions(charge_df, out_file, ext):
     y = charge_df[charge_df.columns[1]]
 
     # Create the plot
-    fig, ax = plt.subplots(figsize =(10, 10))
-    plt.hist2d(x, y, bins =[x_bins, y_bins])
+    fig, ax = plt.subplots(figsize=(10, 10))
+    plt.hist2d(x, y, bins=[x_bins, y_bins])
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
 
 
 if __name__ == "__main__":
     # Do something if this file is invoked on its own
     get_charge_distributions(joint_df, f"{res_x}_{res_y}_dist.png", "png")
-
