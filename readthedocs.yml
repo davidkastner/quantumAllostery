@@ -6,7 +6,8 @@ build:
   image: latest
 
 python:
-  version: 3.9
+  # The version must be 2, 2.7, 3, 3.5, 3.6, 3.7, 3.8 or it will fail
+  version: 3.8
   install:
     - method: pip
       path: .

@@ -32,6 +32,7 @@ Install the package by running the follow commands inside the repository. This w
 ### Creating python environment
 All the dependencies can be loaded together using the prebuilt environment.yml or environment_dev.yml files.
 We provide two YAML files. The dev version contains additional packages for code maintenance.
+Compatibility is automatically tested for python versions 3.9, 3.10, and 3.11.
 If you are only going to be using the package run:
 ```bash
 conda env create -f environment.yml
