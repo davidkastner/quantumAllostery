@@ -1,18 +1,18 @@
 name: docs
 channels:
-  - conda-forge
-  - defaults
 dependencies:
     # Base depends
   - python
   - pip
+
     # Package depends
-  # - numpy
-  # - pandas
-  # - matplotlib
-  # - pandas
-  # - seaborn
-  # - scikit-learn
+  - biopandas
+  - matplotlib
+  - numpy
+  - pandas
+  - pandas
+  - seaborn
+  - scikit-learn
 
     # Pip-only installs
   - pip:
