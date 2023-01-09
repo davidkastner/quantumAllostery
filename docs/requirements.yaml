@@ -6,7 +6,6 @@ dependencies:
   - pip
 
     # Package depends
-  - biopandas
   - matplotlib
   - numpy
   - pandas
@@ -17,4 +16,5 @@ dependencies:
     # Pip-only installs
   - pip:
     - sphinx-autoapi
+    - biopandas
     - https://github.com/revitron/revitron-sphinx-theme/archive/master.zip
