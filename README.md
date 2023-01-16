@@ -55,17 +55,23 @@ pip install -e .
 ### File structure
 ```
 .
-├── docs
-├── qa
-│   ├── qa           # Top-level script that interacts with the rest of the package
-│   ├── process      # Processes the raw AIMD data
-│   ├── predict      # Machine learning analysis
-│   └── plot         # Automated plotting and vizualization 
+|── cli.py          # Command-line interface entry point
+├── docs            # Readthedocs documentation site
+├── qa              # Directory containing the quantumAllostery modules
+│   ├── process     # Processes the raw AIMD data
+│   ├── predict     # Machine learning analysis
+│   └── plot        # Automated plotting and vizualization 
 └── ...
 ```
 
 ### Command Line Interface
 The contents of the library are designed to be navigated through the commandline interface.
+Add the following line to your bash.rc
+```
+alias qa='python /the/path/to/quantumAllostery/cli.py'
+```
+
+Now you can call the quantumAllostery package CLI from anywhere with:
 ```
 python qa.py
 ```

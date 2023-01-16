@@ -110,7 +110,7 @@ def get_charge_file() -> str:
     return charge_file
 
 
-def combine_runs(
+def combine_restarts(
     all_charges: str = "all_charges.xls",
     all_coors: str = "all_coors.xyz",
     atom_count=493,
@@ -549,7 +549,3 @@ def get_res_atom_indices(res, scheme="all") -> list[int]:
 
     return atom_index_list
 
-
-if __name__ == "__main__":
-    # Run when executed as a script
-    get_res_atom_indices("Lys8")
