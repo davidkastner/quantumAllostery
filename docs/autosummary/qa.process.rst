@@ -22,6 +22,7 @@
       get_res_atom_indices
       get_xyz
       remove_incomplete_xyz
+      run_all_replicates
       xyz2pdb_ensemble
       xyz2pdb_traj
    

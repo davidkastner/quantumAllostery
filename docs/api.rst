@@ -6,7 +6,7 @@ API Documentation
    :recursive:
 
    qa.analyze
-   qa.patterns
+   qa.library
    qa.plot
    qa.predict
    qa.process

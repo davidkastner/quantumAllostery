@@ -1,7 +1,7 @@
-﻿qa.patterns
-===========
+﻿qa.library
+==========
 
-.. automodule:: qa.patterns
+.. automodule:: qa.library
 
    
    
@@ -13,8 +13,10 @@
 
    .. autosummary::
    
-      batch_submit
+      clean_exit
       get_aa_identifiers
+      help
+      nonoption_exit
       sequence
    
    
