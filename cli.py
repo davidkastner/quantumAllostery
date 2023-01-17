@@ -1,10 +1,11 @@
 """Command-line interface entry point."""
 
 import sys
-import qa.process
+import qa.analyze
+import qa.patterns
 import qa.predict
+import qa.process
 import qa.plot
-
 
 def cli():
     """
@@ -82,7 +83,7 @@ def cli():
             qa.process.combine_restarts(atom_count)
         elif request == "2": # Combine restarted trajectories for multiple replicates
             atom_count = qa.process.get_atom_count()
-            qa.process.batch_submit(qa.process.combine_restarts(atom_count))
+            qa.patterns.batch_submit(lambda: qa.process.combine_restarts(atom_count))
         elif request == "3": # Combine replicates into a single trajectory
             qa.process.combine_replicates()
         elif request == "4": # Convert an XYZ to PDB trajectory

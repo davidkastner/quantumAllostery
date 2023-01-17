@@ -5,8 +5,8 @@ API Documentation
    :toctree: autosummary
    :recursive:
 
-   qa.process
    qa.analyze
-   qa.predict
+   qa.patterns
    qa.plot
-   qa.lib
+   qa.predict
+   qa.process

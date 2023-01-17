@@ -15,7 +15,8 @@
    
       check_valid_resname
       combine_replicates
-      combine_runs
+      combine_restarts
+      get_atom_count
       get_charge_file
       get_pdb
       get_res_atom_indices

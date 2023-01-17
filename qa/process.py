@@ -7,50 +7,8 @@ import glob
 import time
 import shutil
 from biopandas.pdb import PandasPdb
-from qa.lib import get_aa_identifiers
+from qa.patterns import get_aa_identifiers
 
-
-def batch_submit(function) -> None:
-    """
-    Loops through all replicates and runs a specific funtion on each.
-
-    Often a function needs to be run on all replicates.
-    Given a common file structure, this will take care of all of them at once.
-
-    Notes
-    -----
-    The directories in the first level should contain replicates,
-    and the sub directories should contain restarts.
-    Additional random directories will lead to errors.
-    """
-
-    start_time = time.time()  # Used to report the executation speed
-
-    # Set path elements
-    root = os.getcwd()
-    dirs = sorted(os.listdir(root))
-    replicates_count = 0
-
-    # Loop over the replicate directories
-    for dir in dirs:
-        # Don't try entering files only directories
-        if os.path.isfile(dir):
-            continue
-        else:
-            os.chdir(f"{root}/{dir}")
-            print(f"> Executing {function} in {dir}.")
-            function
-            replicates_count += 1
-    
-    total_time = round(time.time() - start_time, 3)  # Seconds to run
-    print(
-        f"""
-        \t----------------------------ALL RUNS END----------------------------
-        \tRESULT: Combined restarts for {replicates_count} replicates.
-        \tTIME: Total execution time: {total_time} seconds.
-        \t--------------------------------------------------------------------\n
-        """
-    )
 
 def get_pdb() -> str:
     """
@@ -537,7 +495,7 @@ def check_valid_resname(res) -> tuple[str, int]:
 
     """
     # Get amino acid identifier information from library module
-    aa_identifiers = lib.get_aa_identifiers()
+    aa_identifiers = patterns.get_aa_identifiers()
     # Check if one or three letter code provided by counting letters
     letter_count = sum(map(str.isalpha, res))
 

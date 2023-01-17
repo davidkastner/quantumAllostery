@@ -1,7 +1,7 @@
-﻿qa.lib
-======
+﻿qa.patterns
+===========
 
-.. automodule:: qa.lib
+.. automodule:: qa.patterns
 
    
    
@@ -13,6 +13,7 @@
 
    .. autosummary::
    
+      batch_submit
       get_aa_identifiers
       sequence
    
