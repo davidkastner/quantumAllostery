@@ -47,18 +47,19 @@ def cli():
     # User welcome header
     print("\n.-----------------------------------.")
     print("| WELCOME TO QUANTUM ALLOSTERY (QA) |")
-    print(".-----------------------------------.\n")
+    print(".-----------------------------------.")
     print("Default programmed actions for the quantumAllostery package.")
     print("Feel free to add your own action sequences.")
-    print("\t• GitHub: https://github.com/davidkastner/quantumAllostery")
-    print("\t• Documenation: https://quantumallostery.readthedocs.io/en/latest/\n")
+    print("GitHub: https://github.com/davidkastner/quantumAllostery")
+    print("Documenation: https://quantumallostery.readthedocs.io")
 
     # First level of actions
     lvl_1 = """
-        1) Process raw files
-        2) Predict charge-coupling interactions
+        1) Process files
+        2) Make ML predictions
         3) Visualize results
-        4) Quit\n
+        4) Help
+        5) Quit
         """
     print(f"{lvl_1}")
     request = input("Select an option: ")
@@ -67,34 +68,37 @@ def cli():
     if request == "1":
         lvl_11 = """
         1) Combine restarted trajectories
-        2) Combine replicates into a single trajectory
-        3) Convert an XYZ to PDB trajectory
-        4) Convert an XYZ to PDB ensemble
+        2) Combine restarted trajectories for multiple replicates
+        3) Combine replicates into a single trajectory
+        4) Convert an XYZ to PDB trajectory
         5) Remove incomplete xyz frames
-        6) Quit\n
+        6) Quit
         """
         print(f"{lvl_11}")
         request = input("Select an option: ")
         
-        if request == "1":
-            qa.process.combine_restarts()
-        elif request == "2":
+        if request == "1": # Combine restarted trajectories
+            atom_count = qa.process.get_atom_count()
+            qa.process.combine_restarts(atom_count)
+        elif request == "2": # Combine restarted trajectories for multiple replicates
+            atom_count = qa.process.get_atom_count()
+            qa.process.batch_submit(qa.process.combine_restarts(atom_count))
+        elif request == "3": # Combine replicates into a single trajectory
             qa.process.combine_replicates()
-        elif request == "3":
+        elif request == "4": # Convert an XYZ to PDB trajectory
             qa.process.xyz2pdb_traj()
-        elif request == "4":
-            qa.process.xyz2pdb_ensemble()
-        elif request == "5":
+        elif request == "5": # Remove incomplete xyz frames
             qa.process.remove_incomplete_xyz()
-        elif request == "6":
-            sys.exit("Exited successfully.\n Thanks for using Quantum Allostery.\n")
+        elif request == "6": # Quit
+            print("Thanks for using quantumAllostery.")
+            sys.exit("Exited successfully.\n")
         else:
             print("Sorry that option is not available.")
-            print("Please select one of the available options.\n")
+            sys.exit("Please select one of the available options.")
 
     elif request == "2":
         lvl_12 = """
-        1) Quit\n
+        1) Quit
         """
         print(f"{lvl_12}")
         request = input("Select an option: ")
@@ -104,17 +108,22 @@ def cli():
         1) Process raw files
         2) Predict charge-coupling interactions
         3) Visualize results
-        4) Quit\n
+        4) Quit
         """
         print(f"{lvl_13}")
         request = input("Select an option: ")
 
-    elif request == "3":
-        sys.exit("Exited successfully.\n Thanks for using Quantum Allostery.\n")
+    elif request == "4":
+        print("Thanks for using quantumAllostery.")
+        sys.exit("Exited successfully.")
+
+    elif request == "5":
+        print("• GitHub: https://github.com/davidkastner/quantumAllostery")
+        print("• Documenation: https://quantumallostery.readthedocs.io")
 
     else:
         print("Sorry that option is not available.")
-        print("Please select one of the available options.\n")
+        sys.exit("Please select one of the available options.")
 
 
 if __name__ == "__main__":

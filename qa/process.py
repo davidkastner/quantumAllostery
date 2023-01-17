@@ -10,6 +10,48 @@ from biopandas.pdb import PandasPdb
 from qa.lib import get_aa_identifiers
 
 
+def batch_submit(function) -> None:
+    """
+    Loops through all replicates and runs a specific funtion on each.
+
+    Often a function needs to be run on all replicates.
+    Given a common file structure, this will take care of all of them at once.
+
+    Notes
+    -----
+    The directories in the first level should contain replicates,
+    and the sub directories should contain restarts.
+    Additional random directories will lead to errors.
+    """
+
+    start_time = time.time()  # Used to report the executation speed
+
+    # Set path elements
+    root = os.getcwd()
+    dirs = sorted(os.listdir(root))
+    replicates_count = 0
+
+    # Loop over the replicate directories
+    for dir in dirs:
+        # Don't try entering files only directories
+        if os.path.isfile(dir):
+            continue
+        else:
+            os.chdir(f"{root}/{dir}")
+            print(f"> Executing {function} in {dir}.")
+            function
+            replicates_count += 1
+    
+    total_time = round(time.time() - start_time, 3)  # Seconds to run
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Combined restarts for {replicates_count} replicates.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
+
 def get_pdb() -> str:
     """
     Searches all directories recursively for a PDB file.
@@ -40,9 +82,9 @@ def get_pdb() -> str:
 
     # Multiple or no PDB files found scenarios
     if len(pdb_files) == 1:
-        print(f"Using {pdb_file} as the template PDB.")
+        print(f"> Using {pdb_file} as the template PDB.")
     elif len(pdb_files) > 1:
-        print(f"More than one PDB file found -> Using {pdb_file}.")
+        print(f"> More than one PDB file found -> Using {pdb_file}.")
     else:
         pdb_file = input("No PDB files was found. What is the path to your PDB file? ")
 
@@ -63,20 +105,36 @@ def get_xyz() -> str:
 
     """
 
-    # Get the xyz from the current directory
-    xyz_names = sorted(glob.glob("*.xyz"))
+    # Search recursively for an xyz file
+    xyz_names = sorted(glob.glob("./**/*.xyz", recursive=True))
 
     # Check the results to confirm that there was only one xyz file found
     if len(xyz_names) == 1:
         xyz_name = xyz_names[0]
-        print(f"Found the coordinate file {xyz_name}.")
+        print(f"> Found the coordinate file {xyz_name}.")
     elif len(xyz_names) > 1:
         xyz_name = xyz_names[0]
-        print(f"Found more than one XYZ, using {xyz_name}.")
+        print(f"> Found more than one XYZ, using {xyz_name}.")
     else:
         xyz_name = input("No XYZ was found. What is the path to your XYZ? ")
 
     return xyz_name
+
+def get_atom_count() -> int:
+    """
+    Finds an xyz file and gets the number of atoms.
+
+    Returns
+    -------
+    atom_count : int
+        The number of atoms in the identified xyz file.
+    """
+    # Find an xyz file
+    xyz_name = get_xyz()
+    with open(xyz_name, "r") as xyz_file:
+        atom_count = int(xyz_file.readline().strip())
+
+    return atom_count
 
 
 def get_charge_file() -> str:
@@ -94,26 +152,26 @@ def get_charge_file() -> str:
 
     """
 
-    # Get the xyz from the current directory
+    # Get the xls from the current directory
     charge_files = sorted(glob.glob("*.xls"))
 
     # Check the results to confirm that there was only one .xls file found
     if len(charge_files) == 1:
         charge_file = charge_files[0]
-        print(f"Found the charge file {charge_file}.")
+        print(f"> Found the charge file {charge_file}.")
     elif len(charge_files) > 1:
         charge_file = charge_files[0]
-        print(f"Found more than one .xls, using {charge_file}.")
+        print(f"> Found more than one .xls, using {charge_file}.")
     else:
-        charge_file = input("No .xls was found. What is the path to your .xls? ")
+        charge_file = input("> No .xls was found. What is the path to your .xls? ")
 
     return charge_file
 
 
 def combine_restarts(
+    atom_count,
     all_charges: str = "all_charges.xls",
-    all_coors: str = "all_coors.xyz",
-    atom_count=493,
+    all_coors: str = "all_coors.xyz"
 ) -> None:
     """
     Collects all charges or coordinates into single xls and xyz files.
@@ -129,7 +187,7 @@ def combine_restarts(
     all_coors.xyz : str
         The name of the file containing the coordinates in xyz format.
     atom_count : int
-        The number of atoms +2 to account for the header lines.
+        The number of atoms in the structure
 
     Notes
     -----
@@ -203,7 +261,7 @@ def combine_restarts(
             for coor in range(0, len(coors_file)):
                 all_coors_file.write(coors_file[coor])
 
-    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    total_time = round(time.time() - start_time, 3)  # Seconds to run
     print(
         f"""
         \t----------------------------ALL RUNS END----------------------------
@@ -213,7 +271,6 @@ def combine_restarts(
         \t--------------------------------------------------------------------\n
         """
     )
-
 
 def combine_replicates(
     all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
@@ -324,7 +381,7 @@ def xyz2pdb_traj() -> None:
             try:
                 x, y, z = line.strip("\n").split()[1:5]  # Coordinates from xyz file
             except:
-                print(f"Script died at {line_count} -> '{line}'")
+                print(f"> Script died at {line_count} -> '{line}'")
                 quit()
             pdb_line = pdb_file[atom - 2]  # PDB is two behind the xyz
             new_file.write(
@@ -489,16 +546,16 @@ def check_valid_resname(res) -> tuple[str, int]:
         aa_num = int(res[1:])
         # Check if the provided one-letter code matches a known amino acid
         if not any([True for k, v in aa_identifiers.items() if v[0] == aa_name]):
-            raise ValueError("The provided one-letter code is unknown.")
+            raise ValueError("> The provided one-letter code is unknown.")
 
     if letter_count == 3:
         aa_name = res[:3].upper().strip()  # clean the input
         aa_num = int(res[3:])
         # Check if the provided three-letter code matches a known amino acid
         if not any([True for k, v in aa_identifiers.items() if v[1] == aa_name]):
-            raise ValueError("The provided three-letter code is unknown.")
+            raise ValueError("> The provided three-letter code is unknown.")
 
-    print(f"Reqesting amino acid {aa_name} at index {aa_num}.")
+    print(f"> Reqesting amino acid {aa_name} at index {aa_num}.")
 
     return aa_name, aa_num
 
@@ -537,15 +594,15 @@ def get_res_atom_indices(res, scheme="all") -> list[int]:
     print(atom_index_list)
     # Use if you only want the backbone atoms summed
     if scheme == "backbone":
-        print("Retrieving only backbone indices.")
+        print("> Retrieving only backbone indices.")
         bb_atoms = ["N", "H", "C", "O"]
         backbone_df = residue_df[residue_df["atom_name"].isin(bb_atoms)]
         atom_index_list = backbone_df.index.tolist()
     if scheme != "all" and scheme != "backbone":
-        raise ValueError("Scheme not recognized. Select all or backbone.")
+        raise ValueError("> ERROR: Scheme not recognized. Select all or backbone.")
     # Alert the user if the list comes out empty
     if len(atom_index_list) == 0:
-        raise ValueError("ERROR: No atom indices were found. Verify that it exists.")
+        raise ValueError("> ERROR: No atom indices were found. Verify that it exists.")
 
     return atom_index_list
 
