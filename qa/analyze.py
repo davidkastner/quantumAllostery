@@ -8,19 +8,19 @@ import time
 from sklearn.feature_selection import mutual_info_regression
 from joblib import parallel_backend
 import pandas as pd
-from qa.process import get_pdb, get_charge_file, get_res_atom_indices
-from qa.plot import get_charge_distributions
+import qa.process
+import qa.plot
 
 
 def charge_matrices() -> None:
     """
-    Generates mutual information and corss-correlation matrices.
+    Generates mutual information and cross-correlation matrices.
 
     """
 
     start_time = time.time()  # Used to report the executation speed
     # Search for the reference PDB
-    pdbfile = process.get_pdb()
+    pdbfile = qa.process.get_pdb()
 
     # Set variables
     oldresi = "0"
@@ -209,11 +209,11 @@ def get_joint_qres(res_x, res_y):
     # Get the indices of the atoms to parse the charge.xls file
     for res in residues:
         # Search for a .xls file and read it in
-        charge_file = process.get_charge_file()
+        charge_file = qa.process.get_charge_file()
         charge_df = pd.read_csv(charge_file, sep="\t")
 
         # Get the atom indices of the residue
-        atom_indices = process.get_res_atom_indices(res)
+        atom_indices = qa.process.get_res_atom_indices(res)
         # Sum the charges of the atoms of the requested residues
         summed_charges = charge_df[charge_df.columns[atom_indices]].sum(axis=1).tolist()
         # Add the summed residue to the new dataframe
@@ -221,12 +221,12 @@ def get_joint_qres(res_x, res_y):
 
     ext = "png"
     plot_name = f"{res_x}_{res_y}_dist.{ext}"
-    plot.get_charge_distributions(joint_df, plot_name, ext)
+    qa.plot.get_charge_distributions(joint_df, plot_name, ext)
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
         f"""
-        \t-------------------------GET JOINT qRES END---------------------------
+        \t-------------------------GET JOINT qRES END-------------------------
         \tRESULT: Extracted and computed the joint charge distribution.
         \tOUTPUT: Created the charge distribution plot: {plot_name}.
         \tTIME: Total execution time: {total_time} seconds.

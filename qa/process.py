@@ -7,8 +7,48 @@ import glob
 import time
 import shutil
 from biopandas.pdb import PandasPdb
-from qa.patterns import get_aa_identifiers
+import qa.library
 
+def run_all_replicates(function) -> None:
+    """
+    Loops through all replicates and runs a specific funtion on each.
+
+    Often a function needs to be run on all replicates.
+    Given a common file structure, this will take care of all of them at once.
+
+    Notes
+    -----
+    The directories in the first level should contain replicates,
+    and the sub directories should contain restarts.
+    Additional random directories will lead to errors.
+    """
+
+    start_time = time.time()  # Used to report the executation speed
+
+    # Set path elements
+    root = os.getcwd()
+    dirs = sorted(os.listdir(root))
+    replicates_count = 0
+
+    # Loop over the replicate directories
+    for dir in dirs:
+        new_dir = f"{root}/{dir}"
+        if os.path.isdir(new_dir):
+            os.chdir(new_dir)
+            print(f"> Executing function in {new_dir}.")
+            function()
+            replicates_count += 1
+
+    
+    total_time = round(time.time() - start_time, 3)  # Seconds to run
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Combined restarts for {replicates_count} replicates.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
 
 def get_pdb() -> str:
     """
@@ -490,12 +530,12 @@ def check_valid_resname(res) -> tuple[str, int]:
     ------
     aa_name : str
         The requested amino acid's three letter code.
-    aa_nume : int
+    aa_name : int
         The requested amino acid's position in the sequence.
 
     """
     # Get amino acid identifier information from library module
-    aa_identifiers = patterns.get_aa_identifiers()
+    aa_identifiers = qa.library.get_aa_identifiers()
     # Check if one or three letter code provided by counting letters
     letter_count = sum(map(str.isalpha, res))
 
@@ -518,7 +558,7 @@ def check_valid_resname(res) -> tuple[str, int]:
     return aa_name, aa_num
 
 
-def get_res_atom_indices(res, scheme="all") -> list[int]:
+def get_res_atom_indices(res, scheme="backbone") -> list[int]:
     """
     For a residue get the atom indices of all atoms in the residue.
 
@@ -548,16 +588,17 @@ def get_res_atom_indices(res, scheme="all") -> list[int]:
         (ppdb["residue_name"] == aa_name) & (ppdb["residue_number"] == aa_num)
     ]
     atom_index_list = residue_df.index.tolist()
-    print(residue_df)
-    print(atom_index_list)
+
     # Use if you only want the backbone atoms summed
     if scheme == "backbone":
-        print("> Retrieving only backbone indices.")
+        print("> Retrieving only backbone indices. See qa.process.get_res_atom_indices()")
         bb_atoms = ["N", "H", "C", "O"]
         backbone_df = residue_df[residue_df["atom_name"].isin(bb_atoms)]
         atom_index_list = backbone_df.index.tolist()
+
     if scheme != "all" and scheme != "backbone":
         raise ValueError("> ERROR: Scheme not recognized. Select all or backbone.")
+        
     # Alert the user if the list comes out empty
     if len(atom_index_list) == 0:
         raise ValueError("> ERROR: No atom indices were found. Verify that it exists.")
