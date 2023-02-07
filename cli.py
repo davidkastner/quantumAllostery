@@ -11,7 +11,7 @@ print("Documenation: https://quantumallostery.readthedocs.io\n")
 print("Loading...")
 
 import sys
-import qa.analyze
+# import qa.anayze
 import qa.library
 import qa.predict
 import qa.process
@@ -134,6 +134,21 @@ def cli():
     else: # Non-option
         qa.logger.nonoption_exit()
 
+
+def level_one():
+    """
+    Lists all the potential modules to choose from.
+    """
+        # First level of actions
+    print("""
+        1) Process files
+        2) Analyze results
+        3) Predict using ML model
+        4) Plot results
+        5) Help
+        6) Quit
+        """)
+    request = input("Select an option: ")
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed

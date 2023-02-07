@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - ambertools
   - python
   - black
   - biopandas
@@ -22,6 +23,5 @@ dependencies:
   - seaborn
   - sphinx-autoapi
   - sphinx_rtd_theme
-  - ambertools
   - pip:
     - https://github.com/revitron/revitron-sphinx-theme/archive/master.zip
