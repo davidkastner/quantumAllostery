@@ -216,12 +216,14 @@ def get_joint_qres(res_x, res_y):
         atom_indices = qa.process.get_res_atom_indices(res)
         # Sum the charges of the atoms of the requested residues
         summed_charges = charge_df[charge_df.columns[atom_indices]].sum(axis=1).tolist()
+        charge_df.to_csv("charge_df.csv")
+        
         # Add the summed residue to the new dataframe
         joint_df[res] = summed_charges
 
     ext = "png"
     plot_name = f"{res_x}_{res_y}_dist.{ext}"
-    qa.plot.get_charge_distributions(joint_df, plot_name, ext)
+    qa.plot.get_charge_distributions(joint_df, plot_name, res_x, res_y, ext)
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
@@ -235,8 +237,3 @@ def get_joint_qres(res_x, res_y):
     )
 
     return joint_df
-
-
-if __name__ == "__main__":
-    # Run when executed as a script
-    get_joint_qres("Lys8", "Asp1")

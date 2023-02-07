@@ -14,13 +14,17 @@ def format_plot() -> None:
     """
     font = {"family": "sans-serif", "weight": "bold", "size": 10}
     plt.rc("font", **font)
+    plt.rcParams['xtick.major.pad'] = 5
+    plt.rcParams['ytick.major.pad'] = 5
     plt.rcParams["axes.linewidth"] = 2
     plt.rcParams["xtick.major.size"] = 7
     plt.rcParams["xtick.major.width"] = 2
     plt.rcParams["ytick.major.size"] = 7
     plt.rcParams["ytick.major.width"] = 2
-    plt.rcParams["xtick.direction"] = "out"
+    plt.rcParams["xtick.direction"] = "in"
     plt.rcParams["ytick.direction"] = "in"
+    plt.rcParams["xtick.top"] = True
+    plt.rcParams["ytick.right"] = True
     plt.rcParams["svg.fonttype"] = "none"
 
 
@@ -139,7 +143,7 @@ def get_parity_plot(x: list[int], y: list[int]) -> None:
     )
 
 
-def get_charge_distributions(charge_df, out_file, ext):
+def get_charge_distributions(charge_df, out_file, res_x, res_y, ext):
     """
     Creates a charge distribution plot with one residue on each axis.
 
@@ -157,25 +161,23 @@ def get_charge_distributions(charge_df, out_file, ext):
     # Apply Kulik plotting format
     format_plot()
 
-    # Define the bins, how grainy the distribution plot will look
-    x_min = charge_df[charge_df.columns[0]].min()
-    x_max = charge_df[charge_df.columns[0]].max()
-    y_min = charge_df[charge_df.columns[1]].min()
-    y_max = charge_df[charge_df.columns[1]].max()
-
-    x_bins = np.linspace(x_min, x_max, 50)
-    y_bins = np.linspace(y_min, y_max, 50)
+    # Define the bins automatically (for testing)
+    # x_min = charge_df[charge_df.columns[0]].min()
+    # x_max = charge_df[charge_df.columns[0]].max()
+    # y_min = charge_df[charge_df.columns[1]].min()
+    # y_max = charge_df[charge_df.columns[1]].max()
+    # x_bins = np.linspace(x_min, x_max, 50)
+    # y_bins = np.linspace(y_min, y_max, 50)
 
     # Extract the data from the dataframe
     x = charge_df[charge_df.columns[0]]
     y = charge_df[charge_df.columns[1]]
 
     # Create the plot
-    fig, ax = plt.subplots(figsize=(10, 10))
-    plt.hist2d(x, y, bins=[x_bins, y_bins])
+    fig, ax = plt.subplots()
+    # ax.hist2d(x, y, bins=(x_bins, y_bins))
+    ax.hist2d(x, y, bins=30, range=[[0.4, 1.2], [-1.2, -0.4]])
+    ax.set_aspect('equal')
+    plt.xlabel(res_x, fontweight='bold')
+    plt.ylabel(res_y, fontweight='bold')
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
-
-
-# if __name__ == "__main__":
-#     # Do something if this file is invoked on its own
-#     get_charge_distributions(joint_df, f"{res_x}_{res_y}_dist.png", "png")

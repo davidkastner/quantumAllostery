@@ -558,7 +558,7 @@ def check_valid_resname(res) -> tuple[str, int]:
     return aa_name, aa_num
 
 
-def get_res_atom_indices(res, scheme="backbone") -> list[int]:
+def get_res_atom_indices(res, scheme="all") -> list[int]:
     """
     For a residue get the atom indices of all atoms in the residue.
 
