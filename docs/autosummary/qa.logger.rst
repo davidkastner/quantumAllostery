@@ -1,7 +1,7 @@
-﻿qa.library
-==========
+﻿qa.logger
+=========
 
-.. automodule:: qa.library
+.. automodule:: qa.logger
 
    
    
@@ -13,8 +13,9 @@
 
    .. autosummary::
    
-      get_aa_identifiers
-      sequence
+      clean_exit
+      help
+      nonoption_exit
    
    
 
