@@ -73,7 +73,7 @@ alias qa='python /the/path/to/quantumAllostery/cli.py'
 
 Now you can call the quantumAllostery package CLI from anywhere with:
 ```
-python qa.py
+qa
 ```
 
 
