@@ -3,21 +3,15 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - ambertools
-  - python
+  - python=3.8
   - black
   - biopandas
   - cookiecutter
-  - flake8
-  - git
+  - jupyterlab
   - matplotlib
-  - mypy
   - numpy
   - pandas
   - pip
-  - pydantic
-  - pytest
-  - pytest-cov
   - scikit-learn
   - scipy
   - seaborn

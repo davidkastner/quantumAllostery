@@ -3,6 +3,7 @@
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
+from typing import List
 from matplotlib.ticker import MultipleLocator
 import numpy as np
 
@@ -29,7 +30,7 @@ def format_plot() -> None:
 
 
 # def heatmap(csv, protein, delete, out_file, cmap) -> None:
-def heatmap(csv: str, protein: str, delete: list[int]=[], out_file: str="heatmap.svg", cmap="RdBu") -> None:
+def heatmap(csv: str, protein: str, delete: List[int]=[], out_file: str="heatmap.svg", cmap="RdBu") -> None:
     """
     Generates formatted heat maps.
 
@@ -45,7 +46,7 @@ def heatmap(csv: str, protein: str, delete: list[int]=[], out_file: str="heatmap
     # General styling variables
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
-    remove: list(int) = []
+    remove: List[int] = []
     residues = lib.sequence(protein)
 
     # Identify matrix format and read in
@@ -102,7 +103,7 @@ def heatmap(csv: str, protein: str, delete: list[int]=[], out_file: str="heatmap
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
 
 
-def get_parity_plot(x: list[int], y: list[int]) -> None:
+def get_parity_plot(x: List[int], y: List[int]) -> None:
     """
     General set up to create an attractive parity plot.
 

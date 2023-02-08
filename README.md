@@ -32,7 +32,7 @@ Install the package by running the follow commands inside the repository. This w
 ### Creating python environment
 All the dependencies can be loaded together using the prebuilt environment.yml or environment_dev.yml files.
 We provide two YAML files. The dev version contains additional packages for code maintenance.
-Compatibility is automatically tested for python versions 3.9, 3.10, and 3.11.
+Compatibility is automatically tested for python versions 3.8 and higher.
 If you are only going to be using the package run:
 ```bash
 conda env create -f environment.yml
@@ -40,6 +40,7 @@ conda env create -f environment.yml
 If you are going to be developing the package run:
 ```bash
 conda env create -f environment_dev.yml
+source activate qa
 ```
 
 ### Setup developing environment
@@ -47,7 +48,7 @@ Remember to update your GitHub [ssh keys](https://docs.github.com/en/authenticat
 ```bash
 git clone git@github.com:davidkastner/quantumAllostery.git
 cd quantumAllostery
-pip install -e .
+python -m pip install -e .
 ```
 
 

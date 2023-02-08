@@ -6,6 +6,7 @@ import sys
 import glob
 import time
 import shutil
+from typing import List, Tuple
 from biopandas.pdb import PandasPdb
 import qa.library
 
@@ -514,7 +515,7 @@ def remove_incomplete_xyz() -> None:
     )
 
 
-def check_valid_resname(res) -> tuple[str, int]:
+def check_valid_resname(res) -> Tuple[str, int]:
     """
     Checks if a valid resname has been identified.
 
@@ -558,7 +559,7 @@ def check_valid_resname(res) -> tuple[str, int]:
     return aa_name, aa_num
 
 
-def get_res_atom_indices(res, scheme="all") -> list[int]:
+def get_res_atom_indices(res, scheme="all") -> List[int]:
     """
     For a residue get the atom indices of all atoms in the residue.
 

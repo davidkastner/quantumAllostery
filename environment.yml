@@ -3,12 +3,12 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python
+  - python=3.8
   - matplotlib
   - biopandas
+  - jupyterlab
   - scipy
   - numpy
   - pandas
   - seaborn
   - scikit-learn
-  - ambertools

@@ -2,9 +2,9 @@
 
 import os
 import time
+from typing import List, Dict
 
-
-def get_aa_identifiers() -> dict[str, list[str, str, str, float]]:
+def get_aa_identifiers() -> Dict[str, List[str]]:
     """
     Amino acid naming conventions and basic features.
 
@@ -13,40 +13,40 @@ def get_aa_identifiers() -> dict[str, list[str, str, str, float]]:
 
     Returns
     -------
-    aa : dict[str, list[str, str, str, float]]
-        Dictionary containing the name, one letter code, three-letter code, molecular formula, and molecular weight.
+    aa : dict[str, list[str, str, str]]
+        Dictionary containing the name, one letter code, three-letter code, and molecular formula.
 
     """
 
     aa = {
-        "alanine": ["A", "ALA", "C3H5NO", 71.08],
-        "arginine": ["R", "ARG", "C6H12N4O", 156.19],
-        "asparagine": ["N", "ASN", "C4H6N2O2", 114.11],
-        "aspartate": ["D", "ASP", "C4H5NO3", 115.09],
-        "cysteine": ["C", "CYS", "C3H5NOS", 103.15],
-        "glutamate": ["E", "GLU", "C5H7NO3", 129.12],
-        "glutamine": ["Q", "GLN", "C5H8N2O2", 128.13],
-        "glycine": ["G", "GLY", "C2H3NO", 57.05],
-        "histidine": ["H", "HIS", "C6H7N3O", 137.14],
-        "isoleucine": ["I", "ILE", "C6H11NO", 113.16],
-        "leucine": ["L", "LEU", "C6H11NO", 113.16],
-        "lysine": ["K", "LYS", "C6H12N2O", 128.18],
-        "methionine": ["M", "MET", "C5H9NOS", 131.20],
-        "phenylalanine": ["F", "PHE", "C9H9NO", 147.18],
-        "proline": ["P", "PRO", "C5H7NO", 97.12],
-        "serine": ["S", "SER", "C3H5NO2", 87.08],
-        "threonine": ["T", "THR", "C4H7NO2", 101.11],
-        "tryptophan": ["W", "TRP", "C11H10N2O	", 186.22],
-        "tyrosine": ["Y", "TYR", "C9H9NO2", 163.18],
-        "valine": ["V", "VAL", "C5H9NO", 99.13],
-        "2-aminoisobutyrate": ["U", "AIB", "C4H7NO", 85.12],
-        "acetyl": ["na", "ACE", "C2H3O", 43],
+        "alanine": ["A", "ALA"],
+        "arginine": ["R", "ARG"],
+        "asparagine": ["N", "ASN"],
+        "aspartate": ["D", "ASP"],
+        "cysteine": ["C", "CYS"],
+        "glutamate": ["E", "GLU"],
+        "glutamine": ["Q", "GLN"],
+        "glycine": ["G", "GLY"],
+        "histidine": ["H", "HIS"],
+        "isoleucine": ["I", "ILE"],
+        "leucine": ["L", "LEU"],
+        "lysine": ["K", "LYS"],
+        "methionine": ["M", "MET"],
+        "phenylalanine": ["F", "PHE"],
+        "proline": ["P", "PRO"],
+        "serine": ["S", "SER"],
+        "threonine": ["T", "THR"],
+        "tryptophan": ["W", "TRP"],
+        "tyrosine": ["Y", "TYR"],
+        "valine": ["V", "VAL"],
+        "2-aminoisobutyrate": ["U", "AIB"],
+        "acetyl": ["na", "ACE"],
     }
 
     return aa
 
 
-def sequence(protein) -> list[str]:
+def sequence(protein) -> List[str]:
     """
     Returns the sequence of one of the mimochromes.
 

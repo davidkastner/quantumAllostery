@@ -10,8 +10,12 @@ print("GitHub: https://github.com/davidkastner/quantumAllostery")
 print("Documenation: https://quantumallostery.readthedocs.io\n")
 print("Loading...")
 
+# !pip show biopandas
+
+import pandas
+
 import sys
-# import qa.anayze
+import qa.analyze
 import qa.library
 import qa.predict
 import qa.process
