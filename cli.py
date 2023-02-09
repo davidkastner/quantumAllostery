@@ -12,8 +12,6 @@ print("Loading...")
 
 # !pip show biopandas
 
-import pandas
-
 import sys
 import qa.analyze
 import qa.library

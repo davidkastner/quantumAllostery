@@ -167,11 +167,7 @@ def get_charge_file() -> str:
     return charge_file
 
 
-def combine_restarts(
-    atom_count,
-    all_charges: str = "all_charges.xls",
-    all_coors: str = "all_coors.xyz"
-) -> None:
+def combine_restarts(atom_count, all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz") -> None:
     """
     Collects all charges or coordinates into single xls and xyz files.
 
@@ -191,22 +187,19 @@ def combine_restarts(
     Notes
     -----
     Run from the directory that contains the run fragments.
-    The variable atom_count should be updated to reflect your system.
-    Could be automated in the future by adding to get_PDB.
 
     """
 
-    # The files where all the charges and coors will be combined
-    start_time = time.time()  # Used to report the executation speed
-    frame_count = -1  # Report to user with -1 to account for header
+    start_time = time.time()  # Clock executation speed
 
     # Collect all qmscript.out files
     out_files = glob.glob("./**/qmscript.out", recursive=True)
     out_files_count = len(out_files)  # Will report this to user
+    # run_info: The MD restart step, the outfile name, and its scr directory
     run_info: list[list[int, str, str]] = []
 
     # Get the first MD step from out_files to identify where each job restarted
-    # Restarting occurs from the last restart point not the last frame
+    # Note: Restarting occurs from the last restart point not the last frame
     for out_file in out_files:
         out_content = open(out_file, "r").readlines()
         for line in out_content:
@@ -216,56 +209,78 @@ def combine_restarts(
                 run_info.append([md_step, out_file])
                 break
 
-    # Get all src directories in safe, one for each restart attempt
+    # Get the src directory locations for the restart attempt to generate paths
     scrdir = glob.glob("./**/scr*/", recursive=True)
     scrdir.sort()  # Sort by modification date
-    # Add the name of the scr directory location to the run_info list
-    run_info.sort()
+    run_info.sort() # Sort by MD step
     for index, step in enumerate(run_info):
+        # Add the name of the scr directory location to the run_info list
         step.append(scrdir[index])
 
-    # Delete so we don't append to a previous version
+    # Delete so we don't append to a previous version when rerunning
     if os.path.exists(all_charges):
         os.remove(all_charges)
     if os.path.exists(all_coors):
         os.remove(all_coors)
 
     # Use the run_info to open the charge and coordinate files
+    first_run = True
     for index, run in enumerate(run_info):
-        charge_file = open(f"{run[2]}charge.xls", "r").readlines()
         coors_file = open(f"{run[2]}coors.xyz", "r").readlines()
-        # Combined charge and coors files
-        all_charges_file = open(all_charges, "a")
+        charge_file = open(f"{run[2]}charge.xls", "r").readlines()
+        # Create combined charge and coors files
         all_coors_file = open(all_coors, "a")
+        all_charges_file = open(all_charges, "a")
 
-        # Parse runs differently based on if first, intermediate, or last
-        if index == 0:
-            for charge in range(0, run_info[index + 1][0] + 1):
-                all_charges_file.write(charge_file[charge])
-                frame_count += 1
-            for coor in range(0, run_info[index + 1][0] * atom_count):
-                all_coors_file.write(coors_file[coor])
-        elif (index < len(run_info) - 1) and index != 0:
-            for charge in range(1, run_info[index + 1][0] - run[0] + 1):
-                all_charges_file.write(charge_file[charge])
-                frame_count += 1
-            for coor in range(
-                0, (run_info[index + 1][0] - run_info[index][0]) * atom_count
-            ):
-                all_coors_file.write(coors_file[coor])
+        # First run
+        if first_run:
+            coor_run_end = (run_info[index + 1][0] - 1) * (atom_count + 2)
+            all_coors_file.writelines(coors_file[:coor_run_end])
+            # The first charges line is a special header line that we add once
+            # so we don't need to substract one because it cancels with the index offset
+            charge_run_end = (run_info[index + 1][0])
+            all_charges_file.writelines(charge_file[:charge_run_end])
+            first_run = False
+
+        # Last run
+        elif index == len(run_info) - 1:
+            # Go all the way to the end so a frame isn't left off
+            all_coors_file.writelines(coors_file)
+            all_charges_file.writelines(charge_file[1:])
+
+        # Other run
         else:
-            for charge in range(1, len(charge_file)):
-                all_charges_file.write(charge_file[charge])
-                frame_count += 1
-            for coor in range(0, len(coors_file)):
-                all_coors_file.write(coors_file[coor])
+            # To get the number of frames in run two, 
+            # substract the restart number from the frames in run 1
+            coor_run_end = ((run_info[index + 1][0] - 1) - (run[0] - 1)) * (atom_count + 2)
+            all_coors_file.writelines(coors_file[:coor_run_end])
+            charge_run_end = ((run_info[index + 1][0]) - (run[0] - 1))
+            all_charges_file.writelines(charge_file[1:charge_run_end])
+
+    # Close files
+    all_coors_file.close()
+    all_charges_file.close()
+
+    # Check the number of frames in the combined xyz trajectory and print for user
+    coors_frame_count = 0
+    with open(all_coors, "r") as coors:
+        for line in coors:
+            if "frame" in line:
+                coors_frame_count += 1
+
+    # Check number of charge frames and print for user
+    charge_frame_count = -1
+    with open(all_charges, "r") as charges:
+        for line in charges:
+            charge_frame_count += 1
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run
     print(
         f"""
         \t----------------------------ALL RUNS END----------------------------
-        \tRESULT: Combined {frame_count} frames from {out_files_count} runs.
+        \tRESULT: {coors_frame_count} frames and {charge_frame_count} charges from {out_files_count} runs.
         \tOUTPUT: Generated {all_charges} and {all_coors}.
+        \tOUTPUT: {os.path.abspath(os.getcwd())}.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """
