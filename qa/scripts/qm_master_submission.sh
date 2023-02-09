@@ -38,11 +38,13 @@ for i in $(seq 0 $stride $index); do
 mkdir $i
 # Needed to read file size like in first script for index here. You can use echo like I do here, or you could just put a string in and used sed to replace it
 # This is currently set up for TC on supercloud
+# Precompute a wavefunction for 2 - 3x speedup
 echo "coordinates ../coordinates/${i}.xyz
 basis lacvps_ecp
 method wpbeh
 charge 0
 spinmult 1
+guess ../opt-wfn/c0
 maxit 1000
 scf diis+a
 scrdir ./scr
@@ -55,7 +57,7 @@ done
 mv *.input ./inputfiles/
 
 echo "#!/bin/bash
-#SBATCH --job-name=mc6s
+#SBATCH --job-name=mc6sa
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:volta:1
 #SBATCH --time=100:00:00
