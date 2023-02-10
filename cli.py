@@ -18,6 +18,7 @@ import click
 @click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb.")
 @click.option("--clean_incomplete_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
 @click.option("--residue_charge_coupling_plot", "-f", is_flag=True, help="Charge coupling between two residues plot.")
+@click.option("--find_stalled", "-g", is_flag=True, help="Find TeraChem jobs stalled at the COSMO step.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -25,7 +26,8 @@ def cli(
     combine_replicates,
     xyz2pdb,
     clean_incomplete_frames,
-    residue_charge_coupling_plot
+    residue_charge_coupling_plot,
+    find_stalled
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -79,6 +81,10 @@ def cli(
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
         charge_df = qa.analyze.get_joint_qres(res_x, res_y)
+
+    elif find_stalled:
+        import qa.process
+        qa.process.find_stalled()
     
     else:
         click.echo("No functionality was requested.\nTry --help.")
