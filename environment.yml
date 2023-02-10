@@ -4,11 +4,12 @@ channels:
   - defaults
 dependencies:
   - python=3.8
-  - matplotlib
   - biopandas
+  - click
   - jupyterlab
-  - scipy
+  - matplotlib
   - numpy
   - pandas
-  - seaborn
   - scikit-learn
+  - scipy
+  - seaborn

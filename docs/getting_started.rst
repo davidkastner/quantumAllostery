@@ -51,6 +51,34 @@ If you are going to be developing the package run:
     │   └── plot         # Automated plotting and vizualization 
     └── ...
 
+4 Expected file structure
+-------------------------
+
+    The functions will be expecting the following file structure:
+    
+    .
+    ├── variant
+    │   ├── replicate
+    │   │   ├── start
+    │   │   ├── restart
+    │   │   └── ...
+    │   ├── replicate
+    │   │   ├── start
+    │   │   ├── restart
+    │   │   └── ...
+    │   └── ...
+    ├── variant
+    │   ├── replicate
+    │   │   ├── start
+    │   │   ├── restart
+    │   │   └── ...
+    │   ├── replicate
+    │   │   ├── start
+    │   │   ├── restart
+    │   │   └── ...
+    │   └── ...
+    └── ...
+
 
 4 Documentation
 ---------------

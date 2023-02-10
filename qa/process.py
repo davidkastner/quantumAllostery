@@ -188,6 +188,10 @@ def combine_restarts(atom_count, all_charges: str = "all_charges.xls", all_coors
     -----
     Run from the directory that contains the run fragments.
 
+    See Also
+    --------
+    combine_replicates: Combines all the combined trajectories of each replicate into one.
+
     """
 
     start_time = time.time()  # Clock executation speed
@@ -302,9 +306,12 @@ def combine_replicates(
     Notes
     -----
     Run from the directory that contains the replicates.
-    Run all_runs() first for if each replicated was run across multiple runs.
+    Run combine_restarts first for if each replicated was run across multiple runs.
     Generalized to combine any number of replicates.
 
+    See Also
+    --------
+    combine_restarts: Combines restarts and should be run first.
     """
 
     # General variables
@@ -476,7 +483,7 @@ def xyz2pdb_ensemble() -> None:
     )
 
 
-def remove_incomplete_xyz() -> None:
+def clean_incomplete_xyz() -> None:
     """
     For removing incomplete frames during troublshooting.
 

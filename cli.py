@@ -1,26 +1,32 @@
-"""Command-line interface entry point."""
+"""Command-line interface (CLI) entry point."""
 
 # Print first to welcome the user while it waits to load the modules
-print("\n.-----------------------------------.")
-print("| WELCOME TO QUANTUM ALLOSTERY (QA) |")
-print(".-----------------------------------.")
+print("\n.------------------------------------------.")
+print("| WELCOME TO THE QUANTUMALLOSTERY (QA) CLI |")
+print(".------------------------------------------.")
 print("Default programmed actions for the quantumAllostery package.")
-print("Feel free to add your own action sequences.")
 print("GitHub: https://github.com/davidkastner/quantumAllostery")
 print("Documenation: https://quantumallostery.readthedocs.io\n")
-print("Loading...")
-
-# !pip show biopandas
 
 import sys
-import qa.analyze
-import qa.library
-import qa.predict
-import qa.process
-import qa.plot
-import qa.logger
+import click
 
-def cli():
+@click.command()
+@click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate.")
+@click.option("--combine_restart_replicates", "-b", is_flag=True, help="Combines restarts across all replicates.")
+@click.option("--combine_replicates", "-c", is_flag=True, help="Combines combined replicates trajectories.")
+@click.option("--xyz2pdb", "-d", help="Converts an xyz to a pdb.")
+@click.option("--clean_incomplete_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
+@click.option("--residue_charge_coupling_plot", "-f", is_flag=True, help="Charge coupling between two residues plot.")
+@click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
+def cli(
+    combine_restarts,
+    combine_restart_replicates,
+    combine_replicates,
+    xyz2pdb,
+    clean_incomplete_frames,
+    residue_charge_coupling_plot
+    ):
     """
     The overall command-line interface (CLI) entry point.
     The CLI interacts with the rest of the package.
@@ -30,127 +36,52 @@ def cli():
     and because it introduces the user to the available functionality.
     Improves long-term maintainability.
 
-    Notes
-    -----
-    The functions will be expecting the following file structure:
-    .
-    ├── variant
-    │   ├── replicate
-    │   │   ├── start
-    │   │   ├── restart
-    │   │   └── ...
-    │   ├── replicate
-    │   │   ├── start
-    │   │   ├── restart
-    │   │   └── ...
-    │   └── ...
-    ├── variant
-    │   ├── replicate
-    │   │   ├── start
-    │   │   ├── restart
-    │   │   └── ...
-    │   ├── replicate
-    │   │   ├── start
-    │   │   ├── restart
-    │   │   └── ...
-    │   └── ...
-    └── ...
-
     """
-
-    # First level of actions
-    print("""
-        1) Process files
-        2) Analyze results
-        3) Predict using ML model
-        4) Plot results
-        5) Help
-        6) Quit
-        """)
-    request = input("Select an option: ")
-
-    # Second level of actions
-    if request == "1": #Process files
-        print("""
-        1) Combine restarted trajectories
-        2) Combine restarted trajectories for multiple replicates
-        3) Combine replicates into a single trajectory
-        4) Convert an XYZ to PDB trajectory
-        5) Remove incomplete xyz frames
-        6) Help
-        7) Quit
-        """)
-        request = input("Select an option: ")
-        
-        if request == "1": # Combine restarted trajectories
-            atom_count = qa.process.get_atom_count()
-            qa.process.combine_restarts(atom_count)
-        elif request == "2": # Combine restarted trajectories for multiple replicates
-            atom_count = qa.process.get_atom_count()
-            qa.process.run_all_replicates(lambda: qa.process.combine_restarts(atom_count))
-        elif request == "3": # Combine replicates into a single trajectory
-            qa.process.combine_replicates()
-        elif request == "4": # Convert an XYZ to PDB trajectory
-            qa.process.xyz2pdb_traj()
-        elif request == "5": # Remove incomplete xyz frames
-            qa.process.remove_incomplete_xyz()
-        elif request == "6": # Help
-            qa.logger.help()
-        elif request == "7": # Quit
-            qa.logger.clean_exit()
-        else:
-            qa.logger.nonoption_exit()
-
-    elif request == "2": # Analyze results
-        print("""
-        1) Quit
-        """)
-        request = input("Select an option: ")
-
-    elif request == "3": # Predict using ML model
-        print("""
-        1) Quit
-        """)
-        request = input("Select an option: ")
-
-    elif request == "4": # Plot results
-        print("""
-        1) Plot charge-coupling heatmap for two residues
-        2) Quit
-        """)
-        request = input("Select an option: ")
-
-        if request == "1": # Combine restarted trajectories
-            res_x = input("\n> What is the first residue (Asp1)? ")
-            res_y = input("> What is the second residue (Gly2)? ")
-            charge_df = qa.analyze.get_joint_qres(res_x, res_y)
-        elif request == "2": # Quit
-            qa.logger.clean_exit()
-        else:
-            qa.logger.nonoption_exit()
-
-    elif request == "1": # Plot charge-coupling heatmap for two residues
-        qa.logger.help()
-    elif request == "2": # Quit
-        qa.logger.clean_exit()
-    else: # Non-option
-        qa.logger.nonoption_exit()
-
-
-def level_one():
-    """
-    Lists all the potential modules to choose from.
-    """
-        # First level of actions
-    print("""
-        1) Process files
-        2) Analyze results
-        3) Predict using ML model
-        4) Plot results
-        5) Help
-        6) Quit
-        """)
-    request = input("Select an option: ")
+    if combine_restarts:
+        click.echo("> Combine restarts:")
+        click.echo("> Loading...")
+        import qa.process
+        atom_count = qa.process.get_atom_count()
+        qa.process.combine_restarts(atom_count)
+    
+    elif combine_restart_replicates:
+        click.echo("> Combine restarts from multiple replicates:")
+        click.echo("> Loading...")
+        import qa.process
+        atom_count = qa.process.get_atom_count()
+        qa.process.run_all_replicates(lambda: qa.process.combine_restarts(atom_count))
+    
+    elif combine_replicates:
+        click.echo("> Combine trajectories from multiple replicates:")
+        click.echo("> Loading...")
+        import qa.process
+        qa.process.combine_replicates()
+    
+    elif xyz2pdb:
+        click.echo("> Convert an xyz to a pdb trajectory:")
+        click.echo("> Loading...")
+        import qa.process
+        qa.process.xyz2pdb_traj()
+    
+    elif clean_incomplete_frames:
+        click.echo("> Clean frames with problems:")
+        click.echo("> Loading...")
+        import qa.process
+        qa.process.remove_incomplete_xyz()
+    
+    elif residue_charge_coupling_plot:
+        click.echo("> Generate a charge coupling plot for two residues:")
+        click.echo("> Loading...")
+        import qa.process
+        import qa.analyze
+        import qa.plot
+        import qa.library
+        res_x = input("> What is the first residue (Asp1)? ")
+        res_y = input("> What is the second residue (Gly2)? ")
+        charge_df = qa.analyze.get_joint_qres(res_x, res_y)
+    
+    else:
+        click.echo("No functionality was requested.\nTry --help.")
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
