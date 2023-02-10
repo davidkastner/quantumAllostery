@@ -105,7 +105,7 @@ def get_xyz() -> str:
     """
 
     # Search recursively for an xyz file
-    xyz_names = sorted(glob.glob("./**/*.xyz", recursive=True))
+    xyz_names = glob.glob("./**/*.xyz", recursive=True)
 
     # Check the results to confirm that there was only one xyz file found
     if len(xyz_names) == 1:
@@ -379,10 +379,12 @@ def xyz2pdb_traj() -> None:
 
     """
 
-    # Search for the XYZ and PDB files names
     start_time = time.time()  # Used to report the executation speed
+
+    # Search for the XYZ and PDB files names
     pdb_name = get_pdb()
     xyz_name = get_xyz()
+
     # Remove the extension to get the protein name to use as the PDB header
     protein_name = pdb_name.split("/")[-1][:-4]
     new_pdb_name = f"{protein_name}_traj.pdb"
@@ -428,7 +430,7 @@ def xyz2pdb_traj() -> None:
 
 def xyz2pdb_ensemble() -> None:
     """
-    Converts an xyz trajectory file into a pdb trajectory file.
+    Converts an xyz trajectory file into a pdb ensemble.
 
     Note
     ----
@@ -487,8 +489,8 @@ def clean_incomplete_xyz() -> None:
     """
     For removing incomplete frames during troublshooting.
 
-    It seems that sometimes an frame was not written out incompletely.
-    In these cases, the best course is to remove them.
+    This is current under construction.
+    I am not sure about its use cases.
 
     """
 

@@ -1,9 +1,9 @@
 """Command-line interface (CLI) entry point."""
 
 # Print first to welcome the user while it waits to load the modules
-print("\n.------------------------------------------.")
-print("| WELCOME TO THE QUANTUMALLOSTERY (QA) CLI |")
-print(".------------------------------------------.")
+print("\n.-------------------------------------------.")
+print("| WELCOME TO THE QUANTUM ALLOSTERY (QA) CLI |")
+print(".-------------------------------------------.")
 print("Default programmed actions for the quantumAllostery package.")
 print("GitHub: https://github.com/davidkastner/quantumAllostery")
 print("Documenation: https://quantumallostery.readthedocs.io\n")
@@ -15,7 +15,7 @@ import click
 @click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate.")
 @click.option("--combine_restart_replicates", "-b", is_flag=True, help="Combines restarts across all replicates.")
 @click.option("--combine_replicates", "-c", is_flag=True, help="Combines combined replicates trajectories.")
-@click.option("--xyz2pdb", "-d", help="Converts an xyz to a pdb.")
+@click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb.")
 @click.option("--clean_incomplete_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
 @click.option("--residue_charge_coupling_plot", "-f", is_flag=True, help="Charge coupling between two residues plot.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')

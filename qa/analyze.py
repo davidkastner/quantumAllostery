@@ -237,3 +237,7 @@ def get_joint_qres(res_x, res_y):
     )
 
     return joint_df
+
+if __name__ == "__main__":
+    # Run the command-line interface when this script is executed
+    charge_matrices()
