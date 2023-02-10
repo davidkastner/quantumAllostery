@@ -671,8 +671,8 @@ def find_stalled():
     # Report findings to user
     if len(stalled_jobs) > 0:
         for index,stalled_job in enumerate(stalled_jobs):
-            print(f"Job in {stalled_jobs[index]} is likely stalled.")
+            print(f"> Job in {stalled_jobs[index]} is likely stalled.")
     else:
-        print("No stalled jobs.")
+        print("> No stalled jobs.")
 
 
