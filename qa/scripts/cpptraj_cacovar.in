@@ -1,0 +1,5 @@
+parm mc6s.pdb
+trajin mc6s_traj.pdb
+autoimage
+rms first :1-30 out rms.dat
+matrix out cacovar.dat correl :2-27@CA

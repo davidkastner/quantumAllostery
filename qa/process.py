@@ -375,6 +375,8 @@ def xyz2pdb_traj() -> None:
 
     Note
     ----
+    Make sure to manually check the PDB that is read in.
+    Assumes no header lines.
     Assumes that the only TER flag is at the end.
 
     """
@@ -408,7 +410,7 @@ def xyz2pdb_traj() -> None:
                 quit()
             pdb_line = pdb_file[atom - 2]  # PDB is two behind the xyz
             new_file.write(
-                f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}\n"
+                f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}"
             )
         else:
             atom += 1
