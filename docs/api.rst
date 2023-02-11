@@ -7,7 +7,7 @@ API Documentation
 
    qa.analyze
    qa.library
-   qa.logger
+   qa.manage
    qa.plot
    qa.predict
    qa.process

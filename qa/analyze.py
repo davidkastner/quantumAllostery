@@ -10,6 +10,7 @@ from joblib import parallel_backend
 import pandas as pd
 import qa.process
 import qa.plot
+import qa.manage
 
 
 def charge_matrices() -> None:
@@ -238,6 +239,42 @@ def get_joint_qres(res_x, res_y):
 
     return joint_df
 
+def cpptraj_covars():
+    """
+    Calculate the covariance using CPPTraj.
+
+    A measure of how different amino acids are geometrically correlated.
+    For example, fluctuations in side chain position or conformational changes.
+    """
+
+    job = "cpptraj_cacovar"
+
+    # Check for a template PDB, if none copy it over
+    qa.manage.check_file("template.pdb", "../template.pdb")
+
+    # Check if a pdb trajectory was generated
+    file_name = "all_coors.pdb"
+    isExist = os.path.isfile(file_name)
+    if not isExist:
+        print(f"> Can't find the {file_name}.")
+        print(f"> Generating it...")
+        qa.process.xyz2pdb_traj()
+
+    # Move to the analysis folder
+    primary = os.getcwd()
+    qa.manage.check_folder("Analysis")
+    os.chdir("Analysis")
+    qa.manage.check_folder(f"1_{job}")
+    os.chdir(f"1_{job}")
+
+    # Copy stored scripts
+    qa.manage.copy_script(f"{job}.in")
+    qa.manage.copy_script(f"{job}.sh")
+
+    # Execute the script
+    os.system(f"sbatch {job}.sh")
+
+
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
-    charge_matrices()
+    cpptraj_covars()

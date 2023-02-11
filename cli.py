@@ -13,21 +13,23 @@ import click
 
 @click.command()
 @click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate.")
-@click.option("--combine_restart_replicates", "-b", is_flag=True, help="Combines restarts across all replicates.")
 @click.option("--combine_replicates", "-c", is_flag=True, help="Combines combined replicates trajectories.")
 @click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb.")
-@click.option("--clean_incomplete_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
-@click.option("--residue_charge_coupling_plot", "-f", is_flag=True, help="Charge coupling between two residues plot.")
-@click.option("--find_stalled", "-g", is_flag=True, help="Find TeraChem jobs stalled at the COSMO step.")
+@click.option("--clean_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
+@click.option("--charge_coupling_plot", "-f", is_flag=True, help="Charge coupling between two residues plot.")
+@click.option("--find_stalled", "-g", is_flag=True, help="Find TeraChem jobs stalled.")
+@click.option("--get_heatmap", "-i", is_flag=True, help="Heat map of amino acid correlations.")
+@click.option("--cpptraj_covars", "-j", is_flag=True, help="Use CPPTraj to calculate covariance.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
-    combine_restart_replicates,
     combine_replicates,
     xyz2pdb,
-    clean_incomplete_frames,
-    residue_charge_coupling_plot,
-    find_stalled
+    clean_frames,
+    charge_coupling_plot,
+    find_stalled,
+    get_heatmap,
+    cpptraj_covars
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -39,20 +41,21 @@ def cli(
     Improves long-term maintainability.
 
     """
+    
     if combine_restarts:
         click.echo("> Combine restarts:")
         click.echo("> Loading...")
         import qa.process
+        compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
         atom_count = qa.process.get_atom_count()
-        qa.process.combine_restarts(atom_count)
-    
-    elif combine_restart_replicates:
-        click.echo("> Combine restarts from multiple replicates:")
-        click.echo("> Loading...")
-        import qa.process
-        atom_count = qa.process.get_atom_count()
-        qa.process.run_all_replicates(lambda: qa.process.combine_restarts(atom_count))
-    
+        
+        if compute_replicates == "y":
+            qa.manage.run_all_replicates(lambda: qa.process.combine_restarts(atom_count))
+        elif compute_replicates == "n":
+            qa.process.combine_restarts(atom_count)
+        else:
+            print("Respond y or n.")
+
     elif combine_replicates:
         click.echo("> Combine trajectories from multiple replicates:")
         click.echo("> Loading...")
@@ -83,9 +86,34 @@ def cli(
         charge_df = qa.analyze.get_joint_qres(res_x, res_y)
 
     elif find_stalled:
-        import qa.process
-        qa.process.find_stalled()
+        click.echo("> Checking for stalled TeraChem jobs:")
+        click.echo("> Loading...")
+        import qa.manage
+        qa.manage.find_stalled()
     
+    elif get_heatmap:
+        click.echo("> Create heatmap of charge correlations:")
+        click.echo("> Loading...")
+        import qa.plot
+        import qa.library
+        protein = input("> What is the name of your protein? ")
+        qa.plot.heatmap(csv="chargematbb.csv", protein=protein, out_file="matrix_geom.png")
+    
+    elif cpptraj_covars:
+        click.echo("> Generate geometric covariance using CPPTraj:")
+        click.echo("> Loading...")
+        import qa.manage
+        import qa.analyze
+
+        compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
+        
+        if compute_replicates == "y":
+            qa.manage.run_all_replicates(lambda: qa.analyze.cpptraj_covars())
+        elif compute_replicates == "n":
+            qa.analyze.cpptraj_covars()
+        else:
+            print("> Respond y or n.")
+
     else:
         click.echo("No functionality was requested.\nTry --help.")
 

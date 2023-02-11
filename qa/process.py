@@ -10,46 +10,6 @@ from typing import List, Tuple
 from biopandas.pdb import PandasPdb
 import qa.library
 
-def run_all_replicates(function) -> None:
-    """
-    Loops through all replicates and runs a specific funtion on each.
-
-    Often a function needs to be run on all replicates.
-    Given a common file structure, this will take care of all of them at once.
-
-    Notes
-    -----
-    The directories in the first level should contain replicates,
-    and the sub directories should contain restarts.
-    Additional random directories will lead to errors.
-    """
-
-    start_time = time.time()  # Used to report the executation speed
-
-    # Set path elements
-    root = os.getcwd()
-    dirs = sorted(os.listdir(root))
-    replicates_count = 0
-
-    # Loop over the replicate directories
-    for dir in dirs:
-        new_dir = f"{root}/{dir}"
-        if os.path.isdir(new_dir):
-            os.chdir(new_dir)
-            print(f"> Executing function in {new_dir}.")
-            function()
-            replicates_count += 1
-
-    
-    total_time = round(time.time() - start_time, 3)  # Seconds to run
-    print(
-        f"""
-        \t----------------------------ALL RUNS END----------------------------
-        \tRESULT: Combined restarts for {replicates_count} replicates.
-        \tTIME: Total execution time: {total_time} seconds.
-        \t--------------------------------------------------------------------\n
-        """
-    )
 
 def get_pdb() -> str:
     """
@@ -71,7 +31,7 @@ def get_pdb() -> str:
 
     """
     # A list of all PDB's found after recursive search
-    pdb_files = sorted(glob.glob("./**/*.pdb", recursive=True))
+    pdb_files = sorted(glob.glob("./**/template.pdb", recursive=True))
     for index, pdb in enumerate(pdb_files):
         # Trajectory PDB's should be marked as ensemble or traj
         if "ensemble" in pdb or "traj" in pdb or "top" in pdb:
@@ -389,7 +349,7 @@ def xyz2pdb_traj() -> None:
 
     # Remove the extension to get the protein name to use as the PDB header
     protein_name = pdb_name.split("/")[-1][:-4]
-    new_pdb_name = f"{protein_name}_traj.pdb"
+    new_pdb_name = f"all_coors.pdb"
 
     # Open files for reading
     xyz_file = open(xyz_name, "r").readlines()
@@ -631,48 +591,4 @@ def get_res_atom_indices(res, scheme="all") -> List[int]:
         raise ValueError("> ERROR: No atom indices were found. Verify that it exists.")
 
     return atom_index_list
-
-
-def find_stalled():
-    """
-    Identifies frozen TeraChem jobs.
-
-    When running TeraChem on SuperCloud, 
-    the jobs will occassionally freeze on the COSMO step.
-    These instances can be difficult to identify.
-    This script will check all jobs,
-    and find those on the specific problematic step.
-    """
-
-    # Get the directories of each replicate
-    primary = os.getcwd()
-    dirs = sorted(glob.glob('*/'))
-    stalled_jobs = [] # List of jobs currently on the COSMO step
-
-    for dir in dirs:
-        os.chdir(primary) # Move back to replicates directory
-        os.chdir(dir)
-        secondary = os.getcwd()
-        # Get the directories of each TeraChem frame calculation
-        sub_dirs = sorted(glob.glob('*/'))
-
-        for sub_dir in sub_dirs:
-            os.chdir(secondary) # Move back to frames directory
-            os.chdir(sub_dir)
-            out_name = glob.glob('*.out') 
-            
-            if len(out_name) > 0: # No out file if the job hasn't run
-                # Open the .out file
-                with open(out_name[0], "r") as out_file:
-                    last_line = out_file.readlines()[-1]
-                    if "=COSMO= size of" in last_line:
-                        stalled_jobs.append(f"{dir}{sub_dir}")
-
-    # Report findings to user
-    if len(stalled_jobs) > 0:
-        for index,stalled_job in enumerate(stalled_jobs):
-            print(f"> Job in {stalled_jobs[index]} is likely stalled.")
-    else:
-        print("> No stalled jobs.")
-
 

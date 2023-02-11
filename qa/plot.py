@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from typing import List
 from matplotlib.ticker import MultipleLocator
 import numpy as np
+import qa.library
 
 
 def format_plot() -> None:
@@ -30,7 +31,7 @@ def format_plot() -> None:
 
 
 # def heatmap(csv, protein, delete, out_file, cmap) -> None:
-def heatmap(csv: str, protein: str, delete: List[int]=[], out_file: str="heatmap.svg", cmap="RdBu") -> None:
+def heatmap(csv: str, protein: str, delete: List[int]=[0,15,16,27,28,29], out_file: str="heatmap.svg", cmap="RdBu") -> None:
     """
     Generates formatted heat maps.
 
@@ -47,7 +48,7 @@ def heatmap(csv: str, protein: str, delete: List[int]=[], out_file: str="heatmap
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
     remove: List[int] = []
-    residues = lib.sequence(protein)
+    residues = qa.library.sequence(protein)
 
     # Identify matrix format and read in
     contents = open(csv, "r").readlines()
@@ -78,8 +79,8 @@ def heatmap(csv: str, protein: str, delete: List[int]=[], out_file: str="heatmap
     ax = sns.heatmap(
         df,
         cmap=cmap,
-        vmin=-1,
-        vmax=1,
+        vmin=-.4,
+        vmax=.4,
         xticklabels=True,
         yticklabels=True,
         linewidth=0.03,
