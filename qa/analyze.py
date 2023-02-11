@@ -3,6 +3,7 @@
 import os
 import sys
 import glob
+import shutil
 import numpy as np
 import time
 from sklearn.feature_selection import mutual_info_regression
@@ -13,7 +14,7 @@ import qa.plot
 import qa.manage
 
 
-def charge_matrices() -> None:
+def charge_matrix() -> None:
     """
     Generates mutual information and cross-correlation matrices.
 
@@ -64,7 +65,7 @@ def charge_matrices() -> None:
         charge_file_length = len(charge_file_lines)
         atwbblist_len = len(atwbblist)
         atwsclist_len = len(atwsclist)
-        print(charge_file_length * 0.0005, "ps collected so far")
+        print(f"> {round(charge_file_length * 0.0005, 2)} ps collected so far")
 
         for line2 in range(1, charge_file_length):
             charge_file_line_pieces = charge_file_lines[line2].split()
@@ -89,7 +90,7 @@ def charge_matrices() -> None:
                     )
                 scchargearray[line2 - 1].append(ressccharge)
 
-    print("Finished looping through charges")
+    print("> Finished looping through charges")
 
     np.array(bbchargearray)
     np.array(scchargearray)
@@ -97,10 +98,10 @@ def charge_matrices() -> None:
     MI_mat = []
     bbchargearray_length = len(bbchargearray[0])
 
-    print(f"Start looping through {bbchargearray_length}")
+    print(f"> Start looping through {bbchargearray_length} residues")
 
     for i in range(0, bbchargearray_length):
-        print("rowMI", i)
+        print(f"   > rowMI {i}")
         rowMI = mutual_info_regression(bbchargemutinf.transpose(), bbchargemutinf[i])
         MI_mat.append(rowMI)
 
@@ -125,12 +126,12 @@ def charge_matrices() -> None:
     avgchgsc = np.mean(scchargearray, axis=0)
     stdchgsc = np.std(scchargearray, axis=0)
     corrcoefsc = np.corrcoef(np.transpose(scchargearray))
-    print("BB stats below.")
 
-    for resi in range(0, len(reslist)):
-        print(
-            f"{reslist[resi]} {maxchgbb[resi]} {minchgbb[resi]} {maxchgbb[resi] - minchgbb[resi]} {avgchgbb[resi]} {stdchgbb[resi]}"
-        )
+    # print("> BB stats below.")
+    # for resi in range(0, len(reslist)):
+    #     print(
+    #         f"{reslist[resi]} {maxchgbb[resi]} {minchgbb[resi]} {maxchgbb[resi] - minchgbb[resi]} {avgchgbb[resi]} {stdchgbb[resi]}"
+    #     )
 
     with open("chargematbb.csv", "w") as chargemat:
         for resx in range(0, len(reslist)):
@@ -143,12 +144,11 @@ def charge_matrices() -> None:
 
             chargemat.write("\n")
 
-    print("SC stats below.")
-
-    for resi in range(0, len(reslist)):
-        print(
-            f"{reslist[resi]} {maxchgsc[resi]} {minchgsc[resi]} {maxchgsc[resi]-minchgsc[resi]} {avgchgsc[resi]} {stdchgsc[resi]}"
-        )
+    # print("SC stats below.")
+    # for resi in range(0, len(reslist)):
+    #     print(
+    #         f"{reslist[resi]} {maxchgsc[resi]} {minchgsc[resi]} {maxchgsc[resi]-minchgsc[resi]} {avgchgsc[resi]} {stdchgsc[resi]}"
+    #     )
 
     with open("chargematsc.csv", "w") as chargemat:
         for resx in range(0, len(reslist)):
@@ -200,7 +200,6 @@ def get_joint_qres(res_x, res_y):
         6. Use joint_plot() to plot the results
 
     """
-
     start_time = time.time()  # Used to report the executation speed
 
     # Create a new data frame to append the two residues of interest
@@ -239,7 +238,7 @@ def get_joint_qres(res_x, res_y):
 
     return joint_df
 
-def cpptraj_covars(delete, recompute=False):
+def cpptraj_covars(delete, recompute=False) -> None:
     """
     Calculate the covariance using CPPTraj.
 
@@ -255,7 +254,6 @@ def cpptraj_covars(delete, recompute=False):
         Recompute the calculation even if results are already present.
 
     """
-
     job = "cpptraj_cacovar"
 
     # Check for a template PDB, if none copy it over
@@ -295,6 +293,66 @@ def cpptraj_covars(delete, recompute=False):
         residues = qa.process.get_protein_sequence(pdb_path)
         qa.plot.heatmap(data="cacovar.dat", residues=residues, delete=delete, out_file="matrix_geom.png")
 
+
+def charge_matrix_analysis(delete, recompute=False) -> None:
+    """
+    Analyze the charging coupling across all amino acids.
+
+    Performs the analyze to generate matrix files.
+    Automates plotting of the results.
+
+    Parameters
+    ----------
+    delete: List[List[int]]
+        A list containing two lists. The first is the residues to delete.
+        The second is the columns of the matrix to delete.
+    recompute: bool
+        Recompute the calculation even if results are already present.
+    
+    """
+
+    # Check for a template PDB, if none copy it over
+    qa.manage.check_file("template.pdb", "../template.pdb")
+
+    # Check for required files
+    required_file = "all_charges.xls"
+    if not os.path.exists(required_file):
+        print(f"{required_file} not found. See qa.process.combine_restarts()") 
+
+    # Check if Analysis folder exits, if it doesn't create one
+    primary = os.getcwd() # Save this as our primary home directory for later
+    analysis_dir = "Analysis"
+    qa.manage.check_folder(analysis_dir)
+    os.chdir(analysis_dir)
+    job_dir = "2_charge_matrix"
+    qa.manage.check_folder(job_dir)
+    os.chdir(primary)
+
+    # Generate the charge matrix and mutual information data
+    out_files = ["mimatbb.csv", "chargematbb.csv", "chargematsc.csv"]
+    if not os.path.exists(out_files[0]) or not os.path.exists(out_files[1] or not os.path.exists(out_files[2])):
+        print("> Computing the charge matrix. Pleas wait...")
+        charge_matrix()
+        out_files = ["mimatbb.csv", "chargematbb.csv", "chargematsc.csv"]
+        shutil.move(out_files[0], f"{analysis_dir}/{job_dir}/{out_files[0]}")
+        shutil.move(out_files[1], f"{analysis_dir}/{job_dir}/{out_files[1]}")
+        shutil.move(out_files[2], f"{analysis_dir}/{job_dir}/{out_files[2]}")
+    elif recompute:
+        print("> Computing the charge matrix. Pleas wait...")
+        charge_matrix()
+        out_files = ["mimatbb.csv", "chargematbb.csv", "chargematsc.csv"]
+        shutil.move(out_files[0], f"{analysis_dir}/{job_dir}/{out_files[0]}")
+        shutil.move(out_files[1], f"{analysis_dir}/{job_dir}/{out_files[1]}")
+        shutil.move(out_files[2], f"{analysis_dir}/{job_dir}/{out_files[2]}")
+
+    # Move working directory to job directory in Analysis for plotting
+    os.chdir(f"{analysis_dir}/{job_dir}")
+
+    # plot the results
+    pdb_path = f"{primary}/template.pdb"
+    residues = qa.process.get_protein_sequence(pdb_path)
+    qa.plot.heatmap(data="chargematbb.csv", residues=residues, delete=delete, out_file="matrix_geom.png")
+
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
-    cpptraj_covars()
+    charge_matrix_analysis([[],[]], recompute=False)

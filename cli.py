@@ -19,6 +19,7 @@ import click
 @click.option("--find_stalled", "-g", is_flag=True, help="Find TeraChem jobs stalled.")
 @click.option("--get_heatmap", "-i", is_flag=True, help="Heat map of amino acid correlations.")
 @click.option("--cpptraj_covars", "-j", is_flag=True, help="Use CPPTraj to calculate covariance.")
+@click.option("--charge_matrix_analysis", "-k", is_flag=True, help="Create a matrix of charge couplings.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -28,16 +29,17 @@ def cli(
     charge_coupling_plot,
     find_stalled,
     get_heatmap,
-    cpptraj_covars
+    cpptraj_covars,
+    charge_matrix_analysis
     ):
     """
     The overall command-line interface (CLI) entry point.
     The CLI interacts with the rest of the package.
 
-    It will prompt the user with multiple levels of options.
-    This is advantagous as quantumAllostery is moderate in scope,
-    and because it introduces the user to the available functionality.
-    Improves long-term maintainability.
+    A complete reference of quantumAllostery functionality.
+    This is advantagous because it quickly introduces so quantumAllostery.
+    Specificaly, to the complete scope of available functionality.
+    It also improves long-term maintainability and readability.
 
     """
     
@@ -115,8 +117,27 @@ def cli(
         else:
             print(f"> {compute_replicates} is not a valid response.")
 
+    elif charge_matrix_analysis:
+        click.echo("> Perform a complete charge matrix analysis:")
+        click.echo("> Loading...")
+        import qa.manage
+        import qa.plot
+        import qa.analyze
+
+        compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
+        delete = [[],[]]
+        
+        # Perform the charge analysis and generate matrix files
+        if compute_replicates == "y":
+            qa.manage.run_all_replicates(lambda: qa.analyze.charge_matrix_analysis(delete, recompute=False))
+        elif compute_replicates == "n":
+            qa.analyze.charge_matrix_analysis(delete, recompute=False)
+        else:
+            print(f"> {compute_replicates} is not a valid response.")
+
     else:
         click.echo("No functionality was requested.\nTry --help.")
+
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
