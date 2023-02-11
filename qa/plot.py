@@ -30,31 +30,42 @@ def format_plot() -> None:
     plt.rcParams["svg.fonttype"] = "none"
 
 
-# def heatmap(csv, protein, delete, out_file, cmap) -> None:
-def heatmap(csv: str, protein: str, delete: List[int]=[0,15,16,27,28,29], out_file: str="heatmap.svg", cmap="RdBu") -> None:
+# def heatmap(data, protein, delete, out_file, cmap) -> None:
+def heatmap(data: str, residues: List[str], delete: List[List[int]], out_file: str="heatmap.svg", cmap="RdBu") -> None:
     """
     Generates formatted heat maps.
 
     Uses the Kulik Lab figure formatting standards.
 
+    Parameters
+    ----------
+    data: str
+        The name of the data file, which can be a data or a dat file.
+    delete: List[List[int]]
+        A list of the amino acids you would like removed indexed at zero.
+    out_file: str
+        The name you would like the image saved as.
+    cmp: str
+        Your color map setting.
+
     Examples
     --------
-    delete = [0,15,16,27,28,29]
-    heatmap(csv="cacovar.dat", protein="mc6sa", out_file="matrix_geom.svg")
+    heatmap(data="cacovar.dat", protein="mc6sa", delete=[0,15,16,27,28,29], out_file="matrix_geom.svg")
 
     """
 
     # General styling variables
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
-    remove: List[int] = []
-    residues = qa.library.sequence(protein)
+
+    # Delete extra residues
+    residues = [item for index, item in enumerate(residues) if index not in delete[0]]
 
     # Identify matrix format and read in
-    contents = open(csv, "r").readlines()
+    contents = open(data, "r").readlines()
     contents_joined = " ".join(contents)  # Create a single string for parsing
-    if "," in contents_joined:  # If CSV
-        matrix = np.genfromtxt(csv, delimiter=",")
+    if "," in contents_joined: # If a csv file
+        matrix = np.genfromtxt(data, delimiter=",")
     elif " " in contents_joined:  # If a dat file
         matrix = []
         for line in contents:
@@ -67,8 +78,8 @@ def heatmap(csv: str, protein: str, delete: List[int]=[0,15,16,27,28,29], out_fi
     df = pd.DataFrame(matrix)
     # Remove specific rows and columns from non-residues
     if len(delete) > 0:
-        df = df.drop(df.columns[delete], axis=0)
-        df = df.drop(df.columns[delete], axis=1)
+        df = df.drop(df.columns[delete[1]], axis=0)
+        df = df.drop(df.columns[delete[1]], axis=1)
     df.columns = residues
     df.index = residues
 

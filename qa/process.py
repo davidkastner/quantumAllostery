@@ -63,7 +63,6 @@ def get_xyz() -> str:
         The path of a XYZ file within the current directory.
 
     """
-
     # Search recursively for an xyz file
     xyz_names = glob.glob("./**/*.xyz", recursive=True)
 
@@ -94,6 +93,31 @@ def get_atom_count() -> int:
         atom_count = int(xyz_file.readline().strip())
 
     return atom_count
+
+
+def get_protein_sequence(pdb_path) -> List[str]:
+    """
+    Gets the full amino acid sequence of your protein.
+
+    See Also
+    --------
+    qa.plot.heatmap()
+
+    """
+    
+    # Get the template file and load it as a pandas dataframe
+    pdb_df = PandasPdb().read_pdb(pdb_path).df["ATOM"]
+
+    # Filter the dataframe so there is one entry for each residue
+    residues_df = pdb_df[["residue_name","residue_number"]]
+    residues_df = residues_df.drop_duplicates(subset=["residue_number"], keep="first")
+
+    # Convert it to a list of amino acids
+    residues_df = residues_df["residue_name"]
+    residues_list = residues_df.values.tolist()
+    
+    return residues_list
+
 
 
 def get_charge_file() -> str:
@@ -592,3 +616,7 @@ def get_res_atom_indices(res, scheme="all") -> List[int]:
 
     return atom_index_list
 
+
+if __name__ == "__main__":
+    # Run the command-line interface when this script is executed
+    get_protein_sequence()

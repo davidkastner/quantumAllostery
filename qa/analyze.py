@@ -239,12 +239,21 @@ def get_joint_qres(res_x, res_y):
 
     return joint_df
 
-def cpptraj_covars():
+def cpptraj_covars(delete, recompute=False):
     """
     Calculate the covariance using CPPTraj.
 
     A measure of how different amino acids are geometrically correlated.
     For example, fluctuations in side chain position or conformational changes.
+
+    Parameters
+    ----------
+    delete: List[List[int]]
+        A list containing two lists. The first is the residues to delete.
+        The second is the columns of the matrix to delete.
+    recompute: bool
+        Recompute the calculation even if results are already present.
+
     """
 
     job = "cpptraj_cacovar"
@@ -271,9 +280,20 @@ def cpptraj_covars():
     qa.manage.copy_script(f"{job}.in")
     qa.manage.copy_script(f"{job}.sh")
 
-    # Execute the script
-    os.system(f"sbatch {job}.sh")
+    # Execute the script if does not exist or the settings request a recompute
+    file_name = "cacovar.dat"
+    isExist = os.path.isfile(file_name)
+    if not isExist:
+        print(f"> Can't find the {file_name}.")
+        os.system(f"sbatch {job}.sh")
+    elif recompute:
+        os.system(f"sbatch {job}.sh")
 
+    # Plot the results if the exist
+    if isExist:
+        pdb_path = f"{primary}/template.pdb"
+        residues = qa.process.get_protein_sequence(pdb_path)
+        qa.plot.heatmap(data="cacovar.dat", residues=residues, delete=delete, out_file="matrix_geom.png")
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed

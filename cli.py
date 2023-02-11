@@ -8,7 +8,6 @@ print("Default programmed actions for the quantumAllostery package.")
 print("GitHub: https://github.com/davidkastner/quantumAllostery")
 print("Documenation: https://quantumallostery.readthedocs.io\n")
 
-import sys
 import click
 
 @click.command()
@@ -54,7 +53,7 @@ def cli(
         elif compute_replicates == "n":
             qa.process.combine_restarts(atom_count)
         else:
-            print("Respond y or n.")
+            print(f"> {compute_replicates} is not a valid response.")
 
     elif combine_replicates:
         click.echo("> Combine trajectories from multiple replicates:")
@@ -68,13 +67,13 @@ def cli(
         import qa.process
         qa.process.xyz2pdb_traj()
     
-    elif clean_incomplete_frames:
+    elif clean_frames:
         click.echo("> Clean frames with problems:")
         click.echo("> Loading...")
         import qa.process
         qa.process.remove_incomplete_xyz()
     
-    elif residue_charge_coupling_plot:
+    elif charge_coupling_plot:
         click.echo("> Generate a charge coupling plot for two residues:")
         click.echo("> Loading...")
         import qa.process
@@ -96,23 +95,25 @@ def cli(
         click.echo("> Loading...")
         import qa.plot
         import qa.library
-        protein = input("> What is the name of your protein? ")
-        qa.plot.heatmap(csv="chargematbb.csv", protein=protein, out_file="matrix_geom.png")
+        data_file = input("> What file would you like to plot? ")
+        qa.plot.heatmap(data=data_file, protein=protein, out_file="matrix_geom.png")
     
     elif cpptraj_covars:
         click.echo("> Generate geometric covariance using CPPTraj:")
         click.echo("> Loading...")
         import qa.manage
+        import qa.plot
         import qa.analyze
 
         compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
+        delete = [[0,15,16,27,28,29],[]]
         
         if compute_replicates == "y":
-            qa.manage.run_all_replicates(lambda: qa.analyze.cpptraj_covars())
+            qa.manage.run_all_replicates(lambda: qa.analyze.cpptraj_covars(delete, recompute=False))
         elif compute_replicates == "n":
-            qa.analyze.cpptraj_covars()
+            qa.analyze.cpptraj_covars(delete, recompute=False)
         else:
-            print("> Respond y or n.")
+            print(f"> {compute_replicates} is not a valid response.")
 
     else:
         click.echo("No functionality was requested.\nTry --help.")
