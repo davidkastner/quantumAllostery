@@ -13,7 +13,9 @@
 
    .. autosummary::
    
-      charge_matrices
+      charge_matrix
+      charge_matrix_analysis
+      cpptraj_covars
       get_joint_qres
    
    
