@@ -31,7 +31,7 @@ def format_plot() -> None:
 
 
 # def heatmap(data, protein, delete, out_file, cmap) -> None:
-def heatmap(data: str, residues: List[str], delete: List[List[int]], out_file: str="heatmap.svg", cmap="RdBu") -> None:
+def heatmap(data: str, residues: List[str], delete: List[List[int]], out_file: str="heatmap.svg", cmap="RdBu", v=[-.4,.4]) -> None:
     """
     Generates formatted heat maps.
 
@@ -90,8 +90,8 @@ def heatmap(data: str, residues: List[str], delete: List[List[int]], out_file: s
     ax = sns.heatmap(
         df,
         cmap=cmap,
-        vmin=-.4,
-        vmax=.4,
+        vmin=v[0],
+        vmax=v[1],
         xticklabels=True,
         yticklabels=True,
         linewidth=0.03,
