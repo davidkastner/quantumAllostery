@@ -1,7 +1,7 @@
-﻿qa.library
-==========
+﻿qa.reference
+============
 
-.. automodule:: qa.library
+.. automodule:: qa.reference
 
    
    

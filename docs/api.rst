@@ -6,7 +6,7 @@ API Documentation
    :recursive:
 
    qa.analyze
-   qa.library
+   qa.reference
    qa.manage
    qa.plot
    qa.predict

@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from typing import List
 from matplotlib.ticker import MultipleLocator
 import numpy as np
-import qa.library
 
 
 def format_plot() -> None:

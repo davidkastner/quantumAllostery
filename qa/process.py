@@ -8,7 +8,7 @@ import time
 import shutil
 from typing import List, Tuple
 from biopandas.pdb import PandasPdb
-import qa.library
+import qa.reference
 
 
 def get_pdb() -> str:
@@ -545,8 +545,8 @@ def check_valid_resname(res) -> Tuple[str, int]:
         The requested amino acid's position in the sequence.
 
     """
-    # Get amino acid identifier information from library module
-    aa_identifiers = qa.library.get_aa_identifiers()
+    # Get amino acid identifier information from the reference module
+    aa_identifiers = qa.reference.get_aa_identifiers()
     # Check if one or three letter code provided by counting letters
     letter_count = sum(map(str.isalpha, res))
 
