@@ -637,9 +637,14 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
     step: int
         The step size between each single point.
     """
+    start_time = time.time()  # Used to report the executation speed
+
     # Directory containing all replicates
     primary_dir = os.getcwd()
     replicates = sorted(glob.glob("*/"))
+    total_job_count = 0 # Report to user upon job completion
+    incomplete_job_count = 0 # Report to user upon job completion
+
     for replicate in replicates:
         os.chdir(replicate)
         # The location of the current replicate
@@ -649,8 +654,10 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
         # A list of all job directories assuming they are named as integers
         job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
         for dir in job_dirs:
+            total_job_count += 1
             os.chdir(dir)
             tertiary_dir = os.getcwd()
+
             # Get the out file, we use glob so we can generalize to all out files
             out_name = glob.glob("*.out")
             if len(out_name) < 1:
@@ -662,6 +669,7 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
                     last_line = lines[-1]
                     # The phrase Job finished is indicative of a success
                     if "Job finished" not in last_line:
+                        incomplete_job_count += 1
                         print(f"   > Job in {tertiary_dir} did not finish.")
 
                     # The job completed, so delete extra scr directories
@@ -671,21 +679,103 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
                         sorted_scr_dirs = sorted(scr_dirs, key=os.path.getmtime, reverse=True)
                         # Only keep the newest
                         for scr_dir in sorted_scr_dirs[1:]:
-                            # os.rmdir(scr_dir)
-                            print(f"   > Deleting extra scratch directory: {scr_dir}")
+                            # shutil.rmtree(scr_dir)
+                            print(f"   > Delete extra scratch directory: {scr_dir}")
 
             os.chdir(secondary_dir)
         os.chdir(primary_dir)
-            
+    
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Checked {total_job_count} jobs for completion.
+        \tOUTPUT: Found {incomplete_job_count} incomplete or problematic jobs.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
 
-def combine_qm_charges() -> None:
+def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
     """
     Combines the charge_mull.xls files generate by TeraChem single points.
 
     After running periodic single points on the ab-initio MD data,
     we need to process the charge data so that it matches the SQM data.
 
+    Parameters
+    ----------
+    first_job: int
+        The name of the first directory and first job e.g., 0
+    last_job: int
+        The name of the last directory and last job e.g., 39900
+    step: int
+        The step size between each single point.
+
     """
+    start_time = time.time()  # Used to report the executation speed
+    new_charge_file = "all_charges.xls"
+    current_charge_file = "charge_mull.xls"
+
+    # Directory containing all replicates
+    primary_dir = os.getcwd()
+    replicates = sorted(glob.glob("*/"))
+    replicate_count = len(replicates) # Report to user
+    for replicate in replicates:
+        os.chdir(replicate)
+        # The location of the current qm job that we are appending
+        secondary_dir = os.getcwd()
+        print(f"   > Adding { secondary_dir}")
+
+        # Create a new file where we will store the combined charges
+        first_charges_file = True # We need the title line but only once
+        with open(new_charge_file, "a") as combined_charges_file:
+            # A list of all job directories assuming they are named as integers
+            job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
+            
+            # Change into one of the QM job directories
+            for dir in job_dirs:
+                os.chdir(dir)
+                tertiary_dir = os.getcwd()
+                os.chdir("scr")
+
+                # Open an individual charge file from a QM single point
+                atom_column = []
+                charge_column = []
+                with open(current_charge_file, "r") as charges_file:
+                    # Separate the atom and charge information
+                    for index,line in enumerate(charges_file):
+                        atom_column.append(line.split("\t")[0])
+                        charge_column.append(line.split("\t")[1])
+                        # Join the data and separate it with tabs
+                        atom_line = "\t".join(atom_column)
+                        charge_line = "\t".join(charge_column)
+
+                        # Append the data to the combined charges data file
+                        # We only add the header line once
+                        if first_charges_file:
+                            combined_charges_file.write(atom_line)
+                            first_charges_file = False
+                        # Skip the header if it has already been added
+                        elif index == 1:
+                            continue
+                        else:
+                            combined_charges_file.write(charge_line)
+                
+                os.chdir(secondary_dir)
+        os.chdir(primary_dir)
+    
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Combined charges across {replicate_count} replicates.
+        \tOUTPUT: Generated {new_charge_file} in the current directory.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
+
 
 
 def combine_qm_coors() -> None:
