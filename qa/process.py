@@ -317,7 +317,7 @@ def combine_replicates(
     file_locations = [charge_files, coors_files]
     # Loop over the file names and their locations
     for (file_name, file_location) in zip(new_file_names, file_locations):
-        # Open a new file where we will right the concatonated output
+        # Open a new file where we will write the concatonated output
         with open(file_name, "wb") as outfile:
             for loc in file_location:
                 with open(loc, "rb") as infile:
@@ -721,7 +721,9 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
     primary_dir = os.getcwd()
     replicates = sorted(glob.glob("*/"))
     replicate_count = len(replicates) # Report to user
+
     for replicate in replicates:
+        frames = 1 # Saved to report to the user
         os.chdir(replicate)
         # The location of the current qm job that we are appending
         secondary_dir = os.getcwd()
@@ -729,6 +731,7 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
 
         # Create a new file where we will store the combined charges
         first_charges_file = True # We need the title line but only once
+        os.remove(new_charge_file) # Since appending remove old version
         with open(new_charge_file, "a") as combined_charges_file:
             # A list of all job directories assuming they are named as integers
             job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
@@ -738,31 +741,45 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
                 os.chdir(dir)
                 tertiary_dir = os.getcwd()
                 os.chdir("scr")
-
                 # Open an individual charge file from a QM single point
                 atom_column = []
                 charge_column = []
+
+                # Open one of the QM charge single point files
                 with open(current_charge_file, "r") as charges_file:
                     # Separate the atom and charge information
-                    for index,line in enumerate(charges_file):
-                        atom_column.append(line.split("\t")[0])
-                        charge_column.append(line.split("\t")[1])
-                        # Join the data and separate it with tabs
-                        atom_line = "\t".join(atom_column)
-                        charge_line = "\t".join(charge_column)
+                    for line in charges_file:
+                        clean_line = line.strip().split("\t")
+                        charge_column.append(clean_line[1])
+                        atom_column.append(clean_line[0])
+                    
+                # Join the data and separate it with tabs
+                charge_line = "\t".join(charge_column)
 
-                        # Append the data to the combined charges data file
-                        # We only add the header line once
-                        if first_charges_file:
-                            combined_charges_file.write(atom_line)
-                            first_charges_file = False
-                        # Skip the header if it has already been added
-                        elif index == 1:
-                            continue
-                        else:
-                            combined_charges_file.write(charge_line)
+                # For some reason, TeraChem indexes at 0 with SQM,
+                # and 1 with QM so we change the index to start at 1
+                atoms_line_reindex = []
+                for atom in atom_column:
+                    atom_list = atom.split()
+                    atom_list[0] = str(int(atom_list[0]) - 1)
+                    x = " ".join(atom_list)
+                    atoms_line_reindex.append(x)
+                atom_line = "\t".join(atoms_line_reindex)
+                
+                # Append the data to the combined charges data file
+                # We only add the header line once
+                if first_charges_file:
+                    combined_charges_file.write(f"{atom_line}\n")
+                    combined_charges_file.write(f"{charge_line}\n")
+                    frames += 1
+                    first_charges_file = False
+                # Skip the header if it has already been added
+                else:
+                    combined_charges_file.write(f"{charge_line}\n")
+                    frames += 1
                 
                 os.chdir(secondary_dir)
+        print(f"      > Combined {frames} frames.")
         os.chdir(primary_dir)
     
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
@@ -776,6 +793,54 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
         """
     )
 
+
+def combine_qm_replicates() -> None:
+    """
+    Combines the all_charges.xls files for replicates into a master charge file.
+
+    """
+    start_time = time.time()  # Used to report the executation speed
+    charge_file = "all_charges.xls"
+
+    # Directory containing all replicates
+    primary_dir = os.getcwd()
+    replicates = sorted(glob.glob("*/"))
+    replicate_count = len(replicates) # Report to user
+
+    # Remove any old version because we are appending
+    if os.path.isfile(charge_file):
+        os.remove(charge_file)
+
+    # Create a new file to save charges
+    with open(charge_file, "a") as new_charge_file:
+        for replicate in replicates:
+            os.chdir(replicate)
+            secondary_dir = os.getcwd()
+            print(f"   > Adding { secondary_dir}")
+
+            first_charge_file = True # Add the header for the first replicate
+            with open(charge_file, "r") as charge_file:
+                if first_charge_file:
+                    first_line = charge_file.readline()
+                    new_charge_file.writelines(first_line)
+                for index,line in enumerate(charge_file):
+                    if index == 0:
+                        continue
+                    else:
+                        new_charge_file.writelines(line)
+            
+            primary_dir = os.getcwd()
+
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Combined charges across {replicate_count} replicates.
+        \tOUTPUT: Generated {new_charge_file} in the current directory.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
 
 
 def combine_qm_coors() -> None:
