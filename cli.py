@@ -20,6 +20,7 @@ import click
 @click.option("--get_heatmap", "-i", is_flag=True, help="Heat map of amino acid correlations.")
 @click.option("--cpptraj_covars", "-j", is_flag=True, help="Use CPPTraj to calculate covariance.")
 @click.option("--charge_matrix_analysis", "-k", is_flag=True, help="Create a matrix of charge couplings.")
+@click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -30,7 +31,8 @@ def cli(
     find_stalled,
     get_heatmap,
     cpptraj_covars,
-    charge_matrix_analysis
+    charge_matrix_analysis,
+    clean_qm,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -134,6 +136,13 @@ def cli(
             qa.analyze.charge_matrix_analysis(delete, recompute=False)
         else:
             print(f"> {compute_replicates} is not a valid response.")
+
+    elif clean_qm:
+        click.echo("> Cleaning QM single point jobs:")
+        click.echo("> Loading...")
+        import qa.manage
+        import qa.process
+        qa.process.clean_qm_jobs(0, 39900, 100)
 
     else:
         click.echo("No functionality was requested.\nTry --help.")

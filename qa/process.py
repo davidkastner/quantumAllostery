@@ -617,6 +617,68 @@ def get_res_atom_indices(res, scheme="all") -> List[int]:
     return atom_index_list
 
 
+def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
+    """
+    Cleans all QM jobs and checks for completion.
+
+    We ran single points at a higher level of theory from the SQM simulations.
+    Some jobs will inevitable die do to memory or convergence issues.
+    It is important to check that all the jobs finished successfully.
+    This script checks that all the jobs finished.
+    Once it has confirmed that all jobs finished sucessfully,
+    it will clean up the QM by deleting log files and scratch directories.
+
+    Parameters
+    ----------
+    first_job: int
+        The name of the first directory and first job e.g., 0
+    last_job: int
+        The name of the last directory and last job e.g., 39900
+    step: int
+        The step size between each single point.
+    """
+    # Directory containing all replicates
+    primary_dir = os.getcwd()
+    replicates = sorted(glob.glob("*/"))
+    for replicate in replicates:
+        os.chdir(replicate)
+        # The location of the current replicate
+        secondary_dir = os.getcwd()
+        print(f"> Checking {secondary_dir}.")
+        
+        # A list of all job directories assuming they are named as integers
+        job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
+        for dir in job_dirs:
+            os.chdir(dir)
+            tertiary_dir = os.getcwd()
+            # Get the out file, we use glob so we can generalize to all out files
+            out_name = glob.glob("*.out")
+            if len(out_name) < 1:
+                print(f"   > Job in {tertiary_dir} did not finish.")
+            else:
+                # Determine if a job finished
+                with open(out_name[0], "r") as out_file:
+                    lines = out_file.read().rstrip().splitlines()
+                    last_line = lines[-1]
+                    # The phrase Job finished is indicative of a success
+                    if "Job finished" not in last_line:
+                        print(f"   > Job in {tertiary_dir} did not finish.")
+
+                    # # The job completed, so delete extra scr directories
+                    # else:
+                    #     scr_dirs = glob.glob('scr*/')
+                    #     # Sort the scr directories by age (oldest to newest)
+                    #     sorted_scr_dirs = sorted(scr_dirs, key=os.path.getmtime)
+                    #     oldest_scr = sorted_scr_dirs[0]
+                    #     # os.rmdir(oldest_scr)
+                    #     print(f"deleting {oldest_scr}")
+
+            os.chdir(secondary_dir)
+        os.chdir(primary_dir)
+            
+
+
+
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
     get_protein_sequence()
