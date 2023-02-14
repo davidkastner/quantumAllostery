@@ -112,6 +112,7 @@ def heatmap(data: str, residues: List[str], delete: List[List[int]], out_file: s
 
     ext = out_file.split(".")[-1]  # Determine the output file type
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
+    plt.close()
 
 
 def get_parity_plot(x: List[int], y: List[int]) -> None:
@@ -193,3 +194,4 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext):
     plt.xlabel(res_x, fontweight='bold')
     plt.ylabel(res_y, fontweight='bold')
     plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
+    plt.close()

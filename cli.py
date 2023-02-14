@@ -130,12 +130,13 @@ def cli(
 
         compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
         delete = [[],[]]
+        recompute = True
         
         # Perform the charge analysis and generate matrix files
         if compute_replicates == "y":
-            qa.manage.run_all_replicates(lambda: qa.analyze.charge_matrix_analysis(delete, recompute=False))
+            qa.manage.run_all_replicates(lambda: qa.analyze.charge_matrix_analysis(delete, recompute=recompute))
         elif compute_replicates == "n":
-            qa.analyze.charge_matrix_analysis(delete, recompute=False)
+            qa.analyze.charge_matrix_analysis(delete, recompute=recompute)
         else:
             print(f"> {compute_replicates} is not a valid response.")
 
