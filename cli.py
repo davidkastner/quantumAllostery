@@ -85,7 +85,7 @@ def cli(
         import qa.process
         import qa.analyze
         import qa.plot
-        import qa.library
+        import qa.manage
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
         charge_df = qa.analyze.get_joint_qres(res_x, res_y)
@@ -100,7 +100,7 @@ def cli(
         click.echo("> Create heatmap of charge correlations:")
         click.echo("> Loading...")
         import qa.plot
-        import qa.library
+        import qa.manage
         data_file = input("> What file would you like to plot? ")
         qa.plot.heatmap(data=data_file, protein=protein, out_file="matrix_geom.png")
     

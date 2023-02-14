@@ -696,6 +696,7 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
         """
     )
 
+
 def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
     """
     Combines the charge_mull.xls files generate by TeraChem single points.
@@ -716,10 +717,12 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
     start_time = time.time()  # Used to report the executation speed
     new_charge_file = "all_charges.xls"
     current_charge_file = "charge_mull.xls"
+    ignore = ["Analysis/"]
 
     # Directory containing all replicates
     primary_dir = os.getcwd()
-    replicates = sorted(glob.glob("*/"))
+    directories = sorted(glob.glob("*/"))
+    replicates = [i for i in directories if i not in ignore]
     replicate_count = len(replicates) # Report to user
 
     for replicate in replicates:
@@ -737,7 +740,7 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
             job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
             
             # Change into one of the QM job directories
-            for dir in job_dirs:
+            for index,dir in enumerate(job_dirs):
                 os.chdir(dir)
                 tertiary_dir = os.getcwd()
                 os.chdir("scr")
@@ -775,6 +778,8 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
                     first_charges_file = False
                 # Skip the header if it has already been added
                 else:
+                    if "nan" in charge_line:
+                        sys.exit(f"Found nan values in {index * 100}.")
                     combined_charges_file.write(f"{charge_line}\n")
                     frames += 1
                 
@@ -801,10 +806,12 @@ def combine_qm_replicates() -> None:
     """
     start_time = time.time()  # Used to report the executation speed
     charge_file = "all_charges.xls"
+    ignore = ["Analysis/"]
 
     # Directory containing all replicates
     primary_dir = os.getcwd()
-    replicates = sorted(glob.glob("*/"))
+    directories = sorted(glob.glob("*/"))
+    replicates = [i for i in directories if i not in ignore]
     replicate_count = len(replicates) # Report to user
 
     # Remove any old version because we are appending
@@ -813,50 +820,39 @@ def combine_qm_replicates() -> None:
 
     # Create a new file to save charges
     with open(charge_file, "a") as new_charge_file:
+        first_charge_file = True
         for replicate in replicates:
+            # There will always be an Analysis folder
             os.chdir(replicate)
             secondary_dir = os.getcwd()
             print(f"   > Adding { secondary_dir}")
 
-            first_charge_file = True # Add the header for the first replicate
-            with open(charge_file, "r") as charge_file:
+            # Add the header for the first replicate
+            with open(charge_file, "r") as current_charge_file:
                 if first_charge_file:
-                    first_line = charge_file.readline()
+                    first_line = current_charge_file.readline()
                     new_charge_file.writelines(first_line)
-                for index,line in enumerate(charge_file):
+                    first_charge_file = False
+                for index,line in enumerate(current_charge_file):
                     if index == 0:
                         continue
+                    elif "nan" in line:
+                        sys.exit("Found nan values.")
                     else:
                         new_charge_file.writelines(line)
             
-            primary_dir = os.getcwd()
+            os.chdir(primary_dir)
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
         f"""
         \t----------------------------ALL RUNS END----------------------------
         \tRESULT: Combined charges across {replicate_count} replicates.
-        \tOUTPUT: Generated {new_charge_file} in the current directory.
+        \tOUTPUT: Generated {charge_file} in the current directory.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """
     )
-
-
-def combine_qm_coors() -> None:
-    """
-    Combines the xyz.xyz files generate by TeraChem single points.
-
-    After running periodic single points on the ab-initio MD data,
-    we need to process the coors data so that it matches the SQM data.
-
-    Notes
-    -----
-    This has limited use as the QM calculations are just single points.
-    All the structure in the QM calculations are represented in the SQM data.
-    Useful to identify if conformational populations were missed by the stride.
-
-    """
 
 
 
