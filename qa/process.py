@@ -664,18 +664,44 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
                     if "Job finished" not in last_line:
                         print(f"   > Job in {tertiary_dir} did not finish.")
 
-                    # # The job completed, so delete extra scr directories
-                    # else:
-                    #     scr_dirs = glob.glob('scr*/')
-                    #     # Sort the scr directories by age (oldest to newest)
-                    #     sorted_scr_dirs = sorted(scr_dirs, key=os.path.getmtime)
-                    #     oldest_scr = sorted_scr_dirs[0]
-                    #     # os.rmdir(oldest_scr)
-                    #     print(f"deleting {oldest_scr}")
+                    # The job completed, so delete extra scr directories
+                    else:
+                        scr_dirs = glob.glob('scr*/')
+                        # Sort the scr directories by age (oldest to newest)
+                        sorted_scr_dirs = sorted(scr_dirs, key=os.path.getmtime, reverse=True)
+                        # Only keep the newest
+                        for scr_dir in sorted_scr_dirs[1:]:
+                            # os.rmdir(scr_dir)
+                            print(f"   > Deleting extra scratch directory: {scr_dir}")
 
             os.chdir(secondary_dir)
         os.chdir(primary_dir)
             
+
+def combine_qm_charges() -> None:
+    """
+    Combines the charge_mull.xls files generate by TeraChem single points.
+
+    After running periodic single points on the ab-initio MD data,
+    we need to process the charge data so that it matches the SQM data.
+
+    """
+
+
+def combine_qm_coors() -> None:
+    """
+    Combines the xyz.xyz files generate by TeraChem single points.
+
+    After running periodic single points on the ab-initio MD data,
+    we need to process the coors data so that it matches the SQM data.
+
+    Notes
+    -----
+    This has limited use as the QM calculations are just single points.
+    All the structure in the QM calculations are represented in the SQM data.
+    Useful to identify if conformational populations were missed by the stride.
+
+    """
 
 
 
