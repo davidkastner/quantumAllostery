@@ -1,12 +1,13 @@
 #!/bin/bash
 cat *.out | awk 'f{print $4;f=0} /Segmentation/{f=1}' > ids_to_resubmit
 filename="ids_to_resubmit"
-# Read in as a variable the number of coordinates (always first line in a file, then add 2 for xyz format)
+# Read in as a variable the job number
 while read -r line; do
-    index="$line"
-    echo "Your failed job is $index, Let's resubmit that"
-    for i in $(seq $index 1 $index); do
-    echo "#!/bin/bash
+index="$line"
+echo "Your failed job is $index, Let's resubmit that"
+for i in $(seq $index 1 $index); do
+echo $i
+echo "#!/bin/bash
 #SBATCH --job-name=straggler
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:volta:1
@@ -24,9 +25,9 @@ terachem ../inputfiles/${i}.input > ${i}.out
 echo "I just completed $i job"
 cd ../
 " > straggler_${i}.sh
+sbatch straggler_${i}.sh
+rm straggler_${i}.sh
 done
-sbatch straggler_*.sh
 done < "$filename"
 echo "I'm cleaning up after myself"
 rm ids_to_resubmit
-rm straggler_*.sh
