@@ -157,10 +157,10 @@ def cli(
         import qa.manage
         import qa.process
 
-        compute_replicates = input("> Would you like to combine replicates (y/n)? ")
-        if compute_replicates == "y":
+        compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
+        if compute_replicates == "n":
             qa.process.combine_qm_replicates()
-        elif compute_replicates == "n":
+        elif compute_replicates == "y":
             qa.process.combine_qm_charges(0, 39900, 100)
         else:
             print(f"> {compute_replicates} is not a valid response.")
