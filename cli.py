@@ -71,7 +71,11 @@ def cli(
         click.echo("> Convert an xyz to a pdb trajectory:")
         click.echo("> Loading...")
         import qa.process
-        qa.process.xyz2pdb_traj()
+        xyz_type = input("> Process a trajectory (t) or frames (f)? ")
+        if xyz_type == "t":
+            qa.process.xyz2pdb_traj()
+        elif xyz_type == "f":
+            qa.process.xyz2pdb(["0.xyz","10000.xyz","20000.xyz","30000.xyz","39900.xyz"])
     
     elif clean_frames:
         click.echo("> Clean frames with problems:")

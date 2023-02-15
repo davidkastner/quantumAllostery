@@ -170,11 +170,10 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext):
     qa.analyze.get_joint_qres()
 
     """
-
     # Apply Kulik plotting format
     format_plot()
 
-    # Define the bins automatically (for testing)
+    # # Define the bins automatically (for testing)
     # x_min = charge_df[charge_df.columns[0]].min()
     # x_max = charge_df[charge_df.columns[0]].max()
     # y_min = charge_df[charge_df.columns[1]].min()
@@ -189,9 +188,9 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext):
     # Create the plot
     fig, ax = plt.subplots()
     # ax.hist2d(x, y, bins=(x_bins, y_bins))
-    ax.hist2d(x, y, bins=30, range=[[0.4, 1.2], [-1.2, -0.4]])
+    ax.hist2d(x, y, bins=30, range=[[-0.2, .44], [-1.25, -0.53]])
     ax.set_aspect('equal')
     plt.xlabel(res_x, fontweight='bold')
     plt.ylabel(res_y, fontweight='bold')
-    plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
+    plt.savefig(f"Analysis/3_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300)
     plt.close()

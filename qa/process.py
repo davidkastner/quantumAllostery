@@ -352,6 +352,63 @@ def combine_replicates(
         """
     )
 
+def xyz2pdb(xyz_list: List[str]) -> None:
+    """
+    Converts an xyz file into a pdb file.
+
+    Parameters
+    ----------
+    xyz_list: List(str)
+        A list of file names that you would like to convert to PDB's
+
+    Note
+    ----
+    Make sure to manually check the PDB that is read in.
+    Assumes no header lines.
+    Assumes that the only TER flag is at the end.
+
+    """
+    start_time = time.time()  # Used to report the executation speed
+
+    # Search for the XYZ and PDB files names
+    pdb_name = get_pdb()
+    pdb_file = open(pdb_name, "r").readlines()
+    max_atom = int(pdb_file[len(pdb_file) - 3].split()[1])
+
+    for index,xyz in enumerate(xyz_list):
+        new_file = open(f"{index}.pdb", "w")
+        xyz_file = open(xyz, "r").readlines()
+        atom = -1  # Start at -1 to skip the XYZ header
+        line_count = 0
+        for line in xyz_file:
+            line_count += 1
+            if atom > 0:
+                atom += 1
+                try:
+                    x, y, z = line.strip("\n").split()[1:5]  # Coordinates from xyz file
+                except:
+                    print(f"> Script died at {line_count} -> '{line}'")
+                    quit()
+                pdb_line = pdb_file[atom - 2]  # PDB is two behind the xyz
+                new_file.write(
+                    f"{pdb_line[0:30]}{x[0:6]}  {y[0:6]}  {z[0:6]}  {pdb_line[54:80]}"
+                )
+            else:
+                atom += 1
+            if atom > max_atom:
+                atom = -1
+                new_file.write("END\n")
+
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Converted {len(xyz_list)} to pdbs.
+        \tOUTPUT: Generated in the current directory.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
 
 def xyz2pdb_traj() -> None:
     """

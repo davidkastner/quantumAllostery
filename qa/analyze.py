@@ -201,6 +201,12 @@ def get_joint_qres(res_x, res_y):
 
     """
     start_time = time.time()  # Used to report the executation speed
+    # Add folder for the analysis
+    root = os.getcwd()
+    os.chdir("Analysis")
+    if not os.path.isdir("3_coupling"):
+        os.makedirs("3_coupling")
+    os.chdir(root)
 
     # Create a new data frame to append the two residues of interest
     residues = [res_x, res_y]
