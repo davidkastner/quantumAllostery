@@ -1,12 +1,29 @@
 #!/bin/bash
+
+########################
+# QM MASTER SUBMISSION #
+########################
+
+# TO USE THIS SCRIPT, RUN IT IN THE SAME DIRECTORY AS YOUR .XYZ TRAJECTORY
+# 1. ACTIVATE --> chmod +x qm_master_submission.sh
+# 2. RUN --> ./qm_master_submission trajectory.xyz frame_offset
+
+# EXAMPLE RUN
+# ./qm_master_submission all_coors.xyz 100
+
+echo "A"
 filename="$1" # Put your xyz file here, such that "./cut_coords.sh file.xyz stride"
+echo "B"
 stride="$2"
 # written by CRR 12/19
 # number of atoms is always the first line of the file, so use awk to grab that, and add 2 for the total length of one coordinate block
 mkdir coordinates
+echo "D"
 rm -rf cut_xyz_commands.txt
+echo "E"
 # Read in as a variable the number of coordinates (always first line in a file, then add 2 for xyz format)
 read xyz_size <<< $(awk 'NR==1 {print $1+2}' $filename)
+echo "F"
 echo "your xyz file is $xyz_size lines, +2 from the number of coordinates"
 # get number of lines in the file in total with wc -l 
 read file_size <<< $(wc -l $filename | awk '{print $1}')
@@ -38,7 +55,6 @@ for i in $(seq 0 $stride $index); do
 mkdir $i
 # Needed to read file size like in first script for index here. You can use echo like I do here, or you could just put a string in and used sed to replace it
 # This is currently set up for TC on supercloud
-# Precompute a wavefunction for 2 - 3x speedup
 echo "coordinates ../coordinates/${i}.xyz
 basis lacvps_ecp
 method wpbeh
@@ -57,7 +73,7 @@ done
 mv *.input ./inputfiles/
 
 echo "#!/bin/bash
-#SBATCH --job-name=mc6sa
+#SBATCH --job-name=mc6s_8
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:volta:1
 #SBATCH --time=100:00:00
