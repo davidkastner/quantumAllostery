@@ -61,6 +61,9 @@ python -m pip install -e .
 ├── qa              # Directory containing the quantumAllostery modules
 │   ├── process     # Processes the raw AIMD data
 │   ├── predict     # Machine learning analysis
+│   ├── manage      # File management functionality and routines
+│   ├── analyze     # Data analysis to combine process and plot routines
+│   ├── reference   # Definitions and conversion dictionaries for amino acids
 │   └── plot        # Automated plotting and vizualization 
 └── ...
 ```
