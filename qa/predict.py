@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from typing import List, Tuple
 from demystifying import feature_extraction as fe
+from demystifying import relevance_propagation as relprop
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import shuffle
 import qa.process
@@ -71,7 +72,7 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
     return charges_df, labels_df
 
 
-def data_processing(df):
+def data_processing(df, samples):
     """
     Scales the data for the ML workflows.
 
@@ -92,73 +93,34 @@ def data_processing(df):
     df_norm = pd.DataFrame(
         scaler.fit_transform(df.values), columns=df.columns, index=df.index
     )
+    # Convert to numpy matrices for compatibility with Demystify
+    data_norm = df_norm.to_numpy()
+    samples = samples.to_numpy().astype(int)
 
-    return df_norm
+    return data_norm, samples
 
 
-def run_ml(df_norm, samples_df):
+def run_ml(data_norm, samples):
     """
     ML analysis workflow.
 
     Parameters
     ----------
-    df_norm: pd.DataFrame
+    df_norm: numpy matrix
         The data scaled by column.
     samples_df: pd.DataFrame
         One-hot-encoded labels for each frame.
 
     """
+    print("   > Creating csv's to check.")
+    np.savetxt("data.csv", data_norm, delimiter=",")
+    np.savetxt("samples.csv", samples, fmt='%i', delimiter=",")
 
-    # Running various ML workflows
-    models = ["RF", "KL", "MLP"]
-    feature_extractors = [
-        fe.RandomForestFeatureExtractor(
-            one_vs_rest=True, classifier_kwargs={"n_estimators": 100}, **kwargs
-        ),
-        fe.KLFeatureExtractor(**kwargs),
-        fe.MlpFeatureExtractor(
-            classifier_kwargs={
-                "hidden_layer_sizes": (120,),
-                "solver": "adam",
-                "max_iter": 1000000,
-            },
-            activation=relprop.relu,
-            **kwargs,
-        ),
-    ]
-
-    # Process the results
-    postprocessors = []
-    working_dir = "."
-    for extractor, model in zip(feature_extractors, models):
-        print(f"\nRunning {model} model.")
-        extractor.extract_features()
-        # Post-process data (rescale and filter feature importances)
-        postprocessor = extractor.postprocessing(
-            working_dir=working_dir,
-            rescale_results=True,
-            filter_results=False,
-            feature_to_resids=None,
-        )
-        postprocessor.average()
-        postprocessor.persist()
-        postprocessors.append(postprocessor)
-
-
-def run_ml_OLD():
-    """
-    Run the ML processes
-    """
-
-    # Get the processed data as a numpy array and the labels
-    df, labels = create_combined_csv()
-    samples, labels = data_processing(df, labels)
-    np.savetxt("foo.csv", samples, delimiter=",")  # Check final matrix
 
     # Set the arguments for the ML workflows
     kwargs = {
-        "samples": samples,
-        "labels": labels,
+        "samples": data_norm,
+        "labels": samples,
         "filter_by_distance_cutoff": False,
         "lower_bound_distance_cutoff": 1.0,
         "upper_bound_distance_cutoff": 1.0,
@@ -171,11 +133,6 @@ def run_ml_OLD():
     # Running various ML workflows
     models = ["RF", "KL", "MLP"]
     feature_extractors = [
-        fe.MlpAeFeatureExtractor(
-            activation=relprop.relu,
-            classifier_kwargs={"solver": "adam", "hidden_layer_sizes": (100,)},
-            **kwargs,
-        ),
         fe.RandomForestFeatureExtractor(
             one_vs_rest=True, classifier_kwargs={"n_estimators": 100}, **kwargs
         ),
@@ -195,7 +152,7 @@ def run_ml_OLD():
     postprocessors = []
     working_dir = "."
     for extractor, model in zip(feature_extractors, models):
-        print(f"\nRunning {model} model.")
+        print(f"   > Running {model} model.")
         extractor.extract_features()
         # Post-process data (rescale and filter feature importances)
         postprocessor = extractor.postprocessing(
@@ -207,6 +164,16 @@ def run_ml_OLD():
         postprocessor.average()
         postprocessor.persist()
         postprocessors.append(postprocessor)
+
+    # Create a summarizing plot of the results of the ML models
+    visualization.visualize(
+        [postprocessors],
+        show_importance=True,
+        show_projected_data=False,
+        show_performance=False,
+        highlighted_residues=[22],
+        outfile="./importance.pdf",
+    )
 
 # Execute the script
 if __name__ == "__main__":

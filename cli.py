@@ -22,6 +22,7 @@ import click
 @click.option("--charge_matrix_analysis", "-k", is_flag=True, help="Create a matrix of charge couplings.")
 @click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs.")
 @click.option("--combine_qm_charges", "-m", is_flag=True, help="Combine charge data across QM single points.")
+@click.option("--predict", "-p", is_flag=True, help="Uses simple ML models to predict key residues.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -35,6 +36,7 @@ def cli(
     charge_matrix_analysis,
     clean_qm,
     combine_qm_charges,
+    predict,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -164,6 +166,18 @@ def cli(
             qa.process.combine_qm_charges(0, 39900, 100)
         else:
             print(f"> {compute_replicates} is not a valid response.")
+
+    elif predict:
+        click.echo("> Making predictions:")
+        click.echo("> Loading...")
+        import qa.process
+        import qa.predict
+        charge_files = ["mc6.xls","mc6s.xls","mc6sa.xls"]
+        templates = ["mc6.pdb","mc6s.pdb","mc6sa.pdb"]
+        mutations = [0,2,15,16,19,22,27]
+        charges_df, labels_df = qa.predict.create_combined_csv(charge_files, templates, mutations)
+        charges_mat, labels_mat = qa.predict.data_processing(charges_df, labels_df)
+        qa.predict.run_ml(charges_mat, labels_mat)
 
     else:
         click.echo("No functionality was requested.\nTry --help.")
