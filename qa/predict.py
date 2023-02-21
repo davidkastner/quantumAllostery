@@ -174,15 +174,6 @@ def run_ml(data_norm, samples, models = ["RF", "KL", "MLP"], recompute=False):
             postprocessor.persist()
             postprocessors.append(postprocessor)
 
-        # Create a summarizing plot of the results of the ML models
-        visualization.visualize(
-            [postprocessors],
-            show_importance=True,
-            show_projected_data=False,
-            show_performance=False,
-            highlighted_residues=[23],
-            outfile="./importance.pdf",
-        )
 
 # Execute the script
 if __name__ == "__main__":
