@@ -1,6 +1,7 @@
 """Backpropogated feature predictions from ML models."""
 
 import os
+import sys
 import pandas as pd
 import numpy as np
 from typing import List, Tuple
@@ -40,25 +41,19 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
     # Convert the input data files to pd.DataFrames
     dataframes = []
     labels_df = pd.DataFrame()
-    label_index = 0
     for charge_file,template in zip(charge_files,templates):
         print(f"   > Converting atoms to residues for {charge_file}.")
         # Average the charges by residue
         # We does this to minimize the inaccuracies of mulliken charges
         avg_by_residues = qa.process.average_charge_residues(charge_file, template)
 
-        # Add a label index for each frame
-        # You might think it would be better to use one-hot-encoding
-        # However, this package specifically asks for indices for each group
-        # The package may one-hot-encode them for you
+        # Add a column for the one-hot-encoded labels for each frame
         print(f"   > Creating labels for {charge_file}.")
-        label = [label_index for x in range(len(avg_by_residues))]
-        avg_by_residues["Label"] = label
+        label = [1 for x in range(len(avg_by_residues))]
+        avg_by_residues[f"{charge_file}"] = label
 
         # Store the labeled, averaged frames in the list
         dataframes.append(avg_by_residues)
-
-        label_index += 1 # Give the next group a different label
 
     # Drop the residue columns that were mutated
     # We can't compare these residues' charges as their atom counts differ
@@ -72,9 +67,9 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
     combined_df = pd.concat(clean_dataframes, ignore_index=True, sort=False)
     combined_df.fillna(0, inplace=True)
 
-    # Break off the last columns (labels) and save them as their own df
-    charges_df = combined_df.iloc[:,:-1]
-    labels_df = combined_df.iloc[:,-1:]
+    # Break off the last n columns (labels) and save them as their own df
+    charges_df = combined_df.iloc[:,:-len(charge_files)]
+    labels_df = combined_df.iloc[:,-len(charge_files):]
 
     return charges_df, labels_df
 
@@ -102,7 +97,7 @@ def data_processing(df, samples):
     )
     # Convert to numpy matrices for compatibility with Demystify
     data_norm = df_norm.to_numpy()
-    samples = samples.values.tolist()
+    samples = samples.to_numpy().astype(int)
 
     return data_norm, samples
 
@@ -120,7 +115,7 @@ def run_ml(data_norm, samples, models = ["RF", "KL", "MLP"], recompute=False):
 
     """
     # Check if the models and feature importances have already been created
-    output_exists = [True for model in models if os.path.isfile(model) else False]
+    output_exists = [os.path.isdir(model) for model in models]
     if not recompute and not False in output_exists:
         print(f"> Results exist for the following models: {models}")
         return

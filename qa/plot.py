@@ -1,11 +1,13 @@
 """Prebuilt vizualization functions."""
 
+import os
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List
 from matplotlib.ticker import MultipleLocator
 import numpy as np
+import qa.process
 
 
 def format_plot() -> None:
@@ -216,8 +218,8 @@ def plot_feature_importance(models: List[str], template) -> None:
     format_plot()
 
     # Get the amino acid names of our features
-    residues_indentifier = qa.process.get_residue_identifiers(template, by_atom = True)
-
+    residues_indentifier = qa.process.get_residue_identifiers(template, by_atom = False)
+    
     # Get the feature importance data which has been stored by Demystifying
     root = os.getcwd()
     feature_sets = []
@@ -230,7 +232,8 @@ def plot_feature_importance(models: List[str], template) -> None:
     x_axis = residues_indentifier
     color = ["b", "g", "r", "k", "m", "c"]
     for index,feature_set in enumerate(feature_sets):
-        plt.plot(x_axis, features, color=color[index], linewidth=2)
+        print(feature_set)
+        plt.plot(x_axis, feature_set, color=color[index], linewidth=2)
     
     xlabel = "residues"
     ylabel = "feature importance score"

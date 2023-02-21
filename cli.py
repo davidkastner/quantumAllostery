@@ -178,7 +178,7 @@ def cli(
         mutations = [0,2,15,16,19,22,27]
         charges_df, labels_df = qa.predict.create_combined_csv(charge_files, templates, mutations)
         charges_mat, labels_mat = qa.predict.data_processing(charges_df, labels_df)
-        models = ["RF", "KL", "MLP"]
+        models = ["RF", "MLP"]
         qa.predict.run_ml(charges_mat, labels_mat, models=models, recompute=False)
         qa.plot.plot_feature_importance(models, templates[0])
 
