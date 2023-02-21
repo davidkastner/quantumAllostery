@@ -172,12 +172,16 @@ def cli(
         click.echo("> Loading...")
         import qa.process
         import qa.predict
+        import qa.plot
         charge_files = ["mc6.xls","mc6s.xls","mc6sa.xls"]
         templates = ["mc6.pdb","mc6s.pdb","mc6sa.pdb"]
         mutations = [0,2,15,16,19,22,27]
         charges_df, labels_df = qa.predict.create_combined_csv(charge_files, templates, mutations)
         charges_mat, labels_mat = qa.predict.data_processing(charges_df, labels_df)
-        qa.predict.run_ml(charges_mat, labels_mat)
+        models = ["RF", "KL", "MLP"]
+        qa.predict.run_ml(charges_mat, labels_mat, models=models, recompute=False)
+        qa.plot.plot_feature_importance(models, templates[0])
+
 
     else:
         click.echo("No functionality was requested.\nTry --help.")

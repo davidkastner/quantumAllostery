@@ -1,5 +1,6 @@
 """Backpropogated feature predictions from ML models."""
 
+import os
 import pandas as pd
 import numpy as np
 from typing import List, Tuple
@@ -44,7 +45,7 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
         print(f"   > Converting atoms to residues for {charge_file}.")
         # Average the charges by residue
         # We does this to minimize the inaccuracies of mulliken charges
-        avg_by_residues = qa.process.average_by_residues(charge_file, template)
+        avg_by_residues = qa.process.average_charge_residues(charge_file, template)
 
         # Add a label index for each frame
         # You might think it would be better to use one-hot-encoding
@@ -106,7 +107,7 @@ def data_processing(df, samples):
     return data_norm, samples
 
 
-def run_ml(data_norm, samples):
+def run_ml(data_norm, samples, models = ["RF", "KL", "MLP"], recompute=False):
     """
     ML analysis workflow.
 
@@ -118,68 +119,75 @@ def run_ml(data_norm, samples):
         One-hot-encoded labels for each frame.
 
     """
-    print("   > Creating csv's to check.")
-    np.savetxt("data.csv", data_norm, delimiter=",")
-    np.savetxt("samples.csv", samples, fmt='%i', delimiter=",")
+    # Check if the models and feature importances have already been created
+    output_exists = [True for model in models if os.path.isfile(model) else False]
+    if not recompute and not False in output_exists:
+        print(f"> Results exist for the following models: {models}")
+        return
+    else:
+        # Output has not been generated yet
+        print("   > Creating csv's to check.")
+        np.savetxt("data.csv", data_norm, delimiter=",")
+        np.savetxt("samples.csv", samples, fmt='%i', delimiter=",")
 
 
-    # Set the arguments for the ML workflows
-    kwargs = {
-        "samples": data_norm,
-        "labels": samples,
-        "filter_by_distance_cutoff": False,
-        "lower_bound_distance_cutoff": 1.0,
-        "upper_bound_distance_cutoff": 1.0,
-        "use_inverse_distances": False,
-        "n_splits": 3,
-        "n_iterations": 5,
-        "scaling": True,
-    }
+        # Set the arguments for the ML workflows
+        kwargs = {
+            "samples": data_norm,
+            "labels": samples,
+            "filter_by_distance_cutoff": False,
+            "lower_bound_distance_cutoff": 1.0,
+            "upper_bound_distance_cutoff": 1.0,
+            "use_inverse_distances": False,
+            "n_splits": 3,
+            "n_iterations": 5,
+            "scaling": True,
+        }
 
-    # Running various ML workflows
-    models = ["RF", "KL", "MLP"]
-    feature_extractors = [
-        fe.RandomForestFeatureExtractor(
-            one_vs_rest=True, classifier_kwargs={"n_estimators": 100}, **kwargs
-        ),
-        fe.KLFeatureExtractor(**kwargs),
-        fe.MlpFeatureExtractor(
-            classifier_kwargs={
-                "hidden_layer_sizes": (120,),
-                "solver": "adam",
-                "max_iter": 1000000,
-            },
-            activation=relprop.relu,
-            **kwargs,
-        ),
-    ]
+        # Running various ML workflows
+        models = models
+        feature_extractors = [
+            fe.RandomForestFeatureExtractor(
+                one_vs_rest=True, classifier_kwargs={"n_estimators": 100}, **kwargs
+            ),
+            fe.KLFeatureExtractor(**kwargs),
+            fe.MlpFeatureExtractor(
+                classifier_kwargs={
+                    "hidden_layer_sizes": (120,),
+                    "solver": "adam",
+                    "max_iter": 1000000,
+                },
+                activation=relprop.relu,
+                **kwargs,
+            ),
+        ]
 
-    # Process the results
-    postprocessors = []
-    working_dir = "."
-    for extractor, model in zip(feature_extractors, models):
-        print(f"> Running {model} model.")
-        extractor.extract_features()
-        # Post-process data (rescale and filter feature importances)
-        postprocessor = extractor.postprocessing(
-            working_dir=working_dir,
-            rescale_results=True,
-            filter_results=False,
-            feature_to_resids=None,
+        # Process the results
+        postprocessors = []
+        working_dir = "."
+        for extractor, model in zip(feature_extractors, models):
+            print(f"> Running {model} model.")
+            extractor.extract_features()
+            # Post-process data (rescale and filter feature importances)
+            postprocessor = extractor.postprocessing(
+                working_dir=working_dir,
+                rescale_results=True,
+                filter_results=False,
+                feature_to_resids=None,
+            )
+            postprocessor.average()
+            postprocessor.persist()
+            postprocessors.append(postprocessor)
+
+        # Create a summarizing plot of the results of the ML models
+        visualization.visualize(
+            [postprocessors],
+            show_importance=True,
+            show_projected_data=False,
+            show_performance=False,
+            highlighted_residues=[23],
+            outfile="./importance.pdf",
         )
-        postprocessor.average()
-        postprocessor.persist()
-        postprocessors.append(postprocessor)
-
-    # Create a summarizing plot of the results of the ML models
-    visualization.visualize(
-        [postprocessors],
-        show_importance=True,
-        show_projected_data=False,
-        show_performance=False,
-        highlighted_residues=[23],
-        outfile="./importance.pdf",
-    )
 
 # Execute the script
 if __name__ == "__main__":

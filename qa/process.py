@@ -354,7 +354,41 @@ def combine_replicates(
     )
 
 
-def average_by_residues(charge_file, template):
+def get_residue_identifiers(template, by_atom = True):
+    """
+    Gets the residue identifiers such as Ala1 or Cys24.
+
+    Returns either the residue identifiers for every atom, if by_atom = True
+    or for just the unique amino acids if by_atom = False.
+
+    Parameters
+    ----------
+    template: str
+        The name of the template pdb for the protein of interest.
+    by_atom: bool
+        A boolean value for whether to return the atom identifiers for all atoms
+
+    Returns
+    -------
+    residues_indentifier: List(str)
+        A list of the residue identifiers
+
+    """
+    # Get the residue number identifiers (e.g., 1)
+    residue_number = PandasPdb().read_pdb(template).df["ATOM"]["residue_number"].tolist()
+    # Get the residue number identifiers (e.g., ALA)
+    residue_name = PandasPdb().read_pdb(template).df["ATOM"]["residue_name"].tolist()
+    # Combine them together
+    residues_indentifier = [f"{name}{number}" for number,name in zip(residue_number,residue_name)]
+    
+    # Return only unique entries if the user sets by_atom = False
+    if not by_atom:
+        residues_indentifier = list(set(residues_indentifier))
+
+    return residues_indentifier
+
+
+def average_charge_residues(charge_file, template):
     """
     Averages charge file by residue.
 
@@ -364,6 +398,8 @@ def average_by_residues(charge_file, template):
     ----------
     charge_file: str
         The name of the file containing the charges.
+    template: str
+        The name of the template pdb for the protein of interest.
 
     Returns
     -------
@@ -374,16 +410,17 @@ def average_by_residues(charge_file, template):
     # Read in the charge data file as pd.DataFrame
     charge_df = pd.read_table(charge_file)
     charge_df = charge_df.iloc[: , :-1]
+
     # Get the residue identifiers (e.g., 1Ala) for each atom
-    residue_number = PandasPdb().read_pdb(template).df["ATOM"]["residue_number"].tolist()
-    residue_name = PandasPdb().read_pdb(template).df["ATOM"]["residue_name"].tolist()
-    residues_indentifier = [f"{name}{number}" for number,name in zip(residue_number,residue_name)]
+    residues_indentifier = get_residue_identifiers(template)
+
     # Group of the charge data frame by the residue identifiers
     groups = charge_df.groupby(residues_indentifier, axis=1, sort=False)
+
     # Compute the mean of all atoms in a residue
     avg_by_residues = groups.mean()
 
-    return(avg_by_residues)
+    return avg_by_residues
 
 
 def xyz2pdb(xyz_list: List[str]) -> None:

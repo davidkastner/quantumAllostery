@@ -194,3 +194,47 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext):
     plt.ylabel(res_y, fontweight='bold')
     plt.savefig(f"Analysis/3_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300)
     plt.close()
+
+
+def plot_feature_importance(models: List[str], template) -> None:
+    """
+    Creates a plot with the features on the x-axis and their importance on the y
+
+    Parameters
+    ----------
+    models: List[str]
+        A list of the different models that were trained and tested.
+    template: str
+        The name of the template pdb for the protein of interest.
+
+    See Also
+    --------
+    qa.predict.run_ml()
+
+    """
+    # Apply Kulik plotting format
+    format_plot()
+
+    # Get the amino acid names of our features
+    residues_indentifier = qa.process.get_residue_identifiers(template, by_atom = True)
+
+    # Get the feature importance data which has been stored by Demystifying
+    root = os.getcwd()
+    feature_sets = []
+    for model in models:
+        feature_importance = list(np.load(f"{root}/{model}/feature_importance.npy"))
+        feature_sets.append(feature_importance)
+    
+    # Create the plot
+    print(f"   > Creating a plot of feature importance for all models.")
+    x_axis = residues_indentifier
+    color = ["b", "g", "r", "k", "m", "c"]
+    for index,feature_set in enumerate(feature_sets):
+        plt.plot(x_axis, features, color=color[index], linewidth=2)
+    
+    xlabel = "residues"
+    ylabel = "feature importance score"
+    plt.xlabel(xlabel, fontsize=10, weight="bold")
+    plt.ylabel(ylabel, fontsize=10, weight="bold")
+    plt.savefig("feature_importance.png", bbox_inches="tight", format="png", dpi=300)
+    plt.close()
