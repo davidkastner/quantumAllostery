@@ -43,6 +43,23 @@ conda env create -f environment_dev.yml
 source activate qa
 ```
 
+### Install Machine Learning Dependencies
+If you are planning to use the ML functionality, then you will need to install Demystifying.
+Demystifying is a package that and demonstration of finding features in high-dimensional simulaitions.
+Unfortunately, it does not have a conda install so you can get it and install it from GitHub.
+```bash
+git clone git@github.com:delemottelab/demystifying.git
+```
+
+Demystifying doesn't have a proper install setup so you can just add it to your python path in your bashrc.
+```bash
+export PYTHONPATH="${PYTHONPATH}:/my/path/to/demystifying-master"
+```
+
+*Citation:*
+**Fleetwood, Oliver, et al. "Molecular insights from conformational ensembles via machine learning." Biophysical Journal (2019).**
+
+
 ### Setup developing environment
 Remember to update your GitHub [ssh keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 ```bash

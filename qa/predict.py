@@ -46,9 +46,10 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
         # We does this to minimize the inaccuracies of mulliken charges
         avg_by_residues = qa.process.average_by_residues(charge_file, template)
 
-        # Add a column for the labels for each frame
+        # Add a label index for each frame
         # You might think it would be better to use one-hot-encoding
         # However, this package specifically asks for indices for each group
+        # The package may one-hot-encode them for you
         print(f"   > Creating labels for {charge_file}.")
         label = [label_index for x in range(len(avg_by_residues))]
         avg_by_residues["Label"] = label
@@ -157,7 +158,7 @@ def run_ml(data_norm, samples):
     postprocessors = []
     working_dir = "."
     for extractor, model in zip(feature_extractors, models):
-        print(f"   > Running {model} model.")
+        print(f"> Running {model} model.")
         extractor.extract_features()
         # Post-process data (rescale and filter feature importances)
         postprocessor = extractor.postprocessing(
