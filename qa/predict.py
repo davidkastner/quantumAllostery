@@ -1,70 +1,16 @@
-"""ML workflow using demystifying."""
+"""Backpropogated feature predictions from ML models."""
 
 import pandas as pd
 import numpy as np
+from typing import List, Tuple
+from demystifying import feature_extraction as fe
 from sklearn.preprocessing import MinMaxScaler
-# from demystifying import feature_extraction as fe, visualization
-# from demystifying import relevance_propagation as relprop
 from sklearn.utils import shuffle
-import logging
+import qa.process
 
-logger = logging.getLogger("Trp")
-
-
-def create_combined_csv():
-    """
-    Generate a starting dataframe and stor in at a CSV
-    """
-
-    averaging_frame = 10.0
-    # Read in original files as a dataframe
-    df_1l2y = pd.read_table("1l2y-charges.xls")
-    df_2jof = pd.read_table("2jof-charges.xls")
-    # Atoms numbers that you would like to drop indexed at 0
-    atoms_1l2y = [x for x in range(76)]
-    atoms_2jof = [x for x in range(56)]
-    print("\nCombining datasets.")
-
-    # 1L2Y remove the features of the atoms that were change due to the mutation
-    df_1l2y = df_1l2y.drop(df_1l2y.columns[atoms_1l2y], axis=1)
-    df_1l2y = df_1l2y.iloc[:, :-1]  # The last column "Unnamed" is empty
-    df_1l2y.columns = [x + 1 for x in range(len(df_1l2y.columns))]
-    df_1l2y = df_1l2y.groupby(df_1l2y.index // averaging_frame).mean()
-
-    # 2JOF remove the features of the atoms that were change due to the mutation
-    df_2jof = df_2jof.drop(df_2jof.columns[atoms_2jof], axis=1)
-    df_2jof = df_2jof.iloc[:, :-1]  # The last column "Unnamed" is empty
-    df_2jof.columns = [x + 1 for x in range(len(df_2jof.columns))]
-    df_2jof = df_2jof.groupby(df_2jof.index // averaging_frame).mean()
-
-    # Create an array containing the labels for each frame
-    print("\nCreating labels.")
-    labels_1l2y = [0 for x in range(len(df_1l2y.index))]
-    labels_2jof = [1 for x in range(len(df_2jof.index))]
-    labels = np.array(labels_1l2y + labels_2jof)
-
-    # Combine both dataframes into a single dataframe
-    combined_df = pd.concat([df_1l2y, df_2jof], ignore_index=True, sort=False)
-    # Write the data out to a new file
-
-    return combined_df, labels
-
-
-def data_processing(df, labels):
-    """
-    Format the data for the ML workflows
-    """
-
-    # Scale each column such that all values are between 0 and 1
-    scaler = MinMaxScaler()
-    df_norm = pd.DataFrame(
-        scaler.fit_transform(df.values), columns=df.columns, index=df.index
-    )
-    # Convert it to a matrix which will leave out the row and column headers
-    samples = df_norm.to_numpy()
-    print("\nGenerating and scaling data.")
-
+def shuffle_data(samples):
     # Shuffle the data in groups of 100
+    print("   > Shuffling data.")
     n_samples = samples.shape[0]
     n_samples = int(n_samples / 100) * 100
     inds = np.arange(n_samples)
@@ -73,13 +19,133 @@ def data_processing(df, labels):
     perm_inds = np.ravel(perm_inds)
     samples = samples[perm_inds]  # Apply the shuffling to the matrix
     labels = labels[perm_inds]  # Apply the same shuffling to the labels
-    print("\nShuffling data.")
-    # samples, labels = shuffle(samples, labels, random_state=0)
 
     return samples, labels
+    
+
+def create_combined_csv(charge_files: List[str], templates: List[str], mutations: List[int]) -> pd.DataFrame:
+    """
+    Generate a pd.DataFrame of all features.
+
+    Returns
+    -------
+    charges_df: pd.DataFrame
+        The original charge data as a pandas dataframe.
+    samples_df: pd.DataFrame
+        One-hot-encoded labels for each frame.
+    """
+    
+    # Convert the input data files to pd.DataFrames
+    dataframes = []
+    labels_df = pd.DataFrame()
+    for charge_file,template in zip(charge_files,templates):
+        print(f"   > Converting atoms to residues for {charge_file}.")
+        # Average the charges by residue
+        # We does this to minimize the inaccuracies of mulliken charges
+        avg_by_residues = qa.process.average_by_residues(charge_file, template)
+
+        # Add a column for the one-hot-encoded labels for each frame
+        print(f"   > Creating labels for {charge_file}.")
+        label = [1 for x in range(len(avg_by_residues))]
+        avg_by_residues[f"{charge_file}"] = label
+
+        # Store the labeled, averaged frames in the list
+        dataframes.append(avg_by_residues)
+
+    # Drop the residue columns that were mutated
+    # We can't compare these residues' charges as their atom counts differ
+    clean_dataframes = []
+    for index,df in enumerate(dataframes):
+        df = df.drop(df.columns[mutations], axis=1)
+        clean_dataframes.append(df)
+
+    # Combine both dataframes into a single dataframe
+    print(f"   > Combining {charge_files}.")
+    combined_df = pd.concat(clean_dataframes, ignore_index=True, sort=False)
+    combined_df.fillna(0, inplace=True)
+
+    # Break off the last n columns (labels) and save them as their own df
+    charges_df = combined_df.iloc[:,:-len(charge_files)]
+    labels_df = combined_df.iloc[:,-len(charge_files):]
+
+    return charges_df, labels_df
 
 
-def run_trp_cage():
+def data_processing(df):
+    """
+    Scales the data for the ML workflows.
+
+    Parameters
+    ----------
+    df: pd.DataFrame
+        The original data as a pandas dataframe
+
+    Returns
+    -------
+    df_norm: pd.DataFrame
+        The data scaled by column.
+
+    """
+
+    # Scale each column such that all values are between 0 and 1
+    scaler = MinMaxScaler()
+    df_norm = pd.DataFrame(
+        scaler.fit_transform(df.values), columns=df.columns, index=df.index
+    )
+
+    return df_norm
+
+
+def run_ml(df_norm, samples_df):
+    """
+    ML analysis workflow.
+
+    Parameters
+    ----------
+    df_norm: pd.DataFrame
+        The data scaled by column.
+    samples_df: pd.DataFrame
+        One-hot-encoded labels for each frame.
+
+    """
+
+    # Running various ML workflows
+    models = ["RF", "KL", "MLP"]
+    feature_extractors = [
+        fe.RandomForestFeatureExtractor(
+            one_vs_rest=True, classifier_kwargs={"n_estimators": 100}, **kwargs
+        ),
+        fe.KLFeatureExtractor(**kwargs),
+        fe.MlpFeatureExtractor(
+            classifier_kwargs={
+                "hidden_layer_sizes": (120,),
+                "solver": "adam",
+                "max_iter": 1000000,
+            },
+            activation=relprop.relu,
+            **kwargs,
+        ),
+    ]
+
+    # Process the results
+    postprocessors = []
+    working_dir = "."
+    for extractor, model in zip(feature_extractors, models):
+        print(f"\nRunning {model} model.")
+        extractor.extract_features()
+        # Post-process data (rescale and filter feature importances)
+        postprocessor = extractor.postprocessing(
+            working_dir=working_dir,
+            rescale_results=True,
+            filter_results=False,
+            feature_to_resids=None,
+        )
+        postprocessor.average()
+        postprocessor.persist()
+        postprocessors.append(postprocessor)
+
+
+def run_ml_OLD():
     """
     Run the ML processes
     """
@@ -103,10 +169,8 @@ def run_trp_cage():
     }
 
     # Running various ML workflows
-    models = ["PCA", "RBM", "AE", "RF", "KL", "MLP"]
+    models = ["RF", "KL", "MLP"]
     feature_extractors = [
-        fe.PCAFeatureExtractor(**kwargs),
-        fe.RbmFeatureExtractor(relevance_method="from_components", **kwargs),
         fe.MlpAeFeatureExtractor(
             activation=relprop.relu,
             classifier_kwargs={"solver": "adam", "hidden_layer_sizes": (100,)},
@@ -144,17 +208,6 @@ def run_trp_cage():
         postprocessor.persist()
         postprocessors.append(postprocessor)
 
-    # Create a summarizing plot of the results of the ML models
-    visualization.visualize(
-        [postprocessors],
-        show_importance=True,
-        show_projected_data=False,
-        show_performance=False,
-        highlighted_residues=[22],
-        outfile="./importance.pdf",
-    )
-
-
 # Execute the script
 if __name__ == "__main__":
-    run_trp_cage()
+    create_combined_csv(["mc6.xls","mc6s.xls","mc6sa.xls"], ["mc6.pdb","mc6s.pdb","mc6sa.pdb"], [0,2,15,16,19,22,27])

@@ -7,6 +7,7 @@ import glob
 import time
 import shutil
 from typing import List, Tuple
+import pandas as pd
 from biopandas.pdb import PandasPdb
 import qa.reference
 
@@ -351,6 +352,39 @@ def combine_replicates(
         \t--------------------------------------------------------------------\n
         """
     )
+
+
+def average_by_residues(charge_file, template):
+    """
+    Averages charge file by residue.
+
+    Reduces inaccuracies introduced by the limitations of Mulliken charges.
+
+    Parameters
+    ----------
+    charge_file: str
+        The name of the file containing the charges.
+
+    Returns
+    -------
+    charge_df: pd.DataFrame
+        The charge file summed by residue and stored as a pd.DataFrame.
+
+    """
+    # Read in the charge data file as pd.DataFrame
+    charge_df = pd.read_table(charge_file)
+    charge_df = charge_df.iloc[: , :-1]
+    # Get the residue identifiers (e.g., 1Ala) for each atom
+    residue_number = PandasPdb().read_pdb(template).df["ATOM"]["residue_number"].tolist()
+    residue_name = PandasPdb().read_pdb(template).df["ATOM"]["residue_name"].tolist()
+    residues_indentifier = [f"{name}{number}" for number,name in zip(residue_number,residue_name)]
+    # Group of the charge data frame by the residue identifiers
+    groups = charge_df.groupby(residues_indentifier, axis=1, sort=False)
+    # Compute the mean of all atoms in a residue
+    avg_by_residues = groups.mean()
+
+    return(avg_by_residues)
+
 
 def xyz2pdb(xyz_list: List[str]) -> None:
     """
@@ -915,4 +949,4 @@ def combine_qm_replicates() -> None:
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
-    get_protein_sequence()
+    average_by_residues("all_charges.xls", "template.pdb")
