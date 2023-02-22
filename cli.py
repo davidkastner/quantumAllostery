@@ -178,7 +178,7 @@ def cli(
         templates = ["mc6.pdb","mc6s.pdb","mc6sa.pdb"]
         mutations = [0,2,15,16,19,22,27] # Which amino acids to remove
         models = ["RF", "MLP"]
-        n_frames = 10 # Get every nth frame to cut down the training time
+        n_frames = 2 # Get every nth frame to cut down the training time
 
         charges_df, labels_df = qa.predict.create_combined_csv(charge_files, templates, mutations)
         charges_mat, labels_mat = qa.predict.data_processing(charges_df, labels_df, n_frames = n_frames)

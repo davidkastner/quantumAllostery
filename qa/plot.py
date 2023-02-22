@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from typing import List
 from matplotlib.ticker import MultipleLocator
+import matplotlib.ticker as ticker
 import numpy as np
 import qa.process
 
@@ -231,13 +232,28 @@ def plot_feature_importance(models: List[str], template, mutations) -> None:
     # Create the plot
     print(f"   > Creating a plot of feature importance for all models.")
     x_axis = residues_indentifier
-    color = ["b", "g", "r", "k", "m", "c"]
-    for index,feature_set in enumerate(feature_sets):
-        plt.plot(x_axis, feature_set, color=color[index], linewidth=2)
+    color = ["b", "r", "g", "k", "m", "c"]
+
+    # feature_set is a list of list of lists [[[1,2,1], [3,2,2]]]
+    averages = [[np.mean(sublist) for sublist in list_of_lists] for list_of_lists in feature_sets]
+    errors = [[np.std(sublist) for sublist in list_of_lists] for list_of_lists in feature_sets]
+
+    fig, ax = plt.subplots()
+
+    # Show the average with the error as a transparent trace
+    for index,average in enumerate(averages):
+        plt.plot(x_axis, average, color=color[index], linewidth=2)
+        upper = np.array(average) + np.array(errors[index])
+        lower = np.array(average) - np.array(errors[index])
+        plt.fill_between(x_axis, lower, upper, color=color[index], alpha = .1)
+
+    # Add final touches
     xlabel = "residues"
     ylabel = "feature importance score"
-    plt.xlabel(xlabel, fontsize=10, weight="bold")
-    plt.ylabel(ylabel, fontsize=10, weight="bold")
-    plt.tick_params(axis="x", which="major", labelsize=8, rotation=90, length=0)
+    plt.xlabel(xlabel, weight="bold")
+    plt.ylabel(ylabel, weight="bold")
+    plt.tick_params(axis="x", which="major", rotation=90)
+    ax.yaxis.set_minor_locator(plt.MultipleLocator(0.1))
+    ax.tick_params(axis='y', which='minor', length=4, width=2)
     plt.savefig("feature_importance.png", bbox_inches="tight", format="png", dpi=300)
     plt.close()

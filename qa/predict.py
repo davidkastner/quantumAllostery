@@ -127,7 +127,7 @@ def run_ml(data_norm, labels, models = ["RF", "MLP"], recompute=False):
             "lower_bound_distance_cutoff": 1.0,
             "upper_bound_distance_cutoff": 1.0,
             "use_inverse_distances": False,
-            "n_splits": 1,
+            "n_splits": 3,
             "n_iterations": 5,
             "scaling": True,
         }
