@@ -808,7 +808,7 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
                         sorted_scr_dirs = sorted(scr_dirs, key=os.path.getmtime, reverse=True)
                         # Only keep the newest
                         for scr_dir in sorted_scr_dirs[1:]:
-                            # shutil.rmtree(scr_dir)
+                            shutil.rmtree(scr_dir)
                             print(f"   > Delete extra scratch directory: {scr_dir}")
 
             os.chdir(secondary_dir)
@@ -863,7 +863,8 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
 
         # Create a new file where we will store the combined charges
         first_charges_file = True # We need the title line but only once
-        os.remove(new_charge_file) # Since appending remove old version
+        if os.path.isdir(new_charge_file):
+            os.remove(new_charge_file) # Since appending remove old version
         with open(new_charge_file, "a") as combined_charges_file:
             # A list of all job directories assuming they are named as integers
             job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
@@ -908,7 +909,7 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
                 # Skip the header if it has already been added
                 else:
                     if "nan" in charge_line:
-                        sys.exit(f"Found nan values in {index * 100}.")
+                        print(f"      > Found nan values in {index * 100}!!")
                     combined_charges_file.write(f"{charge_line}\n")
                     frames += 1
                 
