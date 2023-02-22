@@ -27,19 +27,23 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
     # Convert the input data files to pd.DataFrames
     dataframes = []
     labels_df = pd.DataFrame()
+    label_index = 0
     for charge_file,template in zip(charge_files,templates):
         print(f"   > Converting atoms to residues for {charge_file}.")
         # Average the charges by residue
         # We does this to minimize the inaccuracies of mulliken charges
         avg_by_residues = qa.process.average_charge_residues(charge_file, template)
 
-        # Add a column for the one-hot-encoded labels for each frame
+        # Add a column for the labels for each frame
+        # You might think it would be better to use one-hot-encoding
+        # However, this package specifically asks for indices for each group
         print(f"   > Creating labels for {charge_file}.")
-        label = [1 for x in range(len(avg_by_residues))]
-        avg_by_residues[f"{charge_file}"] = label
+        label = [label_index for x in range(len(avg_by_residues))]
+        avg_by_residues["Label"] = label
 
         # Store the labeled, averaged frames in the list
         dataframes.append(avg_by_residues)
+        label_index += 1 # Give the next group a different label
 
     # Drop the residue columns that were mutated
     # We can't compare these residues' charges as their atom counts differ
@@ -54,8 +58,8 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
     combined_df.fillna(0, inplace=True)
 
     # Break off the last n columns (labels) and save them as their own df
-    charges_df = combined_df.iloc[:,:-len(charge_files)]
-    labels_df = combined_df.iloc[:,-len(charge_files):]
+    charges_df = combined_df.iloc[:,:-1]
+    labels_df = combined_df.iloc[:,-1:]
 
     return charges_df, labels_df
 
@@ -86,7 +90,7 @@ def data_processing(df, labels, n_frames = 1):
 
     # Convert to numpy matrices for compatibility with Demystify
     data_norm = df_norm.to_numpy()
-    labels = labels.to_numpy().astype(int)
+    labels = labels.values.tolist()
 
     # Filter the data as every n frames
     filtered_data = data_norm[::n_frames]
@@ -127,7 +131,7 @@ def run_ml(data_norm, labels, models = ["RF", "MLP"], recompute=False):
             "lower_bound_distance_cutoff": 1.0,
             "upper_bound_distance_cutoff": 1.0,
             "use_inverse_distances": False,
-            "n_splits": 1,
+            "n_splits": 5,
             "n_iterations": 5,
             "scaling": True,
         }

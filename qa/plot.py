@@ -198,7 +198,7 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext):
     plt.close()
 
 
-def plot_feature_importance(models: List[str], template) -> None:
+def plot_feature_importance(models: List[str], template, mutations) -> None:
     """
     Creates a plot with the features on the x-axis and their importance on the y
 
@@ -219,7 +219,8 @@ def plot_feature_importance(models: List[str], template) -> None:
 
     # Get the amino acid names of our features
     residues_indentifier = qa.process.get_residue_identifiers(template, by_atom = False)
-    
+    residues_indentifier = [x for i, x in enumerate(residues_indentifier) if i not in mutations]
+
     # Get the feature importance data which has been stored by Demystifying
     root = os.getcwd()
     feature_sets = []
@@ -232,12 +233,11 @@ def plot_feature_importance(models: List[str], template) -> None:
     x_axis = residues_indentifier
     color = ["b", "g", "r", "k", "m", "c"]
     for index,feature_set in enumerate(feature_sets):
-        print(feature_set)
         plt.plot(x_axis, feature_set, color=color[index], linewidth=2)
-    
     xlabel = "residues"
     ylabel = "feature importance score"
     plt.xlabel(xlabel, fontsize=10, weight="bold")
     plt.ylabel(ylabel, fontsize=10, weight="bold")
+    plt.tick_params(axis="x", which="major", labelsize=8, rotation=90, length=0)
     plt.savefig("feature_importance.png", bbox_inches="tight", format="png", dpi=300)
     plt.close()

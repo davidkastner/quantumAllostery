@@ -6,6 +6,7 @@ import sys
 import glob
 import time
 import shutil
+from collections import OrderedDict
 from typing import List, Tuple
 import pandas as pd
 from biopandas.pdb import PandasPdb
@@ -383,7 +384,7 @@ def get_residue_identifiers(template, by_atom = True):
     
     # Return only unique entries if the user sets by_atom = False
     if not by_atom:
-        residues_indentifier = list(set(residues_indentifier))
+        residues_indentifier = list(OrderedDict.fromkeys(residues_indentifier))
 
     return residues_indentifier
 
