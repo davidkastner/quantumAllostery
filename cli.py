@@ -179,9 +179,13 @@ def cli(
         mutations = [0,2,15,16,19,22,27] # Which amino acids to remove
         models = ["RF", "MLP"]
         n_frames = 1 # Get every nth frame to cut down the training time
+        shuffle = True # Shuffle the data to get a better estimate of the error
 
         charges_df, labels_df = qa.predict.create_combined_csv(charge_files, templates, mutations)
         charges_mat, labels_mat = qa.predict.data_processing(charges_df, labels_df, n_frames = n_frames)
+
+        if shuffle:
+            charges_mat, labels_mat = qa.predict.shuffle_data(charges_mat, labels_mat)
         
         qa.predict.run_ml(charges_mat, labels_mat, models=models, recompute=False)
         # Control whether you want a by atom or by residue analysis with by_atom

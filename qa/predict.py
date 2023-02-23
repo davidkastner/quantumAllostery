@@ -12,6 +12,21 @@ from sklearn.utils import shuffle
 import qa.process
 
 
+def shuffle_data(charges_mat, labels_mat):
+    # Shuffle the data in groups of 100
+    n_samples = charges_mat.shape[0]
+    n_samples = int(n_samples / 100) * 100
+    inds = np.arange(n_samples)
+    inds = inds.reshape((int(n_samples / 100), 100))
+    perm_inds = np.random.permutation(inds)
+    perm_inds = np.ravel(perm_inds)
+    samples = charges_mat[perm_inds]  # Apply the shuffling to the matrix
+    labels = labels_mat[perm_inds]  # Apply the same shuffling to the labels
+    print("\n   > Shuffling data in blocks of 100.")
+    
+    return samples, labels
+
+
 def create_combined_csv(charge_files: List[str], templates: List[str], mutations: List[int]) -> pd.DataFrame:
     """
     Generate a pd.DataFrame of all features.
