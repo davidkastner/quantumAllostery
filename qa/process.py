@@ -409,15 +409,17 @@ def average_charge_residues(charge_file, template):
 
     """
     # Read in the charge data file as pd.DataFrame
-    charge_df = pd.read_table(charge_file)
-    charge_df = charge_df.iloc[: , :-1]
+    charge_df = pd.read_table(charge_file, sep='\t')
+    # charge_df = charge_df.iloc[: , :-1]
 
     # Get the residue identifiers (e.g., 1Ala) for each atom
     residues_indentifier = get_residue_identifiers(template)
 
     # Group of the charge data frame by the residue identifiers
-    groups = charge_df.groupby(residues_indentifier, axis=1, sort=False)
-
+    try:
+        groups = charge_df.groupby(residues_indentifier, axis=1, sort=False)
+    except:
+        print("   > ERROR: You likely have an extra hanging column.")
     # Compute the mean of all atoms in a residue
     avg_by_residues = groups.mean()
 
@@ -863,8 +865,10 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
 
         # Create a new file where we will store the combined charges
         first_charges_file = True # We need the title line but only once
-        if os.path.isdir(new_charge_file):
+
+        if os.path.exists(new_charge_file):
             os.remove(new_charge_file) # Since appending remove old version
+            print(f"      > Deleting old {secondary_dir}/{new_charge_file}.")
         with open(new_charge_file, "a") as combined_charges_file:
             # A list of all job directories assuming they are named as integers
             job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
@@ -945,8 +949,9 @@ def combine_qm_replicates() -> None:
     replicate_count = len(replicates) # Report to user
 
     # Remove any old version because we are appending
-    if os.path.isfile(charge_file):
+    if os.path.exists(charge_file):
         os.remove(charge_file)
+        print(f"      > Deleting old {charge_file}.")
 
     # Create a new file to save charges
     with open(charge_file, "a") as new_charge_file:
@@ -955,7 +960,7 @@ def combine_qm_replicates() -> None:
             # There will always be an Analysis folder
             os.chdir(replicate)
             secondary_dir = os.getcwd()
-            print(f"   > Adding { secondary_dir}")
+            print(f"   > Adding {secondary_dir}")
 
             # Add the header for the first replicate
             with open(charge_file, "r") as current_charge_file:
@@ -967,7 +972,7 @@ def combine_qm_replicates() -> None:
                     if index == 0:
                         continue
                     elif "nan" in line:
-                        sys.exit("Found nan values.")
+                        print(f"      > Found nan values in {secondary_dir}.")
                     else:
                         new_charge_file.writelines(line)
             
