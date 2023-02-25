@@ -17,6 +17,7 @@
       charge_matrix_analysis
       cpptraj_covars
       get_joint_qres
+      multiwfn_esp
    
    
 

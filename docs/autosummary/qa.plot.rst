@@ -17,6 +17,7 @@
       get_charge_distributions
       get_parity_plot
       heatmap
+      plot_feature_importance
    
    
 

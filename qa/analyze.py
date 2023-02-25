@@ -373,6 +373,18 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
     elif recompute:
         qa.plot.heatmap(data=data_name, residues=residues, delete=delete, out_file=plot_name, cmap="Blues", v=[0,.2])
 
+
+def multiwfn_esp():
+    """
+    Calculates the electrostatic potential of the system using Multiwfn.
+
+    """
+
+    # Charge paradigms to compute with their Multiwfn codes
+    charge_schemes = {'Hirshfeld': '1', 'Voronoi':'2', 'Mulliken': '5', 'ADCH': '11'}
+
+
+
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
     charge_matrix_analysis([[],[]], recompute=False)

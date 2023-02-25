@@ -23,6 +23,7 @@ import click
 @click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs.")
 @click.option("--combine_qm_charges", "-m", is_flag=True, help="Combine charge data across QM single points.")
 @click.option("--predict", "-p", is_flag=True, help="Uses simple ML models to predict key residues.")
+@click.option("--multiwfn_charges", "-q", is_flag=True, help="Calculates charge schemes using MultiWfn.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -37,6 +38,7 @@ def cli(
     clean_qm,
     combine_qm_charges,
     predict,
+    multiwfn_charges,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -190,6 +192,19 @@ def cli(
         qa.predict.run_ml(charges_mat, labels_mat, models=models, recompute=False)
         # Control whether you want a by atom or by residue analysis with by_atom
         qa.plot.plot_feature_importance(models, templates[0], mutations, by_atom = False)
+
+    elif multiwfn_charges:
+        click.echo("> Computed charge schemes with Multiwfn:")
+        click.echo("> Loading...")
+        import qa.analyze
+        compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
+        
+        if compute_replicates == "y":
+            qa.manage.run_all_replicates(lambda: qa.analyze.multiwfn_charges())
+        elif compute_replicates == "n":
+            qa.analyze.multiwfn_charges()
+        else:
+            print(f"> {compute_replicates} is not a valid response.")
 
 
     else:

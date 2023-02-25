@@ -15,7 +15,8 @@
    
       create_combined_csv
       data_processing
-      run_trp_cage
+      run_ml
+      shuffle_data
    
    
 
