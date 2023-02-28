@@ -5,6 +5,7 @@ import time
 import shutil
 import glob
 
+
 def run_all_replicates(function) -> None:
     """
     Loops through all replicates and runs a specific funtion on each.
@@ -41,7 +42,6 @@ def run_all_replicates(function) -> None:
                 function()
                 replicates_count += 1
 
-    
     total_time = round(time.time() - start_time, 3)  # Seconds to run
     print(
         f"""
@@ -52,11 +52,12 @@ def run_all_replicates(function) -> None:
         """
     )
 
+
 def find_stalled():
     """
     Identifies frozen TeraChem jobs.
 
-    When running TeraChem on SuperCloud, 
+    When running TeraChem on SuperCloud,
     the jobs will occassionally freeze on the COSMO step.
     These instances can be difficult to identify.
     This script will check all jobs,
@@ -65,29 +66,29 @@ def find_stalled():
 
     # Get the directories of each replicate
     primary = os.getcwd()
-    dirs = sorted(glob.glob('*/'))
-    stalled_jobs = [] # List of jobs currently on the COSMO step
+    dirs = sorted(glob.glob("*/"))
+    stalled_jobs = []  # List of jobs currently on the COSMO step
     ignore = ["Analyze"]
 
     for dir in dirs:
         if dir in ignore:
             continue
         else:
-            os.chdir(primary) # Move back to replicates directory
+            os.chdir(primary)  # Move back to replicates directory
             os.chdir(dir)
             secondary = os.getcwd()
             # Get the directories of each TeraChem frame calculation
-            sub_dirs = sorted(glob.glob('*/'))
+            sub_dirs = sorted(glob.glob("*/"))
 
             for sub_dir in sub_dirs:
                 if sub_dir in ignore:
                     continue
                 else:
-                    os.chdir(secondary) # Move back to frames directory
+                    os.chdir(secondary)  # Move back to frames directory
                     os.chdir(sub_dir)
-                    out_name = glob.glob('*.out') 
-                    
-                    if len(out_name) > 0: # No out file if the job hasn't run
+                    out_name = glob.glob("*.out")
+
+                    if len(out_name) > 0:  # No out file if the job hasn't run
                         # Open the .out file
                         with open(out_name[0], "r") as out_file:
                             last_line = out_file.readlines()[-1]
@@ -96,7 +97,7 @@ def find_stalled():
 
     # Report findings to user
     if len(stalled_jobs) > 0:
-        for index,stalled_job in enumerate(stalled_jobs):
+        for index, stalled_job in enumerate(stalled_jobs):
             print(f"> Job in {stalled_jobs[index]} is likely stalled.")
     else:
         print("> No stalled jobs.")
@@ -136,7 +137,7 @@ def check_file(file_name, location) -> None:
         print(f"> Can't find {file_name}.")
         print(f"> Copying it over.")
         shutil.copyfile(location, f"{os.getcwd()}/{file_name}")
-    
+
 
 def copy_script(script_name) -> None:
     """
@@ -158,4 +159,3 @@ def copy_script(script_name) -> None:
     script_loc = f"{this_dir}/scripts/{script_name}"
     destination = f"{os.getcwd()}/{script_name}"
     shutil.copyfile(script_loc, destination)
-    

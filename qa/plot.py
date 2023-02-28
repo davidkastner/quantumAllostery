@@ -18,8 +18,8 @@ def format_plot() -> None:
     """
     font = {"family": "sans-serif", "weight": "bold", "size": 10}
     plt.rc("font", **font)
-    plt.rcParams['xtick.major.pad'] = 5
-    plt.rcParams['ytick.major.pad'] = 5
+    plt.rcParams["xtick.major.pad"] = 5
+    plt.rcParams["ytick.major.pad"] = 5
     plt.rcParams["axes.linewidth"] = 2
     plt.rcParams["xtick.major.size"] = 7
     plt.rcParams["xtick.major.width"] = 2
@@ -33,7 +33,14 @@ def format_plot() -> None:
 
 
 # def heatmap(data, protein, delete, out_file, cmap) -> None:
-def heatmap(data: str, residues: List[str], delete: List[List[int]], out_file: str="heatmap.svg", cmap="RdBu", v=[-.4,.4]) -> None:
+def heatmap(
+    data: str,
+    residues: List[str],
+    delete: List[List[int]],
+    out_file: str = "heatmap.svg",
+    cmap="RdBu",
+    v=[-0.4, 0.4],
+) -> None:
     """
     Generates formatted heat maps.
 
@@ -66,7 +73,7 @@ def heatmap(data: str, residues: List[str], delete: List[List[int]], out_file: s
     # Identify matrix format and read in
     contents = open(data, "r").readlines()
     contents_joined = " ".join(contents)  # Create a single string for parsing
-    if "," in contents_joined: # If a csv file
+    if "," in contents_joined:  # If a csv file
         matrix = np.genfromtxt(data, delimiter=",")
     elif " " in contents_joined:  # If a dat file
         matrix = []
@@ -191,15 +198,19 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext):
     # Create the plot
     fig, ax = plt.subplots()
     # ax.hist2d(x, y, bins=(x_bins, y_bins))
-    ax.hist2d(x, y, bins=30, range=[[-0.2, .44], [-1.25, -0.53]])
-    ax.set_aspect('equal')
-    plt.xlabel(res_x, fontweight='bold')
-    plt.ylabel(res_y, fontweight='bold')
-    plt.savefig(f"Analysis/3_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300)
+    ax.hist2d(x, y, bins=30, range=[[-0.2, 0.44], [-1.25, -0.53]])
+    ax.set_aspect("equal")
+    plt.xlabel(res_x, fontweight="bold")
+    plt.ylabel(res_y, fontweight="bold")
+    plt.savefig(
+        f"Analysis/3_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300
+    )
     plt.close()
 
 
-def plot_feature_importance(models: List[str], template: List[str], mutations: List[str], by_atom = False) -> None:
+def plot_feature_importance(
+    models: List[str], template: List[str], mutations: List[str], by_atom=False
+) -> None:
     """
     Creates a plot with the features on the x-axis and their importance on the y
 
@@ -219,8 +230,10 @@ def plot_feature_importance(models: List[str], template: List[str], mutations: L
     format_plot()
 
     # Get the amino acid names of our features
-    residues_indentifier = qa.process.get_residue_identifiers(template, by_atom = by_atom)
-    residues_indentifier = [x for i, x in enumerate(residues_indentifier) if i not in mutations]
+    residues_indentifier = qa.process.get_residue_identifiers(template, by_atom=by_atom)
+    residues_indentifier = [
+        x for i, x in enumerate(residues_indentifier) if i not in mutations
+    ]
 
     # Get the feature importance data which has been stored by Demystifying
     root = os.getcwd()
@@ -228,7 +241,7 @@ def plot_feature_importance(models: List[str], template: List[str], mutations: L
     for model in models:
         feature_importance = list(np.load(f"{root}/{model}/feature_importance.npy"))
         feature_sets.append(feature_importance)
-    
+
     # Create the plot
     print(f"   > Creating a plot of feature importance for all models.")
     x_axis = residues_indentifier
@@ -239,17 +252,22 @@ def plot_feature_importance(models: List[str], template: List[str], mutations: L
         x_axis = [x for x in range(len(feature_sets[0]))]
 
     # feature_set is a list of list of lists [[[1,2,1], [3,2,2]]]
-    averages = [[np.mean(sublist) for sublist in list_of_lists] for list_of_lists in feature_sets]
-    errors = [[np.std(sublist) for sublist in list_of_lists] for list_of_lists in feature_sets]
+    averages = [
+        [np.mean(sublist) for sublist in list_of_lists]
+        for list_of_lists in feature_sets
+    ]
+    errors = [
+        [np.std(sublist) for sublist in list_of_lists] for list_of_lists in feature_sets
+    ]
 
     fig, ax = plt.subplots()
 
     # Show the average with the error as a transparent trace
-    for index,average in enumerate(averages):
+    for index, average in enumerate(averages):
         plt.plot(x_axis, average, color=color[index], linewidth=2)
         upper = np.array(average) + np.array(errors[index])
         lower = np.array(average) - np.array(errors[index])
-        plt.fill_between(x_axis, lower, upper, color=color[index], alpha = .1)
+        plt.fill_between(x_axis, lower, upper, color=color[index], alpha=0.1)
 
     # Add final touches
     xlabel = "residues"
@@ -258,6 +276,6 @@ def plot_feature_importance(models: List[str], template: List[str], mutations: L
     plt.ylabel(ylabel, weight="bold")
     plt.tick_params(axis="x", which="major", rotation=90)
     ax.yaxis.set_minor_locator(plt.MultipleLocator(0.1))
-    ax.tick_params(axis='y', which='minor', length=4, width=2)
+    ax.tick_params(axis="y", which="minor", length=4, width=2)
     plt.savefig("feature_importance.png", bbox_inches="tight", format="png", dpi=300)
     plt.close()

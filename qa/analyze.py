@@ -223,7 +223,7 @@ def get_joint_qres(res_x, res_y):
         # Sum the charges of the atoms of the requested residues
         summed_charges = charge_df[charge_df.columns[atom_indices]].sum(axis=1).tolist()
         charge_df.to_csv("charge_df.csv")
-        
+
         # Add the summed residue to the new dataframe
         joint_df[res] = summed_charges
 
@@ -243,6 +243,7 @@ def get_joint_qres(res_x, res_y):
     )
 
     return joint_df
+
 
 def cpptraj_covars(delete, recompute=False) -> None:
     """
@@ -297,7 +298,12 @@ def cpptraj_covars(delete, recompute=False) -> None:
     if isExist:
         pdb_path = f"{primary}/template.pdb"
         residues = qa.process.get_protein_sequence(pdb_path)
-        qa.plot.heatmap(data="cacovar.dat", residues=residues, delete=delete, out_file="matrix_geom.png")
+        qa.plot.heatmap(
+            data="cacovar.dat",
+            residues=residues,
+            delete=delete,
+            out_file="matrix_geom.png",
+        )
 
 
 def charge_matrix_analysis(delete, recompute=False) -> None:
@@ -314,7 +320,7 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
         The second is the columns of the matrix to delete.
     recompute: bool
         Recompute the calculation even if results are already present.
-    
+
     """
 
     # Check for a template PDB, if none copy it over
@@ -323,10 +329,10 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
     # Check for required files
     required_file = "all_charges.xls"
     if not os.path.exists(required_file):
-        print(f"{required_file} not found. See qa.process.combine_restarts()") 
+        print(f"{required_file} not found. See qa.process.combine_restarts()")
 
     # Check if Analysis folder exits, if it doesn't create one
-    primary = os.getcwd() # Save this as our primary home directory for later
+    primary = os.getcwd()  # Save this as our primary home directory for later
     analysis_dir = "Analysis"
     qa.manage.check_folder(analysis_dir)
     os.chdir(analysis_dir)
@@ -337,7 +343,11 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
     # Generate the charge matrix and mutual information data
     prefix = f"{analysis_dir}/{job_dir}/"
     out_files = ["mimatbb.csv", "chargematbb.csv", "chargematsc.csv"]
-    if not os.path.exists(f"{prefix}{out_files[0]}") or not os.path.exists(f"{prefix}{out_files[1]}") or not os.path.exists(f"{prefix}{out_files[2]}"):
+    if (
+        not os.path.exists(f"{prefix}{out_files[0]}")
+        or not os.path.exists(f"{prefix}{out_files[1]}")
+        or not os.path.exists(f"{prefix}{out_files[2]}")
+    ):
         print("> Computing the charge matrix. Please wait...")
         charge_matrix()
         out_files = ["mimatbb.csv", "chargematbb.csv", "chargematsc.csv"]
@@ -361,17 +371,35 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
     plot_name = "matrix_charge.png"
     data_name = "chargematbb.csv"
     if not os.path.exists(plot_name):
-        qa.plot.heatmap(data=data_name, residues=residues, delete=delete, out_file=plot_name)
+        qa.plot.heatmap(
+            data=data_name, residues=residues, delete=delete, out_file=plot_name
+        )
     elif recompute:
-        qa.plot.heatmap(data=data_name, residues=residues, delete=delete, out_file=plot_name)
+        qa.plot.heatmap(
+            data=data_name, residues=residues, delete=delete, out_file=plot_name
+        )
 
     # plot the mututal informatino results
     plot_name = "mi_charge.png"
     data_name = "mimatbb.csv"
     if not os.path.exists(plot_name):
-        qa.plot.heatmap(data=data_name, residues=residues, delete=delete, out_file=plot_name, cmap="Blues", v=[0,.2])
+        qa.plot.heatmap(
+            data=data_name,
+            residues=residues,
+            delete=delete,
+            out_file=plot_name,
+            cmap="Blues",
+            v=[0, 0.2],
+        )
     elif recompute:
-        qa.plot.heatmap(data=data_name, residues=residues, delete=delete, out_file=plot_name, cmap="Blues", v=[0,.2])
+        qa.plot.heatmap(
+            data=data_name,
+            residues=residues,
+            delete=delete,
+            out_file=plot_name,
+            cmap="Blues",
+            v=[0, 0.2],
+        )
 
 
 def multiwfn_esp():
@@ -381,10 +409,9 @@ def multiwfn_esp():
     """
 
     # Charge paradigms to compute with their Multiwfn codes
-    charge_schemes = {'Hirshfeld': '1', 'Voronoi':'2', 'Mulliken': '5', 'ADCH': '11'}
-
+    charge_schemes = {"Hirshfeld": "1", "Voronoi": "2", "Mulliken": "5", "ADCH": "11"}
 
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
-    charge_matrix_analysis([[],[]], recompute=False)
+    charge_matrix_analysis([[], []], recompute=False)

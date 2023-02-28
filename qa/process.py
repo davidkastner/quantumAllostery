@@ -80,6 +80,7 @@ def get_xyz() -> str:
 
     return xyz_name
 
+
 def get_atom_count() -> int:
     """
     Finds an xyz file and gets the number of atoms.
@@ -106,20 +107,19 @@ def get_protein_sequence(pdb_path) -> List[str]:
     qa.plot.heatmap()
 
     """
-    
+
     # Get the template file and load it as a pandas dataframe
     pdb_df = PandasPdb().read_pdb(pdb_path).df["ATOM"]
 
     # Filter the dataframe so there is one entry for each residue
-    residues_df = pdb_df[["residue_name","residue_number"]]
+    residues_df = pdb_df[["residue_name", "residue_number"]]
     residues_df = residues_df.drop_duplicates(subset=["residue_number"], keep="first")
 
     # Convert it to a list of amino acids
     residues_df = residues_df["residue_name"]
     residues_list = residues_df.values.tolist()
-    
-    return residues_list
 
+    return residues_list
 
 
 def get_charge_file() -> str:
@@ -153,7 +153,9 @@ def get_charge_file() -> str:
     return charge_file
 
 
-def combine_restarts(atom_count, all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz") -> None:
+def combine_restarts(
+    atom_count, all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
+) -> None:
     """
     Collects all charges or coordinates into single xls and xyz files.
 
@@ -202,7 +204,7 @@ def combine_restarts(atom_count, all_charges: str = "all_charges.xls", all_coors
     # Get the src directory locations for the restart attempt to generate paths
     scrdir = glob.glob("./**/scr*/", recursive=True)
     scrdir.sort()  # Sort by modification date
-    run_info.sort() # Sort by MD step
+    run_info.sort()  # Sort by MD step
     for index, step in enumerate(run_info):
         # Add the name of the scr directory location to the run_info list
         step.append(scrdir[index])
@@ -228,7 +230,7 @@ def combine_restarts(atom_count, all_charges: str = "all_charges.xls", all_coors
             all_coors_file.writelines(coors_file[:coor_run_end])
             # The first charges line is a special header line that we add once
             # so we don't need to substract one because it cancels with the index offset
-            charge_run_end = (run_info[index + 1][0])
+            charge_run_end = run_info[index + 1][0]
             all_charges_file.writelines(charge_file[:charge_run_end])
             first_run = False
 
@@ -240,11 +242,13 @@ def combine_restarts(atom_count, all_charges: str = "all_charges.xls", all_coors
 
         # Other run
         else:
-            # To get the number of frames in run two, 
+            # To get the number of frames in run two,
             # substract the restart number from the frames in run 1
-            coor_run_end = ((run_info[index + 1][0] - 1) - (run[0] - 1)) * (atom_count + 2)
+            coor_run_end = ((run_info[index + 1][0] - 1) - (run[0] - 1)) * (
+                atom_count + 2
+            )
             all_coors_file.writelines(coors_file[:coor_run_end])
-            charge_run_end = ((run_info[index + 1][0]) - (run[0] - 1))
+            charge_run_end = (run_info[index + 1][0]) - (run[0] - 1)
             all_charges_file.writelines(charge_file[1:charge_run_end])
 
     # Close files
@@ -275,6 +279,7 @@ def combine_restarts(atom_count, all_charges: str = "all_charges.xls", all_coors
         \t--------------------------------------------------------------------\n
         """
     )
+
 
 def combine_replicates(
     all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
@@ -318,7 +323,7 @@ def combine_replicates(
     new_file_names = [f"raw_{all_charges}", all_coors]
     file_locations = [charge_files, coors_files]
     # Loop over the file names and their locations
-    for (file_name, file_location) in zip(new_file_names, file_locations):
+    for file_name, file_location in zip(new_file_names, file_locations):
         # Open a new file where we will write the concatonated output
         with open(file_name, "wb") as outfile:
             for loc in file_location:
@@ -355,7 +360,7 @@ def combine_replicates(
     )
 
 
-def get_residue_identifiers(template, by_atom = True):
+def get_residue_identifiers(template, by_atom=True):
     """
     Gets the residue identifiers such as Ala1 or Cys24.
 
@@ -376,12 +381,16 @@ def get_residue_identifiers(template, by_atom = True):
 
     """
     # Get the residue number identifiers (e.g., 1)
-    residue_number = PandasPdb().read_pdb(template).df["ATOM"]["residue_number"].tolist()
+    residue_number = (
+        PandasPdb().read_pdb(template).df["ATOM"]["residue_number"].tolist()
+    )
     # Get the residue number identifiers (e.g., ALA)
     residue_name = PandasPdb().read_pdb(template).df["ATOM"]["residue_name"].tolist()
     # Combine them together
-    residues_indentifier = [f"{name}{number}" for number,name in zip(residue_number,residue_name)]
-    
+    residues_indentifier = [
+        f"{name}{number}" for number, name in zip(residue_number, residue_name)
+    ]
+
     # Return only unique entries if the user sets by_atom = False
     if not by_atom:
         residues_indentifier = list(OrderedDict.fromkeys(residues_indentifier))
@@ -409,7 +418,7 @@ def average_charge_residues(charge_file, template):
 
     """
     # Read in the charge data file as pd.DataFrame
-    charge_df = pd.read_table(charge_file, sep='\t')
+    charge_df = pd.read_table(charge_file, sep="\t")
     # charge_df = charge_df.iloc[: , :-1]
 
     # Get the residue identifiers (e.g., 1Ala) for each atom
@@ -449,7 +458,7 @@ def xyz2pdb(xyz_list: List[str]) -> None:
     pdb_file = open(pdb_name, "r").readlines()
     max_atom = int(pdb_file[len(pdb_file) - 3].split()[1])
 
-    for index,xyz in enumerate(xyz_list):
+    for index, xyz in enumerate(xyz_list):
         new_file = open(f"{index}.pdb", "w")
         xyz_file = open(xyz, "r").readlines()
         atom = -1  # Start at -1 to skip the XYZ header
@@ -483,6 +492,7 @@ def xyz2pdb(xyz_list: List[str]) -> None:
         \t--------------------------------------------------------------------\n
         """
     )
+
 
 def xyz2pdb_traj() -> None:
     """
@@ -618,7 +628,6 @@ def clean_incomplete_xyz() -> None:
 
     with open(new_file, "w") as coors_file_new:
         with open(orig_file, "r") as coors_file:
-
             section_delim = coors_file.readline().strip()  # First line
             section = []  # Stores the lines for each section
             first_line = True  # The first line is a unique case
@@ -733,14 +742,16 @@ def get_res_atom_indices(res, scheme="all") -> List[int]:
 
     # Use if you only want the backbone atoms summed
     if scheme == "backbone":
-        print("> Retrieving only backbone indices. See qa.process.get_res_atom_indices()")
+        print(
+            "> Retrieving only backbone indices. See qa.process.get_res_atom_indices()"
+        )
         bb_atoms = ["N", "H", "C", "O"]
         backbone_df = residue_df[residue_df["atom_name"].isin(bb_atoms)]
         atom_index_list = backbone_df.index.tolist()
 
     if scheme != "all" and scheme != "backbone":
         raise ValueError("> ERROR: Scheme not recognized. Select all or backbone.")
-        
+
     # Alert the user if the list comes out empty
     if len(atom_index_list) == 0:
         raise ValueError("> ERROR: No atom indices were found. Verify that it exists.")
@@ -773,15 +784,15 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
     # Directory containing all replicates
     primary_dir = os.getcwd()
     replicates = sorted(glob.glob("*/"))
-    total_job_count = 0 # Report to user upon job completion
-    incomplete_job_count = 0 # Report to user upon job completion
+    total_job_count = 0  # Report to user upon job completion
+    incomplete_job_count = 0  # Report to user upon job completion
 
     for replicate in replicates:
         os.chdir(replicate)
         # The location of the current replicate
         secondary_dir = os.getcwd()
         print(f"> Checking {secondary_dir}.")
-        
+
         # A list of all job directories assuming they are named as integers
         job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
         for dir in job_dirs:
@@ -805,9 +816,11 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
 
                     # The job completed, so delete extra scr directories
                     else:
-                        scr_dirs = glob.glob('scr*/')
+                        scr_dirs = glob.glob("scr*/")
                         # Sort the scr directories by age (oldest to newest)
-                        sorted_scr_dirs = sorted(scr_dirs, key=os.path.getmtime, reverse=True)
+                        sorted_scr_dirs = sorted(
+                            scr_dirs, key=os.path.getmtime, reverse=True
+                        )
                         # Only keep the newest
                         for scr_dir in sorted_scr_dirs[1:]:
                             shutil.rmtree(scr_dir)
@@ -815,7 +828,7 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
 
             os.chdir(secondary_dir)
         os.chdir(primary_dir)
-    
+
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
         f"""
@@ -854,27 +867,27 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
     primary_dir = os.getcwd()
     directories = sorted(glob.glob("*/"))
     replicates = [i for i in directories if i not in ignore]
-    replicate_count = len(replicates) # Report to user
+    replicate_count = len(replicates)  # Report to user
 
     for replicate in replicates:
-        frames = 1 # Saved to report to the user
+        frames = 1  # Saved to report to the user
         os.chdir(replicate)
         # The location of the current qm job that we are appending
         secondary_dir = os.getcwd()
         print(f"   > Adding { secondary_dir}")
 
         # Create a new file where we will store the combined charges
-        first_charges_file = True # We need the title line but only once
+        first_charges_file = True  # We need the title line but only once
 
         if os.path.exists(new_charge_file):
-            os.remove(new_charge_file) # Since appending remove old version
+            os.remove(new_charge_file)  # Since appending remove old version
             print(f"      > Deleting old {secondary_dir}/{new_charge_file}.")
         with open(new_charge_file, "a") as combined_charges_file:
             # A list of all job directories assuming they are named as integers
             job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
-            
+
             # Change into one of the QM job directories
-            for index,dir in enumerate(job_dirs):
+            for index, dir in enumerate(job_dirs):
                 os.chdir(dir)
                 tertiary_dir = os.getcwd()
                 os.chdir("scr")
@@ -889,7 +902,7 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
                         clean_line = line.strip().split("\t")
                         charge_column.append(clean_line[1])
                         atom_column.append(clean_line[0])
-                    
+
                 # Join the data and separate it with tabs
                 charge_line = "\t".join(charge_column)
 
@@ -902,7 +915,7 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
                     x = " ".join(atom_list)
                     atoms_line_reindex.append(x)
                 atom_line = "\t".join(atoms_line_reindex)
-                
+
                 # Append the data to the combined charges data file
                 # We only add the header line once
                 if first_charges_file:
@@ -916,11 +929,11 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
                         print(f"      > Found nan values in {index * 100}!!")
                     combined_charges_file.write(f"{charge_line}\n")
                     frames += 1
-                
+
                 os.chdir(secondary_dir)
         print(f"      > Combined {frames} frames.")
         os.chdir(primary_dir)
-    
+
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
         f"""
@@ -946,7 +959,7 @@ def combine_qm_replicates() -> None:
     primary_dir = os.getcwd()
     directories = sorted(glob.glob("*/"))
     replicates = [i for i in directories if i not in ignore]
-    replicate_count = len(replicates) # Report to user
+    replicate_count = len(replicates)  # Report to user
 
     # Remove any old version because we are appending
     if os.path.exists(charge_file):
@@ -968,14 +981,14 @@ def combine_qm_replicates() -> None:
                     first_line = current_charge_file.readline()
                     new_charge_file.writelines(first_line)
                     first_charge_file = False
-                for index,line in enumerate(current_charge_file):
+                for index, line in enumerate(current_charge_file):
                     if index == 0:
                         continue
                     elif "nan" in line:
                         print(f"      > Found nan values in {secondary_dir}.")
                     else:
                         new_charge_file.writelines(line)
-            
+
             os.chdir(primary_dir)
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
@@ -988,7 +1001,6 @@ def combine_qm_replicates() -> None:
         \t--------------------------------------------------------------------\n
         """
     )
-
 
 
 if __name__ == "__main__":

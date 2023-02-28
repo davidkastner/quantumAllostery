@@ -23,11 +23,13 @@ def shuffle_data(charges_mat, labels_mat):
     samples = charges_mat[perm_inds]  # Apply the shuffling to the matrix
     labels = labels_mat[perm_inds]  # Apply the same shuffling to the labels
     print("\n   > Shuffling data in blocks of 100.")
-    
+
     return samples, labels
 
 
-def create_combined_csv(charge_files: List[str], templates: List[str], mutations: List[int]) -> pd.DataFrame:
+def create_combined_csv(
+    charge_files: List[str], templates: List[str], mutations: List[int]
+) -> pd.DataFrame:
     """
     Generate a pd.DataFrame of all features.
 
@@ -38,11 +40,11 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
     lablels_df: pd.DataFrame
         One-hot-encoded labels for each frame.
     """
-    
+
     # Convert the input data files to pd.DataFrames
     dataframes = []
     labels_df = pd.DataFrame()
-    for charge_file,template in zip(charge_files,templates):
+    for charge_file, template in zip(charge_files, templates):
         print(f"   > Converting atoms to residues for {charge_file}.")
         # Average the charges by residue
         # We does this to minimize the inaccuracies of mulliken charges
@@ -59,7 +61,7 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
     # Drop the residue columns that were mutated
     # We can't compare these residues' charges as their atom counts differ
     clean_dataframes = []
-    for index,df in enumerate(dataframes):
+    for index, df in enumerate(dataframes):
         df = df.drop(df.columns[mutations], axis=1)
         clean_dataframes.append(df)
 
@@ -69,13 +71,13 @@ def create_combined_csv(charge_files: List[str], templates: List[str], mutations
     combined_df.fillna(0, inplace=True)
 
     # Break off the last n columns (labels) and save them as their own df
-    charges_df = combined_df.iloc[:,:-len(charge_files)]
-    labels_df = combined_df.iloc[:,-len(charge_files):]
+    charges_df = combined_df.iloc[:, : -len(charge_files)]
+    labels_df = combined_df.iloc[:, -len(charge_files) :]
 
     return charges_df, labels_df
 
 
-def data_processing(df, labels, n_frames = 1):
+def data_processing(df, labels, n_frames=1):
     """
     Scales the data for the ML workflows.
 
@@ -97,7 +99,9 @@ def data_processing(df, labels, n_frames = 1):
 
     # Scale each column such that all values are between 0 and 1
     scaler = MinMaxScaler()
-    df_norm = pd.DataFrame(scaler.fit_transform(df.values), columns=df.columns, index=df.index)
+    df_norm = pd.DataFrame(
+        scaler.fit_transform(df.values), columns=df.columns, index=df.index
+    )
 
     # Convert to numpy matrices for compatibility with Demystify
     data_norm = df_norm.to_numpy()
@@ -110,7 +114,7 @@ def data_processing(df, labels, n_frames = 1):
     return filtered_data, filtered_labels
 
 
-def run_ml(data_norm, labels, models = ["RF", "MLP"], recompute=False):
+def run_ml(data_norm, labels, models=["RF", "MLP"], recompute=False):
     """
     ML analysis workflow.
 
@@ -131,8 +135,7 @@ def run_ml(data_norm, labels, models = ["RF", "MLP"], recompute=False):
         # Output has not been generated yet
         print("   > Creating csv's to check.")
         np.savetxt("data.csv", data_norm, delimiter=",")
-        np.savetxt("labels.csv", labels, fmt='%i', delimiter=",")
-
+        np.savetxt("labels.csv", labels, fmt="%i", delimiter=",")
 
         # Set the arguments for the ML workflows
         kwargs = {
@@ -184,4 +187,8 @@ def run_ml(data_norm, labels, models = ["RF", "MLP"], recompute=False):
 
 # Execute the script
 if __name__ == "__main__":
-    create_combined_csv(["mc6.xls","mc6s.xls","mc6sa.xls"], ["mc6.pdb","mc6s.pdb","mc6sa.pdb"], [0,2,15,16,19,22,27])
+    create_combined_csv(
+        ["mc6.xls", "mc6s.xls", "mc6sa.xls"],
+        ["mc6.pdb", "mc6s.pdb", "mc6sa.pdb"],
+        [0, 2, 15, 16, 19, 22, 27],
+    )

@@ -4,6 +4,7 @@ import os
 import time
 from typing import List, Dict
 
+
 def get_aa_identifiers() -> Dict[str, List[str]]:
     """
     Amino acid naming conventions and basic features.
