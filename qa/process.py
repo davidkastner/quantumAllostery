@@ -360,7 +360,7 @@ def combine_replicates(
     )
 
 
-def get_residue_identifiers(template, by_atom=True):
+def get_residue_identifiers(template, by_atom=True) -> List[str]:
     """
     Gets the residue identifiers such as Ala1 or Cys24.
 
