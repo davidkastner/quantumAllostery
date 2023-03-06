@@ -1,4 +1,4 @@
-"""Backpropogated feature predictions from ML models."""
+"""Layer-wise relevance propogate MD predictions."""
 
 import os
 import sys

@@ -166,7 +166,7 @@ def get_parity_plot(x: List[int], y: List[int]) -> None:
     )
 
 
-def get_charge_distributions(charge_df, out_file, res_x, res_y, ext):
+def get_charge_distributions(charge_df, out_file, res_x, res_y, ext) -> None:
     """
     Creates a charge distribution plot with one residue on each axis.
 
