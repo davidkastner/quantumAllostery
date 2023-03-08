@@ -6,12 +6,16 @@ Getting Started
 1 Overview
 ----------
 
-The quantumAllostery package was designed to automate the identification of charge-transfer events in ab-initio molecular dynamics simulations. Routine tasks can be easily automated using the functionality contained in the library.
+The quantumAllostery package was designed to automate the identification of charge-transfer events in ab-initio molecular dynamics simulations.
+Routine tasks can be easily automated using the functionality contained in the library.
 
 2 Installation
 --------------
 
-Install the package by running the follow commands inside the repository. This will perform a developmental version install. It is good practice to do this inside of a virtual environment. A yaml environmental file has been created to automate the installation of dependencies.
+Install the package by running the follow commands inside the repository.
+This will perform a developmental version install.
+It is good practice to do this inside of a virtual environment.
+A yaml environmental file has been created to automate the installation of dependencies.
 
 **Creating a Conda environment**
 
@@ -29,6 +33,8 @@ If you are going to be developing the package run:
     conda env create -f environment_dev.yml
 
 **Setup developing environment**
+
+Follow these steps to install quantumAllostery.
 
 ::
 
@@ -53,6 +59,11 @@ If you are going to be developing the package run:
 
 4 Expected file structure
 -------------------------
+
+quantumAllostery was originally build for ab-initio simulations with multiple replicates.
+The replicates were run in multiple pieces, as they were computational expensive and required restarts.
+To use the package without changing anything, 
+consider setting up your work flow with this suggested file structure.
 
     The functions will be expecting the following file structure:
     
