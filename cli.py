@@ -197,14 +197,15 @@ def cli(
         click.echo("> Computed charge schemes with Multiwfn:")
         click.echo("> Loading...")
         import qa.analyze
-        compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
+        # compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
         
-        if compute_replicates == "y":
-            qa.manage.run_all_replicates(lambda: qa.analyze.multiwfn_charges())
-        elif compute_replicates == "n":
-            qa.analyze.multiwfn_charges()
-        else:
-            print(f"> {compute_replicates} is not a valid response.")
+        # if compute_replicates == "y":
+        #     qa.manage.run_all_replicates(lambda: qa.analyze.multiwfn_charges())
+        # elif compute_replicates == "n":
+        #     qa.analyze.multiwfn_charges()
+        # else:
+        #     print(f"> {compute_replicates} is not a valid response.")
+        qa.analyze.calculate_charge_schemes("0")
 
 
     else:

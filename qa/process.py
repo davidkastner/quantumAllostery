@@ -6,8 +6,6 @@ import sys
 import glob
 import time
 import shutil
-import subprocess
-import numpy as np
 import pandas as pd
 from collections import OrderedDict
 from typing import List, Tuple

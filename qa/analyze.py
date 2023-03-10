@@ -3,15 +3,16 @@
 import os
 import sys
 import glob
-import shutil
-import numpy as np
 import time
-from sklearn.feature_selection import mutual_info_regression
-from joblib import parallel_backend
+import shutil
+import subprocess
+import numpy as np
 import pandas as pd
-import qa.process
+from joblib import parallel_backend
+from sklearn.feature_selection import mutual_info_regression
 import qa.plot
 import qa.manage
+import qa.process
 
 
 def charge_matrix() -> None:
@@ -402,60 +403,63 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
         )
 
 
-def calculate_charge_schemes(list_of_files: List[str]):
+def calculate_charge_schemes(molden):
     """
     Calculated a variety of charge schemes with Multiwfn.
 
     Compute metal-centered Hirshfeld, Voronoi, Mulliken, and ADCH charges.
     Uses the Multiwfn package to compute the charge partitions.
 
+    Parameters
+    ----------
+    molden: str
+        The name of the molden file to be processed with Multiwfn
+
     """
+    # Try running Multiwfn and throw an error if it fails
+    try:
+        # If installed correctly, Multiwfn can be called with Multiwfn
+        command_A = f"Multiwfn {molden}.molden"
+    except:
+        raise SystemExit('Error: Check Multiwfn installation and conda env.')
+
     start_time = time.time()  # Used to report the executation speed
     job_count = 0 # Keep track of the number of calculations to inform user
     root = os.getcwd() # Old working directory
-
-    # Different charge schemes to be calculated
+    # Different charge schemes to be calculated with Multiwfn
     charge_schemes = {"Hirshfeld": "1", "Voronoi": "2", "Mulliken": "5", "ADCH": "11"}
-
     # Store extracted multiwfn parameters
     temp_dict = {}
+    os.chdir("scr")
 
-    for f in list_of_files:
-        os.chdir(f"{f}/scr")
-        subprocess.call("module load multiwfn/noGUI", shell=True)
-        command_Z = "module load multiwfn/noGUI"
-        command_A = f"/opt/Multiwfn_3.7_bin_Linux_noGUI/Multiwfn {f}.molden"
-        final_dest = "/home/manets12/AuNanocage/solvated_guests/charge_files/"
+    for scheme in charge_schemes:
+        print(f"> Current charge scheme: {scheme}")
+        proc = subprocess.Popen(command_A, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+        calc_command = charge_schemes[scheme]
 
-        for key in charge_schemes:
-            print(f"Current Key: {key}")
-            proc = subprocess.Popen(command_A, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
-            calc_command = charge_schemes[key]
+        # For atomic charge type corresponding to dict key
+        commands = ["7", calc_command, "1", "y", "0", "0", "q"]
+        output = proc.communicate("\n".join(commands).encode())
+        lines = str(output[0]).split("\\n")
+        start = False
+        counter = 0
 
-            # For atomic charge type corresponding to dict key
-            commands = ["7", calc_command, "1", "y", "0", "q"]
-            output = proc.communicate("\n".join(commands).encode())
-            lines = str(output[0]).split("\\n")
-            start = False
-            counter = 0
-
-            for num, line in enumerate(lines):
-                print(line)
-                if "Total valences and free valences" in line:
-                    start = True
-                    continue
-                if start and "Fe" in line:
-                    temp_dict[d] = {"Total valence": float(line.split()[-2]),
-                                "Free valence": float(line.split()[-1])}
-                    counter += 1
-            
-            # Fename the file as the new, desired name
-            new_name = f"{f}_{key}.txt"
-            os.rename(f"{f}.chg", new_name)
-            shutil.copy(new_name, f"{final_dest}{new_name}")  
+        for num, line in enumerate(lines):
+            print(line)
+            if "Total valences and free valences" in line:
+                start = True
+                continue
+            if start and "Fe" in line:
+                temp_dict[d] = {"Total valence": float(line.split()[-2]),
+                            "Free valence": float(line.split()[-1])}
+                counter += 1
         
-        job_count += 1
-        os.chdir(root)
+        # Rename the file as the new, desired name
+        new_name = f"{molden}_{scheme}.txt"
+        os.rename(f"{molden}.chg", new_name)
+    
+    job_count += 1
+    os.chdir(root)
 
     total_time = round(time.time() - start_time, 3)  # Time to run the function
     print(
