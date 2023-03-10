@@ -403,7 +403,7 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
         )
 
 
-def calculate_charge_schemes(molden):
+def calculate_charge_schemes():
     """
     Calculated a variety of charge schemes with Multiwfn.
 
@@ -416,21 +416,29 @@ def calculate_charge_schemes(molden):
         The name of the molden file to be processed with Multiwfn
 
     """
+    # Get the prefix of the molden file
+    molden_files = glob.glob('*.molden')
+    if len(molden_files) == 1:
+        molden = molden_files[0]
+        molden = molden.split(".")[0]
+    elif len(molden_files) == 0:
+        raise Exception("No molden was found.")
+    else:
+        raise Exception("More than one molden was found.")
+
     # Try running Multiwfn and throw an error if it fails
     try:
         # If installed correctly, Multiwfn can be called with Multiwfn
-        command_A = f"Multiwfn {molden}.molden"
+        command_A = f"Multiwfn {molden}.molden -nt 8"
     except:
         raise SystemExit('Error: Check Multiwfn installation and conda env.')
 
     start_time = time.time()  # Used to report the executation speed
     job_count = 0 # Keep track of the number of calculations to inform user
-    root = os.getcwd() # Old working directory
     # Different charge schemes to be calculated with Multiwfn
     charge_schemes = {"Hirshfeld": "1", "Voronoi": "2", "Mulliken": "5", "ADCH": "11"}
     # Store extracted multiwfn parameters
     temp_dict = {}
-    os.chdir("scr")
 
     for scheme in charge_schemes:
         print(f"> Current charge scheme: {scheme}")
@@ -459,7 +467,6 @@ def calculate_charge_schemes(molden):
         os.rename(f"{molden}.chg", new_name)
     
     job_count += 1
-    os.chdir(root)
 
     total_time = round(time.time() - start_time, 3)  # Time to run the function
     print(

@@ -28,7 +28,54 @@ def run_all_replicates(function) -> None:
     replicates_count = 0
 
     # Ignore directories
-    ignore = ["Analysis"]
+    ignore = ["Analysis/", "coordinates/", "inputfiles/"]
+
+    # Loop over the replicate directories
+    for dir in dirs:
+        if dir in ignore:
+            continue
+        else:
+            new_dir = f"{root}/{dir}"
+            if os.path.isdir(new_dir):
+                os.chdir(new_dir)
+                print(f"> Executing function in {new_dir}.")
+                function()
+                replicates_count += 1
+
+    total_time = round(time.time() - start_time, 3)  # Seconds to run
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Combined restarts for {replicates_count} replicates.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
+
+
+def run_all_replicates(function) -> None:
+    """
+    Loops through all replicates and runs a specific funtion on each.
+
+    Often a function needs to be run on all replicates.
+    Given a common file structure, this will take care of all of them at once.
+
+    Notes
+    -----
+    The directories in the first level should contain replicates,
+    and the sub directories should contain restarts.
+    Additional random directories will lead to errors.
+    """
+
+    start_time = time.time()  # Used to report the executation speed
+
+    # Set path elements
+    root = os.getcwd()
+    dirs = sorted(os.listdir(root))
+    replicates_count = 0
+
+    # Ignore directories
+    ignore = ["Analysis", "coordinates", "inputfiles"]
 
     # Loop over the replicate directories
     for dir in dirs:
@@ -159,3 +206,63 @@ def copy_script(script_name) -> None:
     script_loc = f"{this_dir}/scripts/{script_name}"
     destination = f"{os.getcwd()}/{script_name}"
     shutil.copyfile(script_loc, destination)
+
+def all_single_points(first_job: int, last_job: int, step: int, function) -> None:
+    """
+    Loops over the replicates and all single points and performs an operation.
+
+    This is a base function that can be paired with other types of calculations.
+    Pairable with any calculations/analysis run on single point jobs.
+
+    Parameters
+    ----------
+    first_job: int
+        The name of the first directory and first job e.g., 0
+    last_job: int
+        The name of the last directory and last job e.g., 39900
+    step: int
+        The step size between each single point.
+
+    """
+    start_time = time.time()  # Used to report the executation speed
+    ignore = ["Analysis/", "coordinates/", "inputfiles/"]
+
+    # Directory containing all replicates
+    primary_dir = os.getcwd()
+    directories = sorted(glob.glob("*/"))
+    replicates = [i for i in directories if i not in ignore]
+    replicate_count = len(replicates)  # Report to user
+
+    qm_job_count = 0
+    for replicate in replicates:
+        os.chdir(replicate)
+        # The location of the current qm job that we are appending
+        secondary_dir = os.getcwd()
+
+        # A list of all job directories assuming they are named as integers
+        job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
+
+        # Change into one of the QM job directories
+        for index, dir in enumerate(job_dirs):
+            qm_job_count += 1
+            os.chdir(dir)
+            tertiary_dir = os.getcwd()
+            os.chdir("scr/")
+            
+            # Run a function
+            function()
+            os.chdir(secondary_dir)
+
+        print(f"      > Combined {frames} frames.")
+        os.chdir(primary_dir)
+
+    total_time = round(time.time() - start_time, 3)  # Time to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Performed operation on {replicate_count} replicates.
+        \tOUTPUT: Output files for {qm_job_count} single points.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
