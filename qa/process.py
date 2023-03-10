@@ -6,9 +6,11 @@ import sys
 import glob
 import time
 import shutil
+import subprocess
+import numpy as np
+import pandas as pd
 from collections import OrderedDict
 from typing import List, Tuple
-import pandas as pd
 from biopandas.pdb import PandasPdb
 import qa.reference
 
@@ -1002,6 +1004,63 @@ def combine_qm_replicates() -> None:
         """
     )
 
+def get_charge_schemes():
+    """
+    Calculated a variety of charge schemes with Multiwfn.
+
+    Compute metal-centered Hirshfeld, Voronoi, Mulliken, and ADCH charges.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+    # Old working directory
+    owd = os.getcwd()
+
+    # Populate with names of folders of DFT calculations that were sent to job manager
+    list_of_file = ['YIDLOP']
+    charge_schemes = {"Hirshfeld": "1", "Voronoi": "2", "Mulliken": "5", "ADCH": "11"}
+
+    # Store extracted multiwfn parameters
+    temp_dict = {}
+
+    for f in list_of_file:
+        os.chdir(f"{f}/scr")
+        subprocess.call("module load multiwfn/noGUI", shell=True)
+        command_Z = "module load multiwfn/noGUI"
+        command_A = f"/opt/Multiwfn_3.7_bin_Linux_noGUI/Multiwfn {f}.molden"
+        final_dest = "/home/manets12/AuNanocage/solvated_guests/charge_files/"
+
+        for key in charge_schemes:
+            print(f"Current Key: {key}")
+            proc = subprocess.Popen(command_A, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+            calc_command = charge_schemes[key]
+
+            # For atomic charge type corresponding to dict key
+            commands = ["7", calc_command, "1", "y", "0", "q"]
+            output = proc.communicate("\n".join(commands).encode())
+            lines = str(output[0]).split("\\n")
+            start = False
+            counter = 0
+
+            for num, line in enumerate(lines):
+                print(line)
+                if "Total valences and free valences" in line:
+                    start = True
+                    continue
+                if start and "Fe" in line:
+                    temp_dict[d] = {"Total valence": float(line.split()[-2]),
+                                "Free valence": float(line.split()[-1])}
+                    counter += 1
+            
+            # Fename the file as the new, desired name
+            new_name = f"{f}_{key}.txt"
+            os.rename(f"{f}.chg", new_name)
+            shutil.copy(new_name, f"{final_dest}{new_name}")   
+        os.chdir(owd)
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
