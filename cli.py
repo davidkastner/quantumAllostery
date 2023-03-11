@@ -24,6 +24,7 @@ import click
 @click.option("--combine_qm_charges", "-m", is_flag=True, help="Combine charge data across QM single points.")
 @click.option("--predict", "-p", is_flag=True, help="Uses simple ML models to predict key residues.")
 @click.option("--multiwfn_charges", "-q", is_flag=True, help="Calculates charge schemes using MultiWfn.")
+@click.argument("multiwfn_charge_args", nargs=4, type=int, required=False)
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -39,6 +40,7 @@ def cli(
     combine_qm_charges,
     predict,
     multiwfn_charges,
+    multiwfn_charge_args,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -194,15 +196,18 @@ def cli(
         qa.plot.plot_feature_importance(models, templates[0], mutations, by_atom = False)
 
     elif multiwfn_charges:
+        # I had to pass multiwfn_charge_args as an arg although it was ugly
         click.echo("> Computed charge schemes with Multiwfn:")
         click.echo("> Loading...")
         import qa.analyze
 
-        # Which qm single points would you like to process
-        first_job = 0
-        last_job = 39900
-        step = 100
-        qa.manage.all_single_points(first_job, last_job, step, (lambda: qa.analyze.calculate_charge_schemes()))
+        # replicate = 1, first = 0, last = 39900, step = 100
+        replicate = str(multiwfn_charge_args[0])
+        first = multiwfn_charge_args[1]
+        last = multiwfn_charge_args[2]
+        step = multiwfn_charge_args[3]
+        get_charges = lambda: qa.analyze.calculate_charge_schemes()
+        qa.manage.replicate_interval_submit(replicate, first, last, step, get_charges)
 
 
     else:

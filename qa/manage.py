@@ -253,7 +253,6 @@ def all_single_points(first_job: int, last_job: int, step: int, function) -> Non
             function()
             os.chdir(secondary_dir)
 
-        print(f"      > Combined {frames} frames.")
         os.chdir(primary_dir)
 
     total_time = round(time.time() - start_time, 3)  # Time to run the function
@@ -261,6 +260,57 @@ def all_single_points(first_job: int, last_job: int, step: int, function) -> Non
         f"""
         \t----------------------------ALL RUNS END----------------------------
         \tRESULT: Performed operation on {replicate_count} replicates.
+        \tOUTPUT: Output files for {qm_job_count} single points.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
+
+def replicate_interval_submit(replicate: int, first_job: int, last_job: int, step: int, function):
+    """
+    Submits a specific range of sub jobs within a replicate folder.
+
+    I wrote this function for time consuming analysis programs.
+    It takes a long time to compute the Hirshfeld and other charge schemes.
+    This function computes the charge schemes for a subset of the single points
+    from a specific replicate. Dividie and conquer.
+    Written to run on MIT supercloud.
+
+    Parameters
+    ----------
+    replicate: int
+        The number of the replicate that you want to analyze
+    first_job: int
+        The name of the first directory and first job e.g., 0
+    last_job: int
+        The name of the last directory and last job e.g., 39900
+    step: int
+        The step size between each single point.
+
+    """
+    start_time = time.time()  # Used to report the executation speed
+    # Change into the directory of a specific replicate
+    os.chdir(replicate)
+    primary_dir = os.getcwd()
+    # A list of all job directories in the given range assuming integar names
+    job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
+    
+    qm_job_count = 0
+    # Change into one of the QM job directories
+    for index, dir in enumerate(job_dirs):
+        qm_job_count += 1
+        os.chdir(dir)
+        secondary_dir = os.getcwd()
+        os.chdir("scr/")
+        
+        # Run a function
+        function()
+        os.chdir(primary_dir)
+
+    total_time = round(time.time() - start_time, 3)  # Time to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
         \tOUTPUT: Output files for {qm_job_count} single points.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
