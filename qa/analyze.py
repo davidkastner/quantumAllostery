@@ -429,7 +429,7 @@ def calculate_charge_schemes():
     # Try running Multiwfn and throw an error if it fails
     try:
         # If installed correctly, Multiwfn can be called with Multiwfn
-        command_A = f"Multiwfn {molden}.molden -nt 8"
+        command_A = f"Multiwfn {molden}.molden -nt 4"
     except:
         raise SystemExit('Error: Check Multiwfn installation and conda env.')
 
