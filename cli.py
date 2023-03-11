@@ -25,6 +25,7 @@ import click
 @click.option("--predict", "-p", is_flag=True, help="Uses simple ML models to predict key residues.")
 @click.option("--multiwfn_charges", "-q", is_flag=True, help="Calculates charge schemes using MultiWfn.")
 @click.argument("multiwfn_charge_args", nargs=4, type=int, required=False)
+@click.option("--calc_esp", "-r", is_flag=True, help="Calculates metal-centered ESP.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -41,6 +42,7 @@ def cli(
     predict,
     multiwfn_charges,
     multiwfn_charge_args,
+    calc_esp,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -200,6 +202,7 @@ def cli(
         click.echo("> Computed charge schemes with Multiwfn:")
         click.echo("> Loading...")
         import qa.analyze
+        import qa.manage
 
         # replicate = 1, first = 0, last = 39900, step = 100
         replicate = str(multiwfn_charge_args[0])
@@ -208,6 +211,15 @@ def cli(
         step = multiwfn_charge_args[3]
         get_charges = lambda: qa.analyze.calculate_charge_schemes()
         qa.manage.replicate_interval_submit(replicate, first, last, step, get_charges)
+
+    elif calc_esp:
+        click.echo("> Computed charge schemes with Multiwfn:")
+        click.echo("> Loading...")
+        import qa.analyze
+        import qa.manage
+
+        qa.analyze.calculate_esp(0)
+
 
 
     else:

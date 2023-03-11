@@ -484,7 +484,7 @@ def calculate_charge_schemes():
     )
 
 
-def calculate_esp():
+def calculate_esp(qm_frame, species):
     """
     Calculate the electrostatic potential (ESP).
 
@@ -493,60 +493,68 @@ def calculate_esp():
 
     Parameters
     ----------
+    qm_frame: int
+        The index of the current qm frame to be calculated
+    species: Dict[str:List[str]]
+        The species to calculate the ESP and their atoms
+        Atoms can be entered as strings with dashes for easy
+        "iron":[486], "heme":[425-287], "his":[87-103]
 
     Returns
     -------
 
     """
-    df = pd.read_csv(
-        "gas_phaseYIDLOP_Voronoi.txt",
-        sep="\s+",
-        names=["Atom", "x", "y", "z", "charge"],
-    )
-    # Coulombic constant in kg*m**3/(s**4*A**2)
-    k = 8.987551 * (10**9)
+    charge_schemes = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
+    for scheme in charge_schemes:
+        df = pd.read_csv(
+            f"{qm_frame}_{scheme}.txt",
+            sep="\s+",
+            names=["Atom", "x", "y", "z", "charge"],
+        )
+        # Coulombic constant in kg*m**3/(s**4*A**2)
+        k = 8.987551 * (10**9)
 
-    # Convert each column to list for quicker indexing
-    atoms = df["Atom"]
-    charges = df["charge"]
-    xs = df["x"]
-    ys = df["y"]
-    zs = df["z"]
+        # Convert each column to list for quicker indexing
+        atoms = df["Atom"]
+        charges = df["charge"]
+        xs = df["x"]
+        ys = df["y"]
+        zs = df["z"]
 
-    # Pick the index of the atom at which the esp should be calculated
-    idx_atom = 0
+        # A dictionary of atoms of individual molecules (e.g. iron or heme)
+        species = {"iron":[486], "heme":[], "his":[]}
+        for idx_atom in species:
 
-    # Determine position and charge of the target atom
-    xo = xs[idx_atom]
-    yo = ys[idx_atom]
-    zo = zs[idx_atom]
-    chargeo = charges[0]
-    total_esp = 0
+            # Determine position and charge of the target atom
+            xo = xs[idx_atom]
+            yo = ys[idx_atom]
+            zo = zs[idx_atom]
+            chargeo = charges[0]
+            total_esp = 0
 
-    # Unit conversion
-    A_to_m = 10 ** (-10)
-    KJ_J = 10**-3
-    faraday = 23.06  # kcal/(mol*V)
-    C_e = 1.6023 * (10**-19)
-    one_mol = 6.02 * (10**23)
-    cal_J = 4.184
+            # Unit conversion
+            A_to_m = 10 ** (-10)
+            KJ_J = 10**-3
+            faraday = 23.06  # kcal/(mol*V)
+            C_e = 1.6023 * (10**-19)
+            one_mol = 6.02 * (10**23)
+            cal_J = 4.184
 
-    for idx in range(0, len(atoms)):
-        if idx == idx_atom:
-            continue
-        else:
-            # Calculate esp and convert to units (A to m)
-            r = (
-                ((xs[idx] - xo) * A_to_m) ** 2
-                + ((ys[idx] - yo) * A_to_m) ** 2
-                + ((zs[idx] - zo) * A_to_m) ** 2
-            ) ** (0.5)
-            total_esp = total_esp + (charges[idx] / r)
+            for idx in range(0, len(atoms)):
+                if idx == idx_atom:
+                    continue
+                else:
+                    # Calculate esp and convert to units (A to m)
+                    r = (
+                        ((xs[idx] - xo) * A_to_m) ** 2
+                        + ((ys[idx] - yo) * A_to_m) ** 2
+                        + ((zs[idx] - zo) * A_to_m) ** 2
+                    ) ** (0.5)
+                    total_esp = total_esp + (charges[idx] / r)
 
-    final_esp = (
-        k * total_esp * ((C_e)) * cal_J * faraday
-    )  # Note that cal/kcal * kJ/J gives 1
-    print(f"{str(final_esp)} kJ/(mol*e)")
+            # Note that cal/kcal * kJ/J gives 1
+            final_esp = (k * total_esp * ((C_e)) * cal_J * faraday)
+            print(f"{scheme}: {str(final_esp)} kJ/(mol*e)")
 
 
 if __name__ == "__main__":
