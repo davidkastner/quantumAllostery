@@ -417,7 +417,7 @@ def calculate_charge_schemes():
 
     """
     # Get the prefix of the molden file
-    molden_files = glob.glob('*.molden')
+    molden_files = glob.glob("*.molden")
     if len(molden_files) == 1:
         molden = molden_files[0]
         molden = molden.split(".")[0]
@@ -431,10 +431,10 @@ def calculate_charge_schemes():
         # If installed correctly, Multiwfn can be called with Multiwfn
         command_A = f"Multiwfn {molden}.molden -nt 4"
     except:
-        raise SystemExit('Error: Check Multiwfn installation and conda env.')
+        raise SystemExit("Error: Check Multiwfn installation and conda env.")
 
     start_time = time.time()  # Used to report the executation speed
-    job_count = 0 # Keep track of the number of calculations to inform user
+    job_count = 0  # Keep track of the number of calculations to inform user
     # Different charge schemes to be calculated with Multiwfn
     charge_schemes = {"Hirshfeld": "1", "Voronoi": "2", "Mulliken": "5", "ADCH": "11"}
     # Store extracted multiwfn parameters
@@ -442,7 +442,9 @@ def calculate_charge_schemes():
 
     for scheme in charge_schemes:
         print(f"> Current charge scheme: {scheme}")
-        proc = subprocess.Popen(command_A, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+        proc = subprocess.Popen(
+            command_A, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True
+        )
         calc_command = charge_schemes[scheme]
 
         # For atomic charge type corresponding to dict key
@@ -458,14 +460,16 @@ def calculate_charge_schemes():
                 start = True
                 continue
             if start and "Fe" in line:
-                temp_dict[d] = {"Total valence": float(line.split()[-2]),
-                            "Free valence": float(line.split()[-1])}
+                temp_dict[d] = {
+                    "Total valence": float(line.split()[-2]),
+                    "Free valence": float(line.split()[-1]),
+                }
                 counter += 1
-        
+
         # Rename the file as the new, desired name
         new_name = f"{molden}_{scheme}.txt"
         os.rename(f"{molden}.chg", new_name)
-    
+
     job_count += 1
 
     total_time = round(time.time() - start_time, 3)  # Time to run the function
@@ -494,9 +498,13 @@ def calculate_esp():
     -------
 
     """
-    df = pd.read_csv("gas_phaseYIDLOP_Voronoi.txt", sep="\s+", names=["Atom", "x", "y", "z", "charge"])
+    df = pd.read_csv(
+        "gas_phaseYIDLOP_Voronoi.txt",
+        sep="\s+",
+        names=["Atom", "x", "y", "z", "charge"],
+    )
     # Coulombic constant in kg*m**3/(s**4*A**2)
-    k = 8.987551*(10**9)
+    k = 8.987551 * (10**9)
 
     # Convert each column to list for quicker indexing
     atoms = df["Atom"]
@@ -516,11 +524,11 @@ def calculate_esp():
     total_esp = 0
 
     # Unit conversion
-    A_to_m = 10**(-10)
+    A_to_m = 10 ** (-10)
     KJ_J = 10**-3
-    faraday = 23.06   #kcal/(mol*V)
-    C_e = 1.6023*(10**-19)
-    one_mol = 6.02*(10**23)
+    faraday = 23.06  # kcal/(mol*V)
+    C_e = 1.6023 * (10**-19)
+    one_mol = 6.02 * (10**23)
     cal_J = 4.184
 
     for idx in range(0, len(atoms)):
@@ -528,10 +536,16 @@ def calculate_esp():
             continue
         else:
             # Calculate esp and convert to units (A to m)
-            r = (((xs[idx] - xo)*A_to_m)**2 + ((ys[idx] - yo)*A_to_m)**2 + ((zs[idx] - zo)*A_to_m)**2)**(0.5)
-            total_esp = total_esp + (charges[idx]/r)
+            r = (
+                ((xs[idx] - xo) * A_to_m) ** 2
+                + ((ys[idx] - yo) * A_to_m) ** 2
+                + ((zs[idx] - zo) * A_to_m) ** 2
+            ) ** (0.5)
+            total_esp = total_esp + (charges[idx] / r)
 
-    final_esp = k*total_esp*((C_e))*cal_J*faraday   # Note that cal/kcal * kJ/J gives 1
+    final_esp = (
+        k * total_esp * ((C_e)) * cal_J * faraday
+    )  # Note that cal/kcal * kJ/J gives 1
     print(f"{str(final_esp)} kJ/(mol*e)")
 
 

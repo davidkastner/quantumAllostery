@@ -207,6 +207,7 @@ def copy_script(script_name) -> None:
     destination = f"{os.getcwd()}/{script_name}"
     shutil.copyfile(script_loc, destination)
 
+
 def all_single_points(first_job: int, last_job: int, step: int, function) -> None:
     """
     Loops over the replicates and all single points and performs an operation.
@@ -248,7 +249,7 @@ def all_single_points(first_job: int, last_job: int, step: int, function) -> Non
             os.chdir(dir)
             tertiary_dir = os.getcwd()
             os.chdir("scr/")
-            
+
             # Run a function
             function()
             os.chdir(secondary_dir)
@@ -266,7 +267,10 @@ def all_single_points(first_job: int, last_job: int, step: int, function) -> Non
         """
     )
 
-def replicate_interval_submit(replicate: int, first_job: int, last_job: int, step: int, function):
+
+def replicate_interval_submit(
+    replicate: int, first_job: int, last_job: int, step: int, function
+):
     """
     Submits a specific range of sub jobs within a replicate folder.
 
@@ -294,7 +298,7 @@ def replicate_interval_submit(replicate: int, first_job: int, last_job: int, ste
     primary_dir = os.getcwd()
     # A list of all job directories in the given range assuming integar names
     job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
-    
+
     qm_job_count = 0
     # Change into one of the QM job directories
     for index, dir in enumerate(job_dirs):
@@ -302,7 +306,7 @@ def replicate_interval_submit(replicate: int, first_job: int, last_job: int, ste
         os.chdir(dir)
         secondary_dir = os.getcwd()
         os.chdir("scr/")
-        
+
         # Run a function
         function()
         os.chdir(primary_dir)
