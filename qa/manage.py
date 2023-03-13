@@ -6,7 +6,6 @@ import shutil
 import glob
 import qa.analyze
 import pandas as pd
-from numba import jit
 
 
 def run_all_replicates(function) -> None:
@@ -249,7 +248,8 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
         # Create a pandas dataframe with the columns from components keys
         charge_scheme_df = pd.DataFrame(columns=components.keys())
 
-        # Loop over each replicate    
+        # Loop over each replicate
+        row_index = 0    
         for replicate in replicates:
             os.chdir(replicate)
 
@@ -264,20 +264,26 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
                 os.chdir(dir)
                 tertiary_dir = os.getcwd()
                 os.chdir("scr/")
+                row_index += 1
 
-                # Run a function
-                try:
-                    component_esp_list = qa.analyze.calculate_esp(components, scheme)
-                except:
-                    end = time.time()
-                    print(end-start)
-                charge_scheme_df.loc[len(charge_scheme_df)] = component_esp_list
+                # Loop of the values of our dictionary
+                for key,value in components.items():
+                    component_atoms = []
+                    # Convert number strings, with commas and dashes, to numbers
+                    for range_str in value.split(","):
+                        start, end = map(int, range_str.split("-"))
+                        component_atoms.extend(range(start - 1, end))
+
+                        # Run a function
+                        component_esp = qa.analyze.calculate_esp(component_atoms, scheme)
+                        charge_scheme_df.loc[row_index, key] = component_esp
 
                 # Move back to the QM job directory
                 qm_job_count += 1
                 os.chdir(secondary_dir)
 
-            os.chdir(primary_dir, primary_dir)
+            os.chdir(primary_dir)
+            charge_scheme_df.to_csv(f"{scheme}_esp.csv")
         
         # Save the dataframe to a csv file
         charge_scheme_df.to_csv(f"{scheme}_esp.csv")

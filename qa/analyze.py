@@ -429,7 +429,7 @@ def calculate_charge_schemes():
     # Try running Multiwfn and throw an error if it fails
     try:
         # If installed correctly, Multiwfn can be called with Multiwfn
-        command_A = f"Multiwfn {molden}.molden -nt 4"
+        command_A = f"Multiwfn {molden}.molden -nt 22"
     except:
         raise SystemExit("Error: Check Multiwfn installation and conda env.")
 
@@ -483,8 +483,7 @@ def calculate_charge_schemes():
         """
     )
 
-@jit
-def calculate_esp(components, scheme):
+def calculate_esp(component_atoms, scheme):
     """
     Calculate the electrostatic potential (ESP) of a molecular component.
 
@@ -495,9 +494,8 @@ def calculate_esp(components, scheme):
 
     Parameters
     ----------
-    components: dict[str:str]
-        A dictionary of the different components with their atoms ranges.
-        Strings are used to include hyphens.
+    component_atoms: List[int]
+        A list of the atoms in a given component
 
     """
     # Physical constants
@@ -509,63 +507,53 @@ def calculate_esp(components, scheme):
     one_mol = 6.02 * (10**23)
     cal_J = 4.184
     component_esp_list = []
-
-    # Loop of the values of our dictionary
-    for component in components.values():
-        component_atoms = []
-
-        # Convert number strings, with commas and dashes, to numbers
-        for range_str in component.split(","):
-            start, end = map(int, range_str.split("-"))
-            component_atoms.extend(range(start - 1, end))
         
-        # Open a charge scheme file as a pandas dataframe
-        file_path = glob.glob(f"*_{scheme}.txt")[0]
-        df_all = pd.read_csv(
-            file_path,
-            sep="\s+",
-            names=["Atom", "x", "y", "z", "charge"])
+    # Open a charge scheme file as a pandas dataframe
+    file_path = glob.glob(f"*_{scheme}.txt")[0]
+    df_all = pd.read_csv(
+        file_path,
+        sep="\s+",
+        names=["Atom", "x", "y", "z", "charge"])
 
-        # The index of the metal center assuming iron Fe
-        metal_index = df_all.index[df_all["Atom"] == "Fe"][0]
-        component_atoms.append(metal_index)
+    # The index of the metal center assuming iron Fe
+    metal_index = df_all.index[df_all["Atom"] == "Fe"][0]
+    component_atoms.append(metal_index)
 
-        # Select rows corresponding to an atoms in the component
-        df = df_all[df_all.index.isin(component_atoms)]
-        df.reset_index(drop=True, inplace=True)
-        
-        # Get the new index of the metal as it will have changed
-        metal_index = df.index[df["Atom"] == "Fe"][0]
+    # Select rows corresponding to an atoms in the component
+    df = df_all[df_all.index.isin(component_atoms)]
+    df.reset_index(drop=True, inplace=True)
+    
+    # Get the new index of the metal as it will have changed
+    metal_index = df.index[df["Atom"] == "Fe"][0]
 
-        # Convert columns lists for indexing
-        atoms = df["Atom"] # Now contains only atoms in component
-        charges = df["charge"]
-        xs = df["x"]
-        ys = df["y"]
-        zs = df["z"]
+    # Convert columns lists for indexing
+    atoms = df["Atom"] # Now contains only atoms in component
+    charges = df["charge"]
+    xs = df["x"]
+    ys = df["y"]
+    zs = df["z"]
 
-        # Determine position and charge of the target atom
-        xo = xs[metal_index]
-        yo = ys[metal_index]
-        zo = zs[metal_index]
-        chargeo = charges[metal_index]
-        total_esp = 0
+    # Determine position and charge of the target atom
+    xo = xs[metal_index]
+    yo = ys[metal_index]
+    zo = zs[metal_index]
+    chargeo = charges[metal_index]
+    total_esp = 0
 
-        for idx in range(0, len(atoms)):
-            if idx == metal_index:
-                continue
-            else:
-                # Calculate esp and convert to units (A to m)
-                r = (((xs[idx] - xo) * A_to_m) ** 2
-                + ((ys[idx] - yo) * A_to_m) ** 2
-                + ((zs[idx] - zo) * A_to_m) ** 2) ** 0.5
-                total_esp = total_esp + (charges[idx] / r)
+    for idx in range(0, len(atoms)):
+        if idx == metal_index:
+            continue
+        else:
+            # Calculate esp and convert to units (A to m)
+            r = (((xs[idx] - xo) * A_to_m) ** 2
+            + ((ys[idx] - yo) * A_to_m) ** 2
+            + ((zs[idx] - zo) * A_to_m) ** 2) ** 0.5
+            total_esp = total_esp + (charges[idx] / r)
 
-        # Note that cal/kcal * kJ/J gives 1
-        component_esp = (k * total_esp * ((C_e)) * cal_J * faraday)
-        component_esp_list.append(component_esp)
+    # Note that cal/kcal * kJ/J gives 1
+    component_esp = (k * total_esp * ((C_e)) * cal_J * faraday)
 
-    return component_esp_list
+    return component_esp
 
 
 if __name__ == "__main__":
