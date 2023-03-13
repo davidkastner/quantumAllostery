@@ -483,6 +483,7 @@ def calculate_charge_schemes():
         """
     )
 
+
 def calculate_esp(component_atoms, scheme):
     """
     Calculate the electrostatic potential (ESP) of a molecular component.
@@ -499,7 +500,7 @@ def calculate_esp(component_atoms, scheme):
 
     """
     # Physical constants
-    k = 8.987551 * (10**9) # Coulombic constant in kg*m**3/(s**4*A**2)
+    k = 8.987551 * (10**9)  # Coulombic constant in kg*m**3/(s**4*A**2)
     A_to_m = 10 ** (-10)
     KJ_J = 10**-3
     faraday = 23.06  # Kcal/(mol*V)
@@ -507,13 +508,10 @@ def calculate_esp(component_atoms, scheme):
     one_mol = 6.02 * (10**23)
     cal_J = 4.184
     component_esp_list = []
-        
+
     # Open a charge scheme file as a pandas dataframe
     file_path = glob.glob(f"*_{scheme}.txt")[0]
-    df_all = pd.read_csv(
-        file_path,
-        sep="\s+",
-        names=["Atom", "x", "y", "z", "charge"])
+    df_all = pd.read_csv(file_path, sep="\s+", names=["Atom", "x", "y", "z", "charge"])
 
     # The index of the metal center assuming iron Fe
     metal_index = df_all.index[df_all["Atom"] == "Fe"][0]
@@ -522,12 +520,12 @@ def calculate_esp(component_atoms, scheme):
     # Select rows corresponding to an atoms in the component
     df = df_all[df_all.index.isin(component_atoms)]
     df.reset_index(drop=True, inplace=True)
-    
+
     # Get the new index of the metal as it will have changed
     metal_index = df.index[df["Atom"] == "Fe"][0]
 
     # Convert columns lists for indexing
-    atoms = df["Atom"] # Now contains only atoms in component
+    atoms = df["Atom"]  # Now contains only atoms in component
     charges = df["charge"]
     xs = df["x"]
     ys = df["y"]
@@ -545,13 +543,15 @@ def calculate_esp(component_atoms, scheme):
             continue
         else:
             # Calculate esp and convert to units (A to m)
-            r = (((xs[idx] - xo) * A_to_m) ** 2
-            + ((ys[idx] - yo) * A_to_m) ** 2
-            + ((zs[idx] - zo) * A_to_m) ** 2) ** 0.5
+            r = (
+                ((xs[idx] - xo) * A_to_m) ** 2
+                + ((ys[idx] - yo) * A_to_m) ** 2
+                + ((zs[idx] - zo) * A_to_m) ** 2
+            ) ** 0.5
             total_esp = total_esp + (charges[idx] / r)
 
     # Note that cal/kcal * kJ/J gives 1
-    component_esp = (k * total_esp * ((C_e)) * cal_J * faraday)
+    component_esp = k * total_esp * ((C_e)) * cal_J * faraday
 
     return component_esp
 

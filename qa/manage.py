@@ -234,7 +234,14 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
     start_time = time.time()  # Used to report the executation speed
     ignore = ["Analysis/", "coordinates/", "inputfiles/"]
     charge_schemes = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
-    components = {"all":"1-487", "lower":"1-252", "upper":"253-424", "lower_no_his":"1-86,104-252", "heme":"425-486", "his":"87-103"}
+    components = {
+        "all": "1-487",
+        "lower": "1-252",
+        "upper": "253-424",
+        "lower_no_his": "1-86,104-252",
+        "heme": "425-486",
+        "his": "87-103",
+    }
     qm_job_count = 0
 
     # Directory containing all replicates
@@ -249,7 +256,7 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
         charge_scheme_df = pd.DataFrame(columns=components.keys())
 
         # Loop over each replicate
-        row_index = 0    
+        row_index = 0
         for replicate in replicates:
             os.chdir(replicate)
 
@@ -267,7 +274,7 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
                 row_index += 1
 
                 # Loop of the values of our dictionary
-                for key,value in components.items():
+                for key, value in components.items():
                     component_atoms = []
                     # Convert number strings, with commas and dashes, to numbers
                     for range_str in value.split(","):
@@ -275,7 +282,9 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
                         component_atoms.extend(range(start - 1, end))
 
                         # Run a function
-                        component_esp = qa.analyze.calculate_esp(component_atoms, scheme)
+                        component_esp = qa.analyze.calculate_esp(
+                            component_atoms, scheme
+                        )
                         charge_scheme_df.loc[row_index, key] = component_esp
 
                 # Move back to the QM job directory
@@ -284,7 +293,7 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
 
             os.chdir(primary_dir)
             charge_scheme_df.to_csv(f"{scheme}_esp.csv")
-        
+
         # Save the dataframe to a csv file
         charge_scheme_df.to_csv(f"{scheme}_esp.csv")
 
