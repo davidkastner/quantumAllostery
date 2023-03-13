@@ -4,6 +4,9 @@ import os
 import time
 import shutil
 import glob
+import qa.analyze
+import pandas as pd
+from numba import jit
 
 
 def run_all_replicates(function) -> None:
@@ -208,12 +211,12 @@ def copy_script(script_name) -> None:
     shutil.copyfile(script_loc, destination)
 
 
-def all_single_points(first_job: int, last_job: int, step: int, function) -> None:
+def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
     """
-    Loops over the replicates and all single points and performs an operation.
+    Loops over replicates and single points and collects metal-centered ESPs.
 
-    This is a base function that can be paired with other types of calculations.
-    Pairable with any calculations/analysis run on single point jobs.
+    The main purpose is to navigagt the file structure and collect the data.
+    The computing of the ESP is done in the calculate_esp() function.
 
     Parameters
     ----------
@@ -224,9 +227,16 @@ def all_single_points(first_job: int, last_job: int, step: int, function) -> Non
     step: int
         The step size between each single point.
 
+    See Also
+    --------
+    qa.analyze.calculate_esp()
+
     """
     start_time = time.time()  # Used to report the executation speed
     ignore = ["Analysis/", "coordinates/", "inputfiles/"]
+    charge_schemes = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
+    components = {"all":"1-487", "lower":"1-252", "upper":"253-424", "lower_no_his":"1-86,104-252", "heme":"425-486", "his":"87-103"}
+    qm_job_count = 0
 
     # Directory containing all replicates
     primary_dir = os.getcwd()
@@ -234,27 +244,43 @@ def all_single_points(first_job: int, last_job: int, step: int, function) -> Non
     replicates = [i for i in directories if i not in ignore]
     replicate_count = len(replicates)  # Report to user
 
-    qm_job_count = 0
-    for replicate in replicates:
-        os.chdir(replicate)
-        # The location of the current qm job that we are appending
-        secondary_dir = os.getcwd()
+    # Loop over each charge scheme which will be in the scr/ directory
+    for scheme in charge_schemes:
+        # Create a pandas dataframe with the columns from components keys
+        charge_scheme_df = pd.DataFrame(columns=components.keys())
 
-        # A list of all job directories assuming they are named as integers
-        job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
+        # Loop over each replicate    
+        for replicate in replicates:
+            os.chdir(replicate)
 
-        # Change into one of the QM job directories
-        for index, dir in enumerate(job_dirs):
-            qm_job_count += 1
-            os.chdir(dir)
-            tertiary_dir = os.getcwd()
-            os.chdir("scr/")
+            # The location of the current qm job that we are appending
+            secondary_dir = os.getcwd()
 
-            # Run a function
-            function()
-            os.chdir(secondary_dir)
+            # A list of all job directories assuming they are named as integers
+            job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
 
-        os.chdir(primary_dir)
+            # Change into one of the QM job directories
+            for dir in job_dirs:
+                os.chdir(dir)
+                tertiary_dir = os.getcwd()
+                os.chdir("scr/")
+
+                # Run a function
+                try:
+                    component_esp_list = qa.analyze.calculate_esp(components, scheme)
+                except:
+                    end = time.time()
+                    print(end-start)
+                charge_scheme_df.loc[len(charge_scheme_df)] = component_esp_list
+
+                # Move back to the QM job directory
+                qm_job_count += 1
+                os.chdir(secondary_dir)
+
+            os.chdir(primary_dir, primary_dir)
+        
+        # Save the dataframe to a csv file
+        charge_scheme_df.to_csv(f"{scheme}_esp.csv")
 
     total_time = round(time.time() - start_time, 3)  # Time to run the function
     print(

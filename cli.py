@@ -204,7 +204,7 @@ def cli(
         import qa.analyze
         import qa.manage
 
-        # replicate = 1, first = 0, last = 39900, step = 100
+        # replicate = 1, first = 0, last = 39901, step = 100
         replicate = str(multiwfn_charge_args[0])
         first = multiwfn_charge_args[1]
         last = multiwfn_charge_args[2]
@@ -218,8 +218,11 @@ def cli(
         import qa.analyze
         import qa.manage
 
-        qa.analyze.calculate_esp(0)
+        first = 0
+        last = 39901
+        step = 100
 
+        qa.manage.collect_esp_components(first, last, step)
 
 
     else:
