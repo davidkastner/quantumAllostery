@@ -282,9 +282,12 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
                         component_atoms.extend(range(start - 1, end))
 
                         # Run a function
-                        component_esp = qa.analyze.calculate_esp(
-                            component_atoms, scheme
-                        )
+                        try:
+                            component_esp = qa.analyze.calculate_esp(
+                                component_atoms, scheme
+                            )
+                        except:
+                            print(f"Job: {replicate}-->{dir}")
                         charge_scheme_df.loc[row_index, key] = component_esp
 
                 # Move back to the QM job directory
@@ -292,10 +295,9 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
                 os.chdir(secondary_dir)
 
             os.chdir(primary_dir)
-            charge_scheme_df.to_csv(f"{scheme}_esp.csv")
 
         # Save the dataframe to a csv file
-        charge_scheme_df.to_csv(f"{scheme}_esp.csv")
+        charge_scheme_df.to_csv(f"{scheme}_esp.csv", index=False)
 
     total_time = round(time.time() - start_time, 3)  # Time to run the function
     print(

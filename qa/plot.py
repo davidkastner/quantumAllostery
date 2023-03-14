@@ -279,3 +279,84 @@ def plot_feature_importance(
     ax.tick_params(axis="y", which="minor", length=4, width=2)
     plt.savefig("feature_importance.png", bbox_inches="tight", format="png", dpi=300)
     plt.close()
+
+def esp_separate_barchart() -> None:
+    """
+    Plots the ESP for one single charge scheme as a barchart with error bars.
+
+    The ESP analysis outputs multicolumn dataframes for components.
+    This allows us to compare metal-centered ESP contributions for components.
+
+    """
+    # Apply Kulik plotting format
+    qa.plot.format_plot()
+
+    schemes = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
+    colors = ["blue", "red", "green", "gray"]
+
+    for index,scheme in enumerate(schemes):
+        # Generate a dataframe from the data
+        df = pd.read_csv(f"{scheme}.csv")
+
+        # Compute the means and standard deviations
+        means = df.mean()
+        stds = df.std()
+        
+        # create the bar chart with error bars
+        plt.bar(means.index, means.values, yerr=stds.values, color=colors[index], align='center', ecolor='black', capsize=10)
+        plt.xlabel('Components', weight="bold")
+        plt.ylabel(f'{scheme} ESP kJ/(mol x e)', weight="bold")
+        plt.axhline(y=0, color='black', linestyle='--')
+        ext = "png"
+        plt.savefig(f"{scheme}.{ext}", bbox_inches="tight", format=ext, dpi=300)
+        plt.close()
+
+
+def esp_combined_barchart() -> None:
+    """
+    Plots the ESP for all charge schemes as a barchart with error bars.
+
+    The ESP analysis outputs multicolumn dataframes for components.
+    This allows us to compare metal-centered ESP contributions for components.
+    This combined version also allows us to compare different charge schemes.
+    
+    """
+    # Apply Kulik plotting format
+    qa.plot.format_plot()
+
+    # Set the width of each bar
+    bar_width = 0.2
+
+    schemes = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
+    df1 = pd.read_csv(f'{schemes[0]}.csv')
+    df2 = pd.read_csv(f'{schemes[1]}.csv')
+    df3 = pd.read_csv(f'{schemes[2]}.csv')
+    df4 = pd.read_csv(f'{schemes[3]}.csv')
+
+    
+    # Create a list of x-coordinates for each bar
+    r1 = range(len(df1.columns))
+    r2 = [x + bar_width for x in r1]
+    r3 = [x + bar_width for x in r2]
+    r4 = [x + bar_width for x in r3]
+
+    # create the bar chart with error bars
+    plt.bar(r1, df1.mean().values, yerr=df1.std().values, width=bar_width, color="blue", align='center', ecolor='black', capsize=10, label=schemes[0])
+    plt.bar(r2, df2.mean().values, yerr=df2.std().values, width=bar_width, color="red", align='center', ecolor='black', capsize=10, label=schemes[1])
+    plt.bar(r3, df3.mean().values, yerr=df3.std().values, width=bar_width, color="green", align='center', ecolor='black', capsize=10, label=schemes[2])
+    plt.bar(r4, df4.mean().values, yerr=df4.std().values, width=bar_width, color="gray", align='center', ecolor='black', capsize=10, label=schemes[3])
+    
+    plt.xlabel('Components', weight="bold")
+    plt.ylabel('ESP kJ/(mol x e)', weight="bold")
+    plt.axhline(y=0, color='black', linestyle='--')
+    
+    plt.xticks([r + bar_width*1.5 for r in r1], df1.mean().index)
+    plt.legend()
+
+    ext = "png"
+    plt.savefig(f"combined.{ext}", bbox_inches="tight", format=ext, dpi=300)
+    plt.close()
+
+if __name__ == "__main__":
+    # Run the command-line interface when this script is executed
+    esp_nomulliken_barchart()

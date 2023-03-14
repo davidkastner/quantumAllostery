@@ -217,11 +217,9 @@ def cli(
         click.echo("> Loading...")
         import qa.analyze
         import qa.manage
-
         first = 0
         last = 39901
         step = 100
-
         qa.manage.collect_esp_components(first, last, step)
 
 

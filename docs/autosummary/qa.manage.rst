@@ -15,8 +15,10 @@
    
       check_file
       check_folder
+      collect_esp_components
       copy_script
       find_stalled
+      replicate_interval_submit
       run_all_replicates
    
    
