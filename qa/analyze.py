@@ -13,6 +13,7 @@ from sklearn.feature_selection import mutual_info_regression
 import qa.plot
 import qa.manage
 import qa.process
+import select
 
 
 def charge_matrix() -> None:
@@ -189,6 +190,8 @@ def get_joint_qres(res_x, res_y):
 
     Returns
     -------
+    joint_df: pd.DataFrame()
+        A dataframe with the charge information for both correlated residues.
 
     Notes
     -----
@@ -202,12 +205,15 @@ def get_joint_qres(res_x, res_y):
 
     """
     start_time = time.time()  # Used to report the executation speed
-    # Add folder for the analysis
+    # Create folder for the analysis
     root = os.getcwd()
     os.chdir("Analysis")
     if not os.path.isdir("3_coupling"):
         os.makedirs("3_coupling")
     os.chdir(root)
+
+    # 
+    structure = 0
 
     # Create a new data frame to append the two residues of interest
     residues = [res_x, res_y]
@@ -223,10 +229,12 @@ def get_joint_qres(res_x, res_y):
         atom_indices = qa.process.get_res_atom_indices(res)
         # Sum the charges of the atoms of the requested residues
         summed_charges = charge_df[charge_df.columns[atom_indices]].sum(axis=1).tolist()
-        charge_df.to_csv("charge_df.csv")
 
         # Add the summed residue to the new dataframe
         joint_df[res] = summed_charges
+
+    # Save out the dataframe
+    joint_df.to_csv("charge_df.csv")
 
     ext = "png"
     plot_name = f"{res_x}_{res_y}_dist.{ext}"
@@ -426,12 +434,11 @@ def calculate_charge_schemes():
     else:
         raise Exception("More than one molden was found.")
 
-    # Try running Multiwfn and throw an error if it fails
-    try:
-        # If installed correctly, Multiwfn can be called with Multiwfn
-        command_A = f"Multiwfn {molden}.molden -nt 22"
-    except:
-        raise SystemExit("Error: Check Multiwfn installation and conda env.")
+    # If installed correctly, Multiwfn can be called with Multiwfn
+    threads = 4
+    # Setting the threads too high can cause peformance problems
+    command = f"Multiwfn {molden}.molden -nt {threads}"
+    print(f"> Using {threads} threads for Multiwfn")
 
     start_time = time.time()  # Used to report the executation speed
     job_count = 0  # Keep track of the number of calculations to inform user
@@ -443,13 +450,24 @@ def calculate_charge_schemes():
     for scheme in charge_schemes:
         print(f"> Current charge scheme: {scheme}")
         proc = subprocess.Popen(
-            command_A, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True
+            command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True
         )
         calc_command = charge_schemes[scheme]
 
         # For atomic charge type corresponding to dict key
         commands = ["7", calc_command, "1", "y", "0", "0", "q"]
-        output = proc.communicate("\n".join(commands).encode())
+
+        # Run Multiwfn
+        proc.stdin.write("\n".join(commands).encode())
+        proc.stdin.close()
+
+        # Watch the Multiwfn output in real time for troubleshooting
+        verbose = True
+        if verbose:
+            for line in iter(proc.stdout.readline, b''):
+                print(f"   > {line.decode().strip()}")
+
+        # Process the output of Multiwfn
         lines = str(output[0]).split("\\n")
         start = False
         counter = 0
@@ -549,6 +567,7 @@ def calculate_esp(component_atoms, scheme):
                 + ((zs[idx] - zo) * A_to_m) ** 2
             ) ** 0.5
             total_esp = total_esp + (charges[idx] / r)
+            print(total_esp)
 
     # Note that cal/kcal * kJ/J gives 1
     component_esp = k * total_esp * ((C_e)) * cal_J * faraday

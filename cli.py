@@ -26,6 +26,7 @@ import click
 @click.option("--multiwfn_charges", "-q", is_flag=True, help="Calculates charge schemes using MultiWfn.")
 @click.argument("multiwfn_charge_args", nargs=4, type=int, required=False)
 @click.option("--calc_esp", "-r", is_flag=True, help="Calculates metal-centered ESP.")
+@click.option("--check_esp_failed", "-s", is_flag=True, help="Checks for unfinished ESP jobs.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -43,6 +44,7 @@ def cli(
     multiwfn_charges,
     multiwfn_charge_args,
     calc_esp,
+    check_esp_failed,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -221,6 +223,12 @@ def cli(
         last = 39901
         step = 100
         qa.manage.collect_esp_components(first, last, step)
+
+    elif check_esp_failed:
+        click.echo("> Checking for unfinished ESP jobs:")
+        click.echo("> Loading...")
+        import qa.manage
+        qa.manage.check_esp_failed()
 
 
     else:

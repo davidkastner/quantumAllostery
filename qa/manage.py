@@ -117,7 +117,7 @@ def find_stalled():
     primary = os.getcwd()
     dirs = sorted(glob.glob("*/"))
     stalled_jobs = []  # List of jobs currently on the COSMO step
-    ignore = ["Analyze"]
+    ignore = ["Analyze/", "/coordinates", "inputfiles/"]
 
     for dir in dirs:
         if dir in ignore:
@@ -150,6 +150,53 @@ def find_stalled():
             print(f"> Job in {stalled_jobs[index]} is likely stalled.")
     else:
         print("> No stalled jobs.")
+
+def check_esp_failed():
+    """
+    Find jobs where the ESP calculations failed or terminated.
+
+    The ESP jobs are expensive and can take a long time.
+    Occasionally they hang and need to be restarted.
+    This script will check all qm calculations for ESP jobs that are unfinished.
+    Run it from the folder that contains all the replicates.
+
+    Notes
+    -----
+    You may need to update `ignore` if you have additional directories.
+
+    """
+
+    # Get the directories of each replicate
+    primary = os.getcwd()
+    replicates = sorted(glob.glob("*/"))
+    stalled_jobs = []  # List of jobs currently on the COSMO step
+    ignore = ["Analyze/", "coordinates/", "inputfiles/", "opt-wfn/"]
+    esp_files = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
+
+    for replicate in replicates:
+        if replicate in ignore:
+            continue
+        else:
+            os.chdir(replicate)
+            secondary = os.getcwd()
+
+            # Get the directories of each TeraChem frame calculation
+            single_points = sorted(glob.glob("*/"))
+
+            for single_point in single_points:
+                if single_point in ignore:
+                    continue
+                else:
+                    scr_dir = f"{single_point}scr"
+                    os.chdir(scr_dir)
+                    out_files = glob.glob("*.txt") # ESP files have ext txt
+
+                    # Report findings to user
+                    if len(out_files) != 5:
+                        print(f"> Job in {secondary}/{scr_dir} failed.")
+
+                os.chdir(secondary)
+        os.chdir(primary)
 
 
 def check_folder(dir_name) -> None:

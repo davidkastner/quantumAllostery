@@ -98,6 +98,22 @@ def get_atom_count() -> int:
     return atom_count
 
 
+def combine_xyzs() -> None:
+    """
+    Combine an arbitrary number of xyz files.
+
+    When generating the input for the QM calculations,
+    you may have created a directory of single xyz strucutres.
+    This script will recombine them back into a single xyz trajectory.
+
+    """
+    xyz_files = glob.glob("*.xyz")
+    with open("all_coors.xyz", "w") as all_coors:
+        for xyz in xyz_files:
+            with open(xyz, 'r') as current_xyz:
+                all_coors.write(current_xyz.read())
+
+
 def get_protein_sequence(pdb_path) -> List[str]:
     """
     Gets the full amino acid sequence of your protein.
