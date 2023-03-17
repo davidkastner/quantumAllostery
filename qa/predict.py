@@ -13,6 +13,9 @@ import qa.process
 
 
 def shuffle_data(charges_mat, labels_mat):
+    """
+    Enables the option to shuffle the time series data if desired.
+    """
     # Shuffle the data in groups of 100
     n_samples = charges_mat.shape[0]
     n_samples = int(n_samples / 100) * 100
@@ -22,7 +25,7 @@ def shuffle_data(charges_mat, labels_mat):
     perm_inds = np.ravel(perm_inds)
     samples = charges_mat[perm_inds]  # Apply the shuffling to the matrix
     labels = labels_mat[perm_inds]  # Apply the same shuffling to the labels
-    print("\n   > Shuffling data in blocks of 100.")
+    print("   > Shuffling data in blocks of 100.")
 
     return samples, labels
 
@@ -39,8 +42,8 @@ def create_combined_csv(
         The original charge data as a pandas dataframe.
     lablels_df: pd.DataFrame
         One-hot-encoded labels for each frame.
-    """
 
+    """
     # Convert the input data files to pd.DataFrames
     dataframes = []
     labels_df = pd.DataFrame()
@@ -96,7 +99,6 @@ def data_processing(df, labels, n_frames=1):
         The data scaled by column.
 
     """
-
     # Scale each column such that all values are between 0 and 1
     scaler = MinMaxScaler()
     df_norm = pd.DataFrame(
@@ -181,9 +183,16 @@ def run_ml(data_norm, labels, models=["RF", "MLP"], recompute=False):
                 feature_to_resids=None,
             )
             postprocessor.average()
+            postprocessor.evaluate_performance()
             postprocessor.persist()
             postprocessors.append(postprocessor)
 
+        # visualization.visualize([postprocessors],
+        #                     show_importance=True,
+        #                     show_projected_data=True,
+        #                     show_performance=True,
+        #                     outfile=f"{working_dir}/importance-per-residue.png"
+        #                     )
 
 # Execute the script
 if __name__ == "__main__":

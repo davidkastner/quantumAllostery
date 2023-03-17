@@ -170,7 +170,7 @@ def check_esp_failed():
     primary = os.getcwd()
     replicates = sorted(glob.glob("*/"))
     stalled_jobs = []  # List of jobs currently on the COSMO step
-    ignore = ["Analyze/", "coordinates/", "inputfiles/", "opt-wfn/"]
+    ignore = ["Analyze/", "Analysis/", "coordinates/", "inputfiles/", "opt-wfn/"]
     esp_files = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
 
     for replicate in replicates:

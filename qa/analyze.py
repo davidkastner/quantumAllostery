@@ -458,14 +458,16 @@ def calculate_charge_schemes():
         commands = ["7", calc_command, "1", "y", "0", "0", "q"]
 
         # Run Multiwfn
-        proc.stdin.write("\n".join(commands).encode())
-        proc.stdin.close()
+        output = proc.communicate("\n".join(commands).encode())
 
         # Watch the Multiwfn output in real time for troubleshooting
-        verbose = True
-        if verbose:
-            for line in iter(proc.stdout.readline, b''):
-                print(f"   > {line.decode().strip()}")
+        # proc.stdin.write("\n".join(commands).encode())
+        # proc.stdin.close()
+
+        # verbose = True
+        # if verbose:
+        #     for line in iter(proc.stdout.readline, b''):
+        #         print(f"   > {line.decode().strip()}")
 
         # Process the output of Multiwfn
         lines = str(output[0]).split("\\n")
