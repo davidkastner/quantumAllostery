@@ -445,6 +445,9 @@ def average_charge_residues(charge_file, template):
         groups = charge_df.groupby(residues_indentifier, axis=1, sort=False)
     except:
         print("   > ERROR: You likely have an extra hanging column.")
+        charge_df = charge_df.iloc[:, :-1]
+        groups = charge_df.groupby(residues_indentifier, axis=1, sort=False)
+
     # Compute the mean of all atoms in a residue
     avg_by_residues = groups.mean()
 
@@ -697,7 +700,7 @@ def check_valid_resname(res) -> Tuple[str, int]:
     ------
     aa_name : str
         The requested amino acid's three letter code.
-    aa_name : int
+    aa_num : int
         The requested amino acid's position in the sequence.
 
     """
@@ -709,16 +712,10 @@ def check_valid_resname(res) -> Tuple[str, int]:
     if letter_count == 1:
         aa_name = res[0].upper().strip()  # clean the input
         aa_num = int(res[1:])
-        # Check if the provided one-letter code matches a known amino acid
-        if not any([True for k, v in aa_identifiers.items() if v[0] == aa_name]):
-            raise ValueError("> The provided one-letter code is unknown.")
 
-    if letter_count == 3:
+    if letter_count == 3 or res[:3] == "Hm1":
         aa_name = res[:3].upper().strip()  # clean the input
         aa_num = int(res[3:])
-        # Check if the provided three-letter code matches a known amino acid
-        if not any([True for k, v in aa_identifiers.items() if v[1] == aa_name]):
-            raise ValueError("> The provided three-letter code is unknown.")
 
     print(f"> Reqesting amino acid {aa_name} at index {aa_num}.")
 

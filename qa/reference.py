@@ -8,15 +8,12 @@ from typing import List, Dict
 def get_aa_identifiers() -> Dict[str, List[str]]:
     """
     Amino acid naming conventions and basic features.
-
     Contains the full name, the one letter code, three-letter code,
     molecular formula, and molecular weight.
-
     Returns
     -------
     aa : dict[str, list[str, str, str]]
         Dictionary containing the name, one letter code, three-letter code, and molecular formula.
-
     """
 
     aa = {
@@ -50,19 +47,15 @@ def get_aa_identifiers() -> Dict[str, List[str]]:
 def sequence(protein) -> List[str]:
     """
     Returns the sequence of one of the mimochromes.
-
     Add additonal sequences to this function as lists.
-
     Parameters
     ----------
     protein : str
         The name of the protei/peptide whose sequence has been requested.
-
     Returns
     -------
     seq : list[str]
         A list of the amino acids in the requested protein/peptide.
-
     """
 
     # Sequence of mimochrome MC6

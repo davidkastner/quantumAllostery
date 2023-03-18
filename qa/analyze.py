@@ -569,7 +569,6 @@ def calculate_esp(component_atoms, scheme):
                 + ((zs[idx] - zo) * A_to_m) ** 2
             ) ** 0.5
             total_esp = total_esp + (charges[idx] / r)
-            print(total_esp)
 
     # Note that cal/kcal * kJ/J gives 1
     component_esp = k * total_esp * ((C_e)) * cal_J * faraday

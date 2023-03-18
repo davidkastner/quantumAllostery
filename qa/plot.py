@@ -183,14 +183,6 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext) -> None:
     # Apply Kulik plotting format
     format_plot()
 
-    # # Define the bins automatically (for testing)
-    # x_min = charge_df[charge_df.columns[0]].min()
-    # x_max = charge_df[charge_df.columns[0]].max()
-    # y_min = charge_df[charge_df.columns[1]].min()
-    # y_max = charge_df[charge_df.columns[1]].max()
-    # x_bins = np.linspace(x_min, x_max, 50)
-    # y_bins = np.linspace(y_min, y_max, 50)
-
     # Extract the data from the dataframe
     x = charge_df[charge_df.columns[0]]
     y = charge_df[charge_df.columns[1]]
@@ -198,7 +190,7 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext) -> None:
     # Create the plot
     fig, ax = plt.subplots()
     # ax.hist2d(x, y, bins=(x_bins, y_bins))
-    ax.hist2d(x, y, bins=30, range=[[-0.2, 0.44], [-1.25, -0.53]])
+    ax.hist2d(x, y, bins=30, range=[[-.2, .42], [-1.21, -.6]])
     ax.set_aspect("equal")
     plt.xlabel(res_x, fontweight="bold")
     plt.ylabel(res_y, fontweight="bold")
@@ -245,7 +237,7 @@ def plot_feature_importance(
     # Create the plot
     print(f"   > Creating a plot of feature importance for all models.")
     x_axis = residues_indentifier
-    color = ["b", "r", "g", "k", "m", "c"]
+    color = ["#CA4B3F", "#317AB4", "g", "k", "m", "c"]
 
     # Requesting a by atom plot?
     if by_atom:
@@ -277,7 +269,8 @@ def plot_feature_importance(
     plt.tick_params(axis="x", which="major", rotation=90)
     ax.yaxis.set_minor_locator(plt.MultipleLocator(0.1))
     ax.tick_params(axis="y", which="minor", length=4, width=2)
-    plt.savefig("feature_importance.png", bbox_inches="tight", format="png", dpi=300)
+    ext = "svg"
+    plt.savefig(f"feature_importance.{ext}", bbox_inches="tight", format=ext)
     plt.close()
 
 def esp_separate_barchart() -> None:
@@ -319,6 +312,12 @@ def esp_combined_barchart() -> None:
     The ESP analysis outputs multicolumn dataframes for components.
     This allows us to compare metal-centered ESP contributions for components.
     This combined version also allows us to compare different charge schemes.
+
+    Notes
+    -----
+    After running qa.manage.collect_esp_components(first, last, step),
+    csv files for each charge scheme can be generate in the replicate directory.
+    Those files can then be moved to another directory and run this script.
     
     """
     # Apply Kulik plotting format
@@ -328,10 +327,10 @@ def esp_combined_barchart() -> None:
     bar_width = 0.2
 
     schemes = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
-    df1 = pd.read_csv(f'{schemes[0]}.csv')
-    df2 = pd.read_csv(f'{schemes[1]}.csv')
-    df3 = pd.read_csv(f'{schemes[2]}.csv')
-    df4 = pd.read_csv(f'{schemes[3]}.csv')
+    df1 = pd.read_csv(f'{schemes[0]}_esp.csv')
+    df2 = pd.read_csv(f'{schemes[1]}_esp.csv')
+    df3 = pd.read_csv(f'{schemes[2]}_esp.csv')
+    df4 = pd.read_csv(f'{schemes[3]}_esp.csv')
 
     
     # Create a list of x-coordinates for each bar
@@ -351,10 +350,10 @@ def esp_combined_barchart() -> None:
     plt.axhline(y=0, color='black', linestyle='--')
     
     plt.xticks([r + bar_width*1.5 for r in r1], df1.mean().index)
-    plt.legend()
+    plt.legend(bbox_to_anchor=(0.6, .35))  # raise the legend by 20 pixels
 
-    ext = "png"
-    plt.savefig(f"combined.{ext}", bbox_inches="tight", format=ext, dpi=300)
+    ext = "svg"
+    plt.savefig(f"combined.{ext}", bbox_inches="tight", format=ext)
     plt.close()
 
 if __name__ == "__main__":

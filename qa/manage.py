@@ -285,7 +285,7 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
         "all": "1-487",
         "lower": "1-252",
         "upper": "253-424",
-        "lower_no_his": "1-86,104-252",
+        "lower-his": "1-86,104-252",
         "heme": "425-486",
         "his": "87-103",
     }

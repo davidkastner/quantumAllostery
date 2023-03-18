@@ -23,10 +23,11 @@ import click
 @click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs.")
 @click.option("--combine_qm_charges", "-m", is_flag=True, help="Combine charge data across QM single points.")
 @click.option("--predict", "-p", is_flag=True, help="Uses simple ML models to predict key residues.")
-@click.option("--multiwfn_charges", "-q", is_flag=True, help="Calculates charge schemes using MultiWfn.")
+@click.option("--multiwfn_charges", "-q", is_flag=True, help="Calculates charge schemes from Multiwfn.")
 @click.argument("multiwfn_charge_args", nargs=4, type=int, required=False)
-@click.option("--calc_esp", "-r", is_flag=True, help="Calculates metal-centered ESP.")
+@click.option("--calc_esp", "-r", is_flag=True, help="Calculates ESP from Multiwfn output.")
 @click.option("--check_esp_failed", "-s", is_flag=True, help="Checks for unfinished ESP jobs.")
+@click.option("--plot_esp", "-t", is_flag=True, help="Plot the ESP of each scheme and component.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -45,6 +46,7 @@ def cli(
     multiwfn_charge_args,
     calc_esp,
     check_esp_failed,
+    plot_esp,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -229,6 +231,12 @@ def cli(
         click.echo("> Loading...")
         import qa.manage
         qa.manage.check_esp_failed()
+
+    elif plot_esp:
+        click.echo("> Plottint the ESP results:")
+        click.echo("> Loading...")
+        import qa.plot
+        qa.plot.esp_combined_barchart()
 
 
     else:

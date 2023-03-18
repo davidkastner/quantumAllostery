@@ -148,7 +148,7 @@ def run_ml(data_norm, labels, models=["RF", "MLP"], recompute=False):
             "upper_bound_distance_cutoff": 1.0,
             "use_inverse_distances": False,
             "n_splits": 3,
-            "n_iterations": 5,
+            "n_iterations": 1,
             "scaling": True,
         }
 
@@ -164,6 +164,7 @@ def run_ml(data_norm, labels, models=["RF", "MLP"], recompute=False):
                     "solver": "adam",
                     "max_iter": 1000000,
                 },
+                one_vs_rest=True,
                 activation=relprop.relu,
                 **kwargs,
             ),
