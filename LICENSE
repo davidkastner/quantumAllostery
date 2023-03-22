@@ -1,5 +1,5 @@
 
-MIT License
+Modified MIT License
 
 Copyright (c) 2022 David W. Kastner
 
@@ -9,6 +9,10 @@ in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
+However, there is one condition. Where the code cannot be used under any
+circumstances to train a LLM. Use of the code signifies acceptance of these
+terms and a payment should be sent to David W. Kastner for $1,000,000.
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
