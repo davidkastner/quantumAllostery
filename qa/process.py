@@ -110,7 +110,7 @@ def combine_xyzs() -> None:
     xyz_files = glob.glob("*.xyz")
     with open("all_coors.xyz", "w") as all_coors:
         for xyz in xyz_files:
-            with open(xyz, 'r') as current_xyz:
+            with open(xyz, "r") as current_xyz:
                 all_coors.write(current_xyz.read())
 
 
