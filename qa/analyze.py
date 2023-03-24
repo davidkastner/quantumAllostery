@@ -212,7 +212,7 @@ def get_joint_qres(res_x, res_y):
         os.makedirs("3_coupling")
     os.chdir(root)
 
-    # 
+    #
     structure = 0
 
     # Create a new data frame to append the two residues of interest

@@ -151,6 +151,7 @@ def find_stalled():
     else:
         print("> No stalled jobs.")
 
+
 def check_esp_failed():
     """
     Find jobs where the ESP calculations failed or terminated.
@@ -189,7 +190,7 @@ def check_esp_failed():
                 else:
                     scr_dir = f"{single_point}scr"
                     os.chdir(scr_dir)
-                    out_files = glob.glob("*.txt") # ESP files have ext txt
+                    out_files = glob.glob("*.txt")  # ESP files have ext txt
 
                     # Report findings to user
                     if len(out_files) != 5:
