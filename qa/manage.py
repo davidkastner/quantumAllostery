@@ -411,3 +411,56 @@ def replicate_interval_submit(
         \t--------------------------------------------------------------------\n
         """
     )
+
+def combine_sp_xyz():
+    """
+    Combines single point xyz's for all replicates.
+
+    The QM single points each of a geometry file.
+    Combines all those xyz files into.
+    Preferential to using the other geometry files to insure they are identical.
+
+    """
+    start_time = time.time()  # Used to report the executation speed
+
+    # Get the directories of each replicate
+    primary = os.getcwd()
+    replicates = sorted(glob.glob("*/"))
+    ignore = ["Analyze/", "Analysis/", "coordinates/", "inputfiles/", "opt-wfn/"]
+
+    xyz_count = 0
+
+    # Get the name of the structure
+    geometry_name = os.getcwd().split("/")[-1]
+    out_file = f"{geometry_name}_geometry.xyz"
+
+    with open(out_file, "w") as combined_sp:
+        for replicate in replicates:
+            if replicate in ignore:
+                continue
+            else:
+                print(f"   > Adding replicate {replicate} structures.")
+                os.chdir(replicate)
+                secondary = os.getcwd()
+                os.chdir("coordinates")
+
+                structures = sorted(glob.glob("*.xyz"))
+                for index, structure in enumerate(structures):
+                    with open(structure, "r") as file:
+                        # Write the header from the first file
+                        combined_sp.writelines(file.readlines())
+                        xyz_count += 1
+                        
+            # Go back and loop through all the other replicates
+            os.chdir(primary)
+
+    total_time = round(time.time() - start_time, 3)  # Time to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tOUTPUT: Combined {xyz_count} single point xyz files.
+        \tOUTPUT: Output file is {out_file}.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )

@@ -28,6 +28,7 @@ import click
 @click.option("--calc_esp", "-r", is_flag=True, help="Calculates ESP from Multiwfn output.")
 @click.option("--check_esp_failed", "-s", is_flag=True, help="Checks for unfinished ESP jobs.")
 @click.option("--plot_esp", "-t", is_flag=True, help="Plot the ESP of each scheme and component.")
+@click.option("--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -47,6 +48,7 @@ def cli(
     calc_esp,
     check_esp_failed,
     plot_esp,
+    combine_sp_xyz,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -85,6 +87,7 @@ def cli(
         import qa.process
         xyz_type = input("> Process a trajectory (t) or frames (f)? ")
         if xyz_type == "t":
+            
             qa.process.xyz2pdb_traj()
         elif xyz_type == "f":
             qa.process.xyz2pdb(["0.xyz","10000.xyz","20000.xyz","30000.xyz","39900.xyz"])
@@ -233,10 +236,16 @@ def cli(
         qa.manage.check_esp_failed()
 
     elif plot_esp:
-        click.echo("> Plottint the ESP results:")
+        click.echo("> Plotting the ESP results:")
         click.echo("> Loading...")
         import qa.plot
         qa.plot.esp_combined_barchart()
+
+    elif combine_sp_xyz:
+        click.echo("> Combine the xyz files from all the single points:")
+        click.echo("> Loading...")
+        import qa.manage
+        qa.manage.combine_sp_xyz()
 
 
     else:
