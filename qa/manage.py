@@ -464,3 +464,7 @@ def combine_sp_xyz():
         \t--------------------------------------------------------------------\n
         """
     )
+
+if __name__ == "__main__":
+    # Run the command-line interface when this script is executed
+    combine_sp_xyz()
