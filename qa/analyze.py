@@ -16,20 +16,17 @@ import qa.process
 import select
 
 
-def charge_matrix() -> None:
+def charge_matrix(pdbfile) -> None:
     """
     Generates mutual information and cross-correlation matrices.
 
     """
 
     start_time = time.time()  # Used to report the executation speed
-    # Search for the reference PDB
-    pdbfile = qa.process.get_pdb()
-
     # Set variables
-    oldresi = "0"
+    old_res_num = 0
     reslist = []
-    atwbblist = []
+    atw_all_list = []
     atwsclist = []
 
     # Search for the reference PDB
@@ -39,129 +36,101 @@ def charge_matrix() -> None:
         for line in pdbfile_lines:
             if "ATOM" not in line:
                 continue
-
             line_pieces = line.split()
+            atom_num = line_pieces[1]
+            atom = line_pieces[2]
+            res_name = line_pieces[3]
+            res_num = int(line_pieces[4])
 
-            if line_pieces[4] != oldresi:
-                reslist.append(line_pieces[3])
-                oldresi = line_pieces[4]
-                atwbblist.append([line_pieces[1]])
+            # Start new residue
+            if res_num != old_res_num:
+                reslist.append(res_name)
+                old_res_num = res_num
+                atw_all_list.append([atom_num])
                 atwsclist.append([])
-                atom = line_pieces[2]
-
-                if atom not in ["N", "O", "C", "H"]:
-                    atwsclist.append([line_pieces[1]])
             else:
-                atwbblist[int(oldresi) - 1].append(line_pieces[1])
-                atom = line_pieces[2]
+                atw_all_list[old_res_num - 1].append(atom_num)
 
-                if atom not in ["N", "O", "C", "H"]:
-                    atwsclist[int(oldresi) - 1].append(line_pieces[1])
+            # Only side chain atoms in the atwsclist
+            if atom not in ["N", "O", "C", "H"]:
+                atwsclist[old_res_num - 1].append(atom_num)
 
     with open("all_charges.xls", "r") as charge_file:
-        # charge_file = open("all_charges.xls", "r").readlines()
-        # Something must be breaking in this block
         charge_file_lines = charge_file.readlines()
-        bbchargearray = []
+        all_chargearray = []
         scchargearray = []
         charge_file_length = len(charge_file_lines)
-        atwbblist_len = len(atwbblist)
-        atwsclist_len = len(atwsclist)
+        atw_all_list_len = len(atw_all_list)
         print(f"> {round(charge_file_length * 0.0005, 2)} ps collected so far")
 
         for line2 in range(1, charge_file_length):
-            charge_file_line_pieces = charge_file_lines[line2].split()
-            bbchargearray.append([])
+            atom_charges = charge_file_lines[line2].split()
+            all_chargearray.append([])
             scchargearray.append([])
 
-            for resat in range(0, atwbblist_len):
+            for residue_index in range(0, atw_all_list_len):
                 rescharge = 0.00
-
-                for atwbbs in range(0, len(atwbblist[resat])):
+                # sum up all the charges for the current residue
+                for atom_number in atw_all_list[residue_index]:
                     rescharge += float(
-                        charge_file_line_pieces[int(atwbblist[resat][atwbbs]) - 1]
+                        atom_charges[int(atom_number) - 1]
                     )
-                bbchargearray[line2 - 1].append(rescharge)
+                all_chargearray[line2 - 1].append(rescharge)
 
-            for resat in range(0, atwsclist_len):
                 ressccharge = 0.00
-
-                for atwscs in range(0, len(atwsclist[resat])):
+                # sum up all the charges for the current residue
+                for atom_number in atwsclist[residue_index]:
                     ressccharge += float(
-                        charge_file_line_pieces[int(atwsclist[resat][atwscs]) - 1]
+                        atom_charges[int(atom_number) - 1]
                     )
                 scchargearray[line2 - 1].append(ressccharge)
 
     print("> Finished looping through charges")
 
-    np.array(bbchargearray)
-    np.array(scchargearray)
-    bbchargemutinf = np.array(bbchargearray).transpose()
+    reslist_len = len(reslist)
+    all_chargearray = np.array(all_chargearray)
+    scchargearray = np.array(scchargearray)
+    all_chargemutinf = all_chargearray.transpose()
     MI_mat = []
-    bbchargearray_length = len(bbchargearray[0])
 
-    print(f"> Start looping through {bbchargearray_length} residues")
+    print(f"> Start looping through {reslist_len} residues")
 
-    for i in range(0, bbchargearray_length):
+    for i in range(0, reslist_len):
         print(f"   > rowMI {i}")
-        rowMI = mutual_info_regression(bbchargemutinf.transpose(), bbchargemutinf[i])
+        # mutual_info_regression with the transpose matrix of 3k+ charges to 30 residues
+        # and the associated row of residues
+        rowMI = mutual_info_regression(all_chargearray, all_chargemutinf[i])
         MI_mat.append(rowMI)
 
+    corrcoef = np.corrcoef(all_chargemutinf)
+    corrcoefsc = np.corrcoef(scchargearray.transpose())
+
+    # Construct strings from matrices for writing to csv
+    mimat_string = ""
+    chargemat_all_string = ""
+    chargematsc_string = ""
+    for resx in range(0, reslist_len):
+        for resy in range(0, reslist_len):
+            extra = "" if resy == reslist_len - 1 else ","
+            mimat_string += str(MI_mat[resx][resy]) + extra
+            chargemat_all_string += str(corrcoef[resx][resy]) + extra
+            chargematsc_string += str(corrcoefsc[resx][resy]) + extra
+
+        mimat_string += "\n"
+        chargemat_all_string += "\n"
+        chargematsc_string += "\n"
+
+
+    # Write out matrixes to csvs 
     with open("mimatbb.csv", "w") as mimat:
-        for resx in range(0, len(reslist)):
-            for resy in range(0, len(reslist)):
-                if resy == len(reslist) - 1:
-                    extra = ""
-                else:
-                    extra = ","
-                mimat.write(str(MI_mat[resx][resy]) + extra)
-
-            mimat.write("\n")
-
-    maxchgbb = np.amax(bbchargearray, axis=0)
-    minchgbb = np.amin(bbchargearray, axis=0)
-    avgchgbb = np.mean(bbchargearray, axis=0)
-    stdchgbb = np.std(bbchargearray, axis=0)
-    corrcoef = np.corrcoef(np.transpose(bbchargearray))
-    maxchgsc = np.amax(scchargearray, axis=0)
-    minchgsc = np.amin(scchargearray, axis=0)
-    avgchgsc = np.mean(scchargearray, axis=0)
-    stdchgsc = np.std(scchargearray, axis=0)
-    corrcoefsc = np.corrcoef(np.transpose(scchargearray))
-
-    # print("> BB stats below.")
-    # for resi in range(0, len(reslist)):
-    #     print(
-    #         f"{reslist[resi]} {maxchgbb[resi]} {minchgbb[resi]} {maxchgbb[resi] - minchgbb[resi]} {avgchgbb[resi]} {stdchgbb[resi]}"
-    #     )
+        mimat.write(mimat_string)
 
     with open("chargematbb.csv", "w") as chargemat:
-        for resx in range(0, len(reslist)):
-            for resy in range(0, len(reslist)):
-                if resy == len(reslist) - 1:
-                    extra = ""
-                else:
-                    extra = ","
-                chargemat.write(str(corrcoef[resx][resy]) + extra)
-
-            chargemat.write("\n")
-
-    # print("SC stats below.")
-    # for resi in range(0, len(reslist)):
-    #     print(
-    #         f"{reslist[resi]} {maxchgsc[resi]} {minchgsc[resi]} {maxchgsc[resi]-minchgsc[resi]} {avgchgsc[resi]} {stdchgsc[resi]}"
-    #     )
+        chargemat.write(chargemat_all_string)
 
     with open("chargematsc.csv", "w") as chargemat:
-        for resx in range(0, len(reslist)):
-            for resy in range(0, len(reslist)):
-                if resy == len(reslist) - 1:
-                    extra = ""
-                else:
-                    extra = ","
-                chargemat.write(str(corrcoefsc[resx][resy]) + extra)
+            chargemat.write(chargematsc_string)
 
-            chargemat.write("\n")
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
@@ -173,8 +142,6 @@ def charge_matrix() -> None:
         \t--------------------------------------------------------------------\n
         """
     )
-
-    return
 
 
 def get_joint_qres(res_x, res_y):
