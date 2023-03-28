@@ -29,6 +29,7 @@ import click
 @click.option("--check_esp_failed", "-s", is_flag=True, help="Checks for unfinished ESP jobs.")
 @click.option("--plot_esp", "-t", is_flag=True, help="Plot the ESP of each scheme and component.")
 @click.option("--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's.")
+@click.option("--plot_heme_distortion", "-v", is_flag=True, help="Plots heme distortion across replicates.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -49,6 +50,7 @@ def cli(
     check_esp_failed,
     plot_esp,
     combine_sp_xyz,
+    plot_heme_distortion,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -247,6 +249,22 @@ def cli(
         import qa.manage
         qa.manage.combine_sp_xyz()
 
+    elif plot_heme_distortion:
+        click.echo("> Computes the RMSD for a structure across the trajectory:")
+        click.echo("> Loading...")
+
+        import qa.analyze
+        import qa.process
+        import qa.plot
+
+        reference_atoms = "1-20,23,25,27,29,31,35,38,42,46,50,53"
+        reference_atoms = qa.process.string_to_list(reference_atoms)
+
+        trajectory_atoms = "435-454,457,459,461,463,465,469,472,476,480,484,487"
+        trajectory_atoms = qa.process.string_to_list(trajectory_atoms)
+
+        rmsd_list = qa.analyze.get_rmsd(reference_atoms, trajectory_atoms)
+        qa.plot.plot_rmsd(rmsd_list)
 
     else:
         click.echo("No functionality was requested.\nTry --help.")

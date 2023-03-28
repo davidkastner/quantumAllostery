@@ -1016,6 +1016,27 @@ def combine_qm_replicates() -> None:
     )
 
 
+def string_to_list(number_string):
+    """
+    Converts a string of numbers to a list.
+
+    Examples
+    --------
+    "1-4,6,8-10" -> [1,2,3,4,6,8,9,10]
+
+    """
+    segments = number_string.split(',')
+    number_list = []
+    
+    for segment in segments:
+        if '-' in segment:
+            start, end = map(int, segment.split('-'))
+            number_list.extend(range(start, end + 1))
+        else:
+            number_list.append(int(segment))
+    
+    return number_list
+
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed

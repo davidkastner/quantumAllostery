@@ -6,6 +6,7 @@ import glob
 import time
 import shutil
 import subprocess
+import prody
 import numpy as np
 import pandas as pd
 from joblib import parallel_backend
@@ -14,6 +15,7 @@ import qa.plot
 import qa.manage
 import qa.process
 import select
+from typing import List
 
 
 def charge_matrix(pdbfile) -> None:
@@ -541,6 +543,149 @@ def calculate_esp(component_atoms, scheme):
     component_esp = k * total_esp * ((C_e)) * cal_J * faraday
 
     return component_esp
+
+
+def compute_rmsd(matrix_A, matrix_B):
+    """
+    Computes the RMSD for two sets of atoms.
+
+    Given two pairs of comparable atom sets, compute the RMSD between them.
+    Before computing the RMSD we first use prody to align the structures.
+
+    Parameters
+    ----------
+    matrix_A: np.array()
+        A matrix of atoms with columns as the x, y, and z coordinates.
+        The rows, are the different atoms.
+    matrix_B: np.array()
+        A matrix of atoms with columns as the x, y, and z coordinates.
+        The rows, are the different atoms.
+
+    Returns
+    -------
+    rmsd: float
+        The computed RMSD in angstoms.
+
+    Notes
+    -----
+    Prody is the same underlying alignment algorithm as PyMol and Chimera.
+
+    """
+    # Check if the two matrices are the same shape and throw an error otherwise
+    if matrix_A.shape != matrix_B.shape:
+        raise ValueError("Matrices A and B must have the same shape")
+
+    # Calculate the optimal rotation matrix using ProDy's superpose() function
+    _, transformation_matrix = prody.calcTransformation(matrix_A, matrix_B)
+
+    # Apply the transformation matrix to matrix_B to align it with matrix_A
+    matrix_B_aligned = transformation_matrix.apply(matrix_B)
+
+    # Calculate the RMSD between the aligned structures
+    squared_diff = np.square(matrix_A - matrix_B_aligned)
+    sum_squared_diff = np.sum(squared_diff, axis=1)
+    mean_squared_diff = np.mean(sum_squared_diff)
+    rmsd = np.sqrt(mean_squared_diff)
+
+    return rmsd
+
+
+def get_rmsd(ref_atoms: List[int], traj_atoms: List[int]):
+    """
+    Gets RMSD for specific atoms for different analogs.
+
+    Loops over analog directories and computes a series of RMSDs,
+    between a reference set of atoms and a set of atoms from an xyz trajectory.
+    The atom indices for the reference structure are given with ref_atoms.
+    The atom's xyz coordinates for a frame in an xyz trajectory are traj_atoms.
+    ref_atoms and traj_atoms are used to generate matrices A and B.
+    The RMSD is then computed with compute_rmsd.
+
+    Parameters
+    ----------
+    ref_atoms: List[int]
+        A list of the atom indices corresponding to the reference xyz structure
+    traj_atoms: List[int]
+        A list of the atom indices corresponding to the current xyz frame,
+        which we will compare the reference atoms to
+
+    Returns
+    -------
+    rmsd_list: List[List[float]]
+        List of lists where each list represents and analog,
+        and each list contains RMSDs for each frame.
+
+    Notes
+    -----
+    Run from the folder with multiple analogs, e.g., MC6, MC6*, MC6*a
+
+    See Also
+    --------
+    qa.analyze.compute_rmsd()
+
+    """
+    start_time = time.time()  # Used to report the executation speed
+    frame_count = 0 # Used to report back to the user
+
+    # Input files
+    traj_xyz = "all_coors.xyz"
+    ideal_xyz = "reference.xyz"
+
+    # Store RMSDs for each analog in a new list
+    rmsd_list: List[List[int]] = []
+
+    # Get the directories of each replicate
+    primary = os.getcwd()
+    analogs = sorted(glob.glob("*/"))
+
+    # Extract reference atoms from ideal_xyz and create matrix_A
+    with open(ideal_xyz, "r") as ideal:
+        ideal_lines = ideal.readlines()[2:]  # Skip first two lines (number of atoms and comment)
+        matrix_A = np.array(
+            [list(map(float, ideal_lines[i - 1].split()[1:4])) for i in ref_atoms],
+            dtype=float
+        )
+
+    # Loop through the analogs
+    for index, analog in enumerate(analogs):
+        os.chdir(analog)
+
+        # Extract trajectory atoms from traj_xyz and create matrix_B for each frame
+        frame_rmsds = []
+        with open(traj_xyz, "r") as traj:
+            traj_lines = traj.readlines()
+            num_atoms = int(traj_lines[0])  # Read the number of atoms from the first line
+            num_frames = len(traj_lines) // (num_atoms + 2)  # Calculate the number of frames
+
+            # Loop over frames
+            for frame in range(num_frames):
+                offset = 2 + frame * (num_atoms + 2)  # Calculate the starting line number for the current frame
+                frame_lines = traj_lines[offset:offset + num_atoms]  # Extract the current frame
+                matrix_B = np.array(
+                    [list(map(float, frame_lines[i - 1].split()[1:4])) for i in traj_atoms],
+                    dtype=float
+                )
+                
+                # Compute the RMSD for each frame
+                rmsd = compute_rmsd(matrix_A, matrix_B)
+                frame_rmsds.append(rmsd)
+                frame_count += 1
+
+        rmsd_list.append(frame_rmsds)
+        os.chdir(primary)
+
+    total_time = round(time.time() - start_time, 3)
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tOUTPUT: Computed the RMSD for {index + 1} analogs.
+        \tOUTPUT: Computed the RMSD for {frame_count} frames.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
+
+    return rmsd_list
 
 
 if __name__ == "__main__":

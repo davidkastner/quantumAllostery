@@ -13,6 +13,7 @@ dependencies:
   - numpy
   - pandas
   - pip
+  - prody
   - scikit-learn
   - scipy
   - seaborn

@@ -405,6 +405,48 @@ def esp_combined_barchart() -> None:
     plt.close()
 
 
+def plot_rmsd(rmsd_list):
+    """
+    Plots a bar plot the RMSD for each analog with its standard error.
+
+    Parameters
+    ----------
+    rmsd_list: List[List[float]]
+        List of lists where each list represents and analog,
+        and each list contains RMSDs for each frame.
+
+    See Also
+    --------
+    qa.analyze.compute_rmsd()
+    qa.analyze.get_rmsd()
+
+    """
+    # Apply Kulik plotting format
+    qa.plot.format_plot()
+
+    # Calculate mean RMSD and standard error for each analog
+    mean_rmsd = [np.mean(analog_rmsd) for analog_rmsd in rmsd_list]
+    stderr_rmsd = [np.std(analog_rmsd, ddof=1) / np.sqrt(len(analog_rmsd)) for analog_rmsd in rmsd_list]
+
+    # Generate a bar plot for each analog
+    num_analogs = len(rmsd_list)
+    analog_indices = np.arange(num_analogs)
+    plt.bar(analog_indices, mean_rmsd, yerr=stderr_rmsd, capsize=5)
+
+    # Customize the plot
+    plt.xlabel("Analogs", weight="bold")
+    plt.ylabel("RMSD (Å)", weight="bold")
+    # plt.xticks(analog_indices)
+    plt.xticks(["MC6", "MC6*", "MC6*a"])
+
+    # Save output as a 300 dpi PNG
+    ext = "png"
+    plt.savefig(f"rmsd_plot.{ext}", bbox_inches="tight", dpi=300)
+
+    # Show the plot
+    plt.show()
+
+
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
     esp_nomulliken_barchart()

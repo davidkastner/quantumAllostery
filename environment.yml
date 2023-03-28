@@ -10,6 +10,7 @@ dependencies:
   - matplotlib
   - numpy
   - pandas
+  - prody
   - scikit-learn
   - scipy
   - seaborn
