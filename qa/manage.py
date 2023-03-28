@@ -412,6 +412,7 @@ def replicate_interval_submit(
         """
     )
 
+
 def combine_sp_xyz():
     """
     Combines single point xyz's for all replicates.
@@ -450,7 +451,7 @@ def combine_sp_xyz():
                         # Write the header from the first file
                         combined_sp.writelines(file.readlines())
                         xyz_count += 1
-                        
+
             # Go back and loop through all the other replicates
             os.chdir(primary)
 

@@ -549,8 +549,8 @@ def compute_rmsd(matrix_A, matrix_B):
     """
     Computes the RMSD for two sets of atoms.
 
-    Given two pairs of comparable atom sets, compute the RMSD between them.
-    Before computing the RMSD we first use prody to align the structures.
+    Given two pairs of comparable atom sets,
+    compute the RMSD between them.
 
     Parameters
     ----------
@@ -566,20 +566,18 @@ def compute_rmsd(matrix_A, matrix_B):
     rmsd: float
         The computed RMSD in angstoms.
 
-    Notes
-    -----
-    Prody is the same underlying alignment algorithm as PyMol and Chimera.
-
     """
     # Check if the two matrices are the same shape and throw an error otherwise
     if matrix_A.shape != matrix_B.shape:
         raise ValueError("Matrices A and B must have the same shape")
 
-    # Calculate the optimal rotation matrix using ProDy's superpose() function
-    _, transformation_matrix = prody.calcTransformation(matrix_A, matrix_B)
+    # Calculate the optimal rotation matrix and translation vector using ProDy's calcTransformation() function
+    transformation = prody.calcTransformation(matrix_A, matrix_B)
+    rotation_matrix = transformation.getRotation()
+    translation_vector = transformation.getTranslation()
 
-    # Apply the transformation matrix to matrix_B to align it with matrix_A
-    matrix_B_aligned = transformation_matrix.apply(matrix_B)
+    # Apply the rotation matrix and translation vector to matrix_B to align it with matrix_A
+    matrix_B_aligned = np.dot(matrix_B, rotation_matrix) + translation_vector
 
     # Calculate the RMSD between the aligned structures
     squared_diff = np.square(matrix_A - matrix_B_aligned)

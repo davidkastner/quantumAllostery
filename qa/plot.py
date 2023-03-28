@@ -405,15 +405,17 @@ def esp_combined_barchart() -> None:
     plt.close()
 
 
-def plot_rmsd(rmsd_list):
+def plot_rmsd(rmsd_list, labels):
     """
-    Plots a bar plot the RMSD for each analog with its standard error.
+    Plots a bar plot of the RMSD for each analog with its standard error.
 
     Parameters
     ----------
     rmsd_list: List[List[float]]
-        List of lists where each list represents and analog,
+        List of lists where each list represents an analog,
         and each list contains RMSDs for each frame.
+    labels: List[str]
+        List of labels for the x-axis, corresponding to the analog names.
 
     See Also
     --------
@@ -421,30 +423,26 @@ def plot_rmsd(rmsd_list):
     qa.analyze.get_rmsd()
 
     """
-    # Apply Kulik plotting format
-    qa.plot.format_plot()
+    format_plot()
 
-    # Calculate mean RMSD and standard error for each analog
-    mean_rmsd = [np.mean(analog_rmsd) for analog_rmsd in rmsd_list]
-    stderr_rmsd = [np.std(analog_rmsd, ddof=1) / np.sqrt(len(analog_rmsd)) for analog_rmsd in rmsd_list]
+    # Calculate the mean and standard error for each analog
+    rmsd_mean = [np.mean(analog_rmsd) for analog_rmsd in rmsd_list]
+    rmsd_std_err = [np.std(analog_rmsd, ddof=1) / np.sqrt(len(analog_rmsd)) for analog_rmsd in rmsd_list]
 
     # Generate a bar plot for each analog
-    num_analogs = len(rmsd_list)
-    analog_indices = np.arange(num_analogs)
-    plt.bar(analog_indices, mean_rmsd, yerr=stderr_rmsd, capsize=5)
+    x_pos = np.arange(len(rmsd_list))
+    plt.bar(x_pos, rmsd_mean, yerr=rmsd_std_err, align='center', alpha=0.5, capsize=10)
 
-    # Customize the plot
-    plt.xlabel("Analogs", weight="bold")
-    plt.ylabel("RMSD (Å)", weight="bold")
-    # plt.xticks(analog_indices)
-    plt.xticks(["MC6", "MC6*", "MC6*a"])
+    # Set the x-axis labels
+    plt.xticks(x_pos, labels)
+
+    # Set the plot labels and title
+    plt.xlabel('Analogs', weight="bold")
+    plt.ylabel('RMSD', weight="bold")
 
     # Save output as a 300 dpi PNG
     ext = "png"
-    plt.savefig(f"rmsd_plot.{ext}", bbox_inches="tight", dpi=300)
-
-    # Show the plot
-    plt.show()
+    plt.savefig(f'rmsd_plot.{ext}', bbox_inches="tight", dpi=300)
 
 
 if __name__ == "__main__":
