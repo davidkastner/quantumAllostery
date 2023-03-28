@@ -30,6 +30,7 @@ import click
 @click.option("--plot_esp", "-t", is_flag=True, help="Plot the ESP of each scheme and component.")
 @click.option("--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's.")
 @click.option("--plot_heme_distortion", "-v", is_flag=True, help="Plots heme distortion across replicates.")
+@click.option("--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -51,6 +52,7 @@ def cli(
     plot_esp,
     combine_sp_xyz,
     plot_heme_distortion,
+    td_coupling,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -257,14 +259,31 @@ def cli(
         import qa.process
         import qa.plot
 
-        reference_atoms = "1-20,23,25,27,29,31,35,38,42,46,50,53"
-        reference_atoms = qa.process.string_to_list(reference_atoms)
+        # User enters the atom sets here
+        ref_atoms = "1-20,23,25,27,29,31,35,38,42,46,50,53"
+        mc6_atoms = "435-454,457,459,461,463,465,469,472,476,480,484,487"
+        mc6s_atoms = "439-458,461,453,465,467,469,474,476,480,484,488,491"
+        mc6sa_atoms = "437-456,459,461,463,465,467,471,474,478,482,486,489"
 
-        trajectory_atoms = "435-454,457,459,461,463,465,469,472,476,480,484,487"
-        trajectory_atoms = qa.process.string_to_list(trajectory_atoms)
+        # Convert the strings to lists
+        atoms_list = [ref_atoms, mc6_atoms, mc6s_atoms, mc6sa_atoms]
+        atoms_list = qa.process.string_to_list(atoms_list)
 
-        rmsd_list = qa.analyze.get_rmsd(reference_atoms, trajectory_atoms)
-        qa.plot.plot_rmsd(rmsd_list)
+        # Compute the RMSDs
+        rmsd_list = qa.analyze.get_rmsd(atoms_list[0], atoms_list[1:])
+        qa.plot.plot_rmsd(rmsd_list, ["MC6", "MC6*", "MC6*a"])
+
+    elif td_coupling:
+        click.echo("> Plot the fluctuations of two amino acids by time:")
+        click.echo("> Do yo need to update your replicate?")
+        click.echo("> Loading...")
+        import qa.process
+        import qa.analyze
+        import qa.plot
+        import qa.manage
+        res_x = input("> What is the first residue (Asp1)? ")
+        res_y = input("> What is the second residue (Gly2)? ")
+        charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="6")
 
     else:
         click.echo("No functionality was requested.\nTry --help.")

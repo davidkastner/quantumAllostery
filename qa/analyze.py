@@ -6,7 +6,6 @@ import glob
 import time
 import shutil
 import subprocess
-import prody
 import numpy as np
 import pandas as pd
 from joblib import parallel_backend
@@ -16,6 +15,8 @@ import qa.manage
 import qa.process
 import select
 from typing import List
+import MDAnalysis as mda
+from scipy.spatial.transform import Rotation as R
 
 
 def charge_matrix(pdbfile) -> None:
@@ -545,50 +546,52 @@ def calculate_esp(component_atoms, scheme):
     return component_esp
 
 
-def compute_rmsd(matrix_A, matrix_B):
+def compute_rmsd(matrix_A: np.ndarray, matrix_B: np.ndarray) -> float:
     """
-    Computes the RMSD for two sets of atoms.
-
-    Given two pairs of comparable atom sets,
-    compute the RMSD between them.
+    Computes the Root Mean Square Deviation (RMSD) between two matrices of atoms with their xyz coordinates.
 
     Parameters
     ----------
-    matrix_A: np.array()
-        A matrix of atoms with columns as the x, y, and z coordinates.
-        The rows, are the different atoms.
-    matrix_B: np.array()
-        A matrix of atoms with columns as the x, y, and z coordinates.
-        The rows, are the different atoms.
+    matrix_A : np.ndarray
+        A matrix of size N x 3, where N is the number of atoms and the columns are the x, y, and z coordinates.
+    matrix_B : np.ndarray
+        A matrix of size N x 3, where N is the number of atoms and the columns are the x, y, and z coordinates.
 
     Returns
     -------
-    rmsd: float
-        The computed RMSD in angstoms.
-
+    rmsd : float
+        The computed RMSD between the two matrices.
     """
-    # Check if the two matrices are the same shape and throw an error otherwise
-    if matrix_A.shape != matrix_B.shape:
-        raise ValueError("Matrices A and B must have the same shape")
+    # Compute the centroids of each matrix
+    centroid_A = np.mean(matrix_A, axis=0)
+    centroid_B = np.mean(matrix_B, axis=0)
 
-    # Calculate the optimal rotation matrix and translation vector using ProDy's calcTransformation() function
-    transformation = prody.calcTransformation(matrix_A, matrix_B)
-    rotation_matrix = transformation.getRotation()
-    translation_vector = transformation.getTranslation()
+    # Center each matrix by subtracting their respective centroids
+    centered_A = matrix_A - centroid_A
+    centered_B = matrix_B - centroid_B
 
-    # Apply the rotation matrix and translation vector to matrix_B to align it with matrix_A
-    matrix_B_aligned = np.dot(matrix_B, rotation_matrix) + translation_vector
+    # Compute the covariance matrix
+    covariance_matrix = np.dot(centered_A.T, centered_B)
 
-    # Calculate the RMSD between the aligned structures
-    squared_diff = np.square(matrix_A - matrix_B_aligned)
-    sum_squared_diff = np.sum(squared_diff, axis=1)
-    mean_squared_diff = np.mean(sum_squared_diff)
-    rmsd = np.sqrt(mean_squared_diff)
+    # Compute the optimal rotation matrix using Singular Value Decomposition (SVD)
+    U, _, Vt = np.linalg.svd(covariance_matrix)
+    optimal_rotation_matrix = np.dot(U, Vt)
+
+    # Check for reflections
+    if np.linalg.det(optimal_rotation_matrix) < 0:
+        Vt[-1, :] *= -1
+        optimal_rotation_matrix = np.dot(U, Vt)
+
+    # Rotate matrix B using the optimal rotation matrix
+    rotated_B = np.dot(centered_B, optimal_rotation_matrix.T)
+
+    # Compute the RMSD
+    rmsd = np.sqrt(np.mean(np.sum((centered_A - rotated_B)**2, axis=1)))
 
     return rmsd
 
 
-def get_rmsd(ref_atoms: List[int], traj_atoms: List[int]):
+def get_rmsd(ref_atoms: List[int], traj_atoms: List[List[int]]):
     """
     Gets RMSD for specific atoms for different analogs.
 
@@ -660,7 +663,7 @@ def get_rmsd(ref_atoms: List[int], traj_atoms: List[int]):
                 offset = 2 + frame * (num_atoms + 2)  # Calculate the starting line number for the current frame
                 frame_lines = traj_lines[offset:offset + num_atoms]  # Extract the current frame
                 matrix_B = np.array(
-                    [list(map(float, frame_lines[i - 1].split()[1:4])) for i in traj_atoms],
+                    [list(map(float, frame_lines[i - 1].split()[1:4])) for i in traj_atoms[index]],
                     dtype=float
                 )
                 
@@ -684,6 +687,78 @@ def get_rmsd(ref_atoms: List[int], traj_atoms: List[int]):
     )
 
     return rmsd_list
+
+
+def td_coupling(res_x, res_y, replicate_dir):
+    """
+    Calculates and plots the partial charge for two residues over time.
+
+    This function will calculate the charge for each frame for two residues,
+    and plot them. This will help show if the charges are inversely correlated.
+
+    Parameters
+    ----------
+    res_x : str
+        The first amino acid to be plotted against time.
+    res_y : str
+        The second amino acid to be plotted against time.
+    replicate_dir: str
+        The name of the replicate that we will calculate the time-dependent
+        coupling for
+
+    Returns
+    -------
+    joint_df: pd.DataFrame()
+        A dataframe with the charge information for both correlated residues.
+
+    See Also
+    --------
+    qa.analyze.get_joint_qres()
+
+    """
+    start_time = time.time()  # Used to report the executation speed
+    # Create folder for the results in Analysis
+    root = os.getcwd()
+    os.chdir(f"{replicate_dir}/Analysis")
+    if not os.path.isdir("4_time_coupling"):
+        os.makedirs("4_time_coupling")
+    os.chdir(root)
+
+    # Create a new DataFrame to append the two residues of interest
+    residues = [res_x, res_y]
+    joint_df = pd.DataFrame(columns=residues)
+
+    # Get the indices of the atoms to parse the charge.xls file
+    os.chdir(replicate_dir)
+    for res in residues:
+        # Open the combined charge file and read it in
+        charge_file = "all_charges.xls"
+        charge_df = pd.read_csv(charge_file, sep="\t")
+
+        # Get the atom indices of the residue
+        atom_indices = qa.process.get_res_atom_indices(res)
+        # Sum the charges of the atoms of the requested residues
+        summed_charges = charge_df[charge_df.columns[atom_indices]].sum(axis=1).tolist()
+
+        # Add the summed residue to the new dataframe
+        joint_df[res] = summed_charges
+
+    ext = "png"
+    plot_name = f"{res_x}_{res_y}_td.{ext}"
+    qa.plot.time_coupling_plot(joint_df, plot_name, res_x, res_y, ext)
+
+    total_time = round(time.time() - start_time, 3)  # Seconds to run the function
+    print(
+        f"""
+        \t-------------------------GET TD CHARGES END-------------------------
+        \tRESULT: Extracted and computed the joint charge distribution.
+        \tOUTPUT: Created the charge distribution plot: {plot_name}.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
+
+    return joint_df
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@
       combine_qm_replicates
       combine_replicates
       combine_restarts
+      combine_xyzs
       get_atom_count
       get_charge_file
       get_pdb
@@ -28,6 +29,7 @@
       get_res_atom_indices
       get_residue_identifiers
       get_xyz
+      string_to_list
       xyz2pdb
       xyz2pdb_ensemble
       xyz2pdb_traj

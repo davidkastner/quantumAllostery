@@ -11,6 +11,7 @@ from collections import OrderedDict
 from typing import List, Tuple
 from biopandas.pdb import PandasPdb
 import qa.reference
+from typing import List
 
 
 def get_pdb() -> str:
@@ -1016,24 +1017,31 @@ def combine_qm_replicates() -> None:
     )
 
 
-def string_to_list(number_string):
+def string_to_list(str_list: List[str]) -> List[List[int]]:
     """
-    Converts a string of numbers to a list.
+    Converts a list of numerical strings to a list of lists of numbers.
+
+    It takes a list of numerical strings so that it can process them in bulk.
 
     Examples
     --------
-    "1-4,6,8-10" -> [1,2,3,4,6,8,9,10]
+    ["1-4,6,8-10", "1-3"] -> [[1,2,3,4,6,8,9,10],[1,2,3]]
 
     """
-    segments = number_string.split(",")
     number_list = []
+    for number_string in str_list:
+        segments = number_string.split(",")
 
-    for segment in segments:
-        if "-" in segment:
-            start, end = map(int, segment.split("-"))
-            number_list.extend(range(start, end + 1))
-        else:
-            number_list.append(int(segment))
+        sub_list = []
+
+        for segment in segments:
+            if "-" in segment:
+                start, end = map(int, segment.split("-"))
+                sub_list.extend(range(start, end + 1))
+            else:
+                sub_list.append(int(segment))
+
+        number_list.append(sub_list)
 
     return number_list
 

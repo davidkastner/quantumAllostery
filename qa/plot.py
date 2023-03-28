@@ -427,22 +427,63 @@ def plot_rmsd(rmsd_list, labels):
 
     # Calculate the mean and standard error for each analog
     rmsd_mean = [np.mean(analog_rmsd) for analog_rmsd in rmsd_list]
-    rmsd_std_err = [np.std(analog_rmsd, ddof=1) / np.sqrt(len(analog_rmsd)) for analog_rmsd in rmsd_list]
+    rmsd_std_dev = [np.std(analog_rmsd, ddof=1) for analog_rmsd in rmsd_list]
 
     # Generate a bar plot for each analog
     x_pos = np.arange(len(rmsd_list))
-    plt.bar(x_pos, rmsd_mean, yerr=rmsd_std_err, align='center', alpha=0.5, capsize=10)
+    plt.bar(x_pos, rmsd_mean, yerr=rmsd_std_dev, align='center', alpha=0.5, capsize=10, color="grey")
 
     # Set the x-axis labels
     plt.xticks(x_pos, labels)
 
     # Set the plot labels and title
-    plt.xlabel('Analogs', weight="bold")
-    plt.ylabel('RMSD', weight="bold")
+    plt.ylabel('RMSD (Å)', weight="bold")
 
     # Save output as a 300 dpi PNG
     ext = "png"
     plt.savefig(f'rmsd_plot.{ext}', bbox_inches="tight", dpi=300)
+
+
+def time_coupling_plot(charge_df, out_file, res_x, res_y, ext) -> None:
+    """
+    Compares the charge fluctuations of two residues against time
+
+    Parameters
+    ----------
+    charge_df : pd.DataFrame
+        A dataframe with two columns, each corresponding to a residue.
+
+    See Also
+    --------
+    qa.analyze.td_coupling()
+
+    """
+    # Apply Kulik plotting format
+    format_plot()
+
+    # Extract the data from the dataframe and compute the rolling mean
+    residue_1 = charge_df[charge_df.columns[0]].rolling(window=5).mean()
+    residue_2 = charge_df[charge_df.columns[1]].rolling(window=5).mean()
+    
+    # Calculate the mean and subtract it from the residue values to center the traces at zero
+    residue_1_deviation = residue_1 - residue_1.mean()
+    residue_2_deviation = residue_2 - residue_2.mean()
+    
+    # Conversion factor: 200 single points = 1 picosecond
+    frame_to_ps = 1 / 20
+    x = np.arange(len(charge_df.index)) * frame_to_ps
+
+    # Create the plot
+    plt.plot(x, residue_1_deviation, label=f"{res_x}", color='r')
+    plt.plot(x, residue_2_deviation, label=f"{res_y}", color='b')
+    plt.xlabel("time (ps)", fontweight="bold")
+    plt.ylabel("charge deviation from the mean", fontweight="bold")
+    plt.legend()
+    plt.savefig(
+        f"Analysis/4_time_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300
+    )
+    print(os.getcwd())
+    plt.close()
 
 
 if __name__ == "__main__":

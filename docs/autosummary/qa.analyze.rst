@@ -17,8 +17,10 @@
       calculate_esp
       charge_matrix
       charge_matrix_analysis
+      compute_rmsd
       cpptraj_covars
       get_joint_qres
+      get_rmsd
    
    
 
