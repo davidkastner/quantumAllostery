@@ -27,8 +27,6 @@ quantumAllostery
 The quantumAllostery (QA) package automates the identification of charge coupling interactions in ab-initio molecular dynamics (AIMD) simulations.
 Routine tasks can be easily automated using the functionality contained in the library.
 
----
-
 ## 2. Installation
 Install the package by running the follow commands inside the repository.
 This will perform a developmental version install.
