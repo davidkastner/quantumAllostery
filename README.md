@@ -44,6 +44,9 @@ source activate qa
 If you are planning to use the ML functionality, then you will need to install Demystifying.
 Demystifying is a package that and demonstration of finding features in high-dimensional simulaitions.
 Unfortunately, it does not have a conda install so you can get it and install it from GitHub.
+We are currently building an inhouse package to replace this dependency:
+
+[molecuLearn](https://github.com/davidkastner/molecuLearn/)
 ```bash
 git clone git@github.com:delemottelab/demystifying.git
 ```
