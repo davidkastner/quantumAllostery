@@ -61,6 +61,14 @@ def create_combined_csv(
         # Store the labeled, averaged frames in the list
         dataframes.append(avg_by_residues)
 
+        # Remove the last column (label) before saving
+        avg_by_residues_no_label = avg_by_residues.iloc[:, :-1]
+
+        # Save the individual dataframe without the label column to a CSV file
+        output_file = charge_file.split(".")[0] + "_charges.csv"
+        avg_by_residues_no_label.to_csv(output_file, index=False)
+        print(f"   > Saved {output_file}.")
+
     # Drop the residue columns that were mutated
     # We can't compare these residues' charges as their atom counts differ
     clean_dataframes = []
