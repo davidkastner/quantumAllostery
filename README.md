@@ -41,12 +41,6 @@ git clone git@github.com:davidkastner/quantumAllostery.git
 cd quantumAllostery
 ```
 
-### Setup developing environment
-Remember to update your GitHub [ssh keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
-```bash
-git clone git@github.com:davidkastner/quantumAllostery.git
-cd quantumAllostery
-```
 
 ### Creating python environment
 All the dependencies can be loaded together using the prebuilt environment.yml.
@@ -55,19 +49,13 @@ Installing all packages together via the yaml will produce a more robust and eff
 
 ```
 conda env create -f environment.yml
-<<<<<<< HEAD
 conda activate qa # You may need to use source activate qa
-=======
-conda activate qa
-source activate qa # Alternatively used on some clusters
 ```
 
 ### Install pyQMMM package
 Next, we will perform an development install:
 
 ```
-cd quantumAllostery
->>>>>>> f5af0aefcdaa4972b0cc56425e959eb3732fb473
 python -m pip install -e .
 ```
 
@@ -87,10 +75,6 @@ export PYTHONPATH="${PYTHONPATH}:/my/path/to/demystifying-master" # Add to bashr
 **Fleetwood, Oliver, et al. "Molecular insights from conformational ensembles via machine learning." Biophysical Journal (2019).**
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> f5af0aefcdaa4972b0cc56425e959eb3732fb473
 ## 3. What is included?
 ### File structure
 This is the the package structure for reference and its included modules.
