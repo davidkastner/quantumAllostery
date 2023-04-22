@@ -168,7 +168,7 @@ def cli(
         click.echo("> Loading...")
         import qa.manage
         import qa.process
-        qa.process.clean_qm_jobs(0, 39900, 100)
+        qa.process.clean_qm_jobs(0, 39901, 100)
 
     elif combine_qm_charges:
         click.echo("> Combining the QM charge data across single points:")
@@ -180,7 +180,7 @@ def cli(
         if compute_replicates == "n":
             qa.process.combine_qm_replicates()
         elif compute_replicates == "y":
-            qa.process.combine_qm_charges(0, 39900, 100)
+            qa.process.combine_qm_charges(0, 39901, 100)
         else:
             print(f"> {compute_replicates} is not a valid response.")
 

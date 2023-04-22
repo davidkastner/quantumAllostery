@@ -836,9 +836,9 @@ def clean_qm_jobs(first_job: int, last_job: int, step: int) -> None:
                             scr_dirs, key=os.path.getmtime, reverse=True
                         )
                         # Only keep the newest
-                        for scr_dir in sorted_scr_dirs[1:]:
-                            shutil.rmtree(scr_dir)
-                            print(f"   > Delete extra scratch directory: {scr_dir}")
+                        # for scr_dir in sorted_scr_dirs[1:]:
+                        #     shutil.rmtree(scr_dir)
+                        #     print(f"   > Delete extra scratch directory: {scr_dir}")
 
             os.chdir(secondary_dir)
         os.chdir(primary_dir)
@@ -861,13 +861,15 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
 
     After running periodic single points on the ab-initio MD data,
     we need to process the charge data so that it matches the SQM data.
+    This code gets the charges from each single point and combines them.
+    Results are stored in a tabular form.
 
     Parameters
     ----------
     first_job: int
         The name of the first directory and first job e.g., 0
     last_job: int
-        The name of the last directory and last job e.g., 39900
+        The name of the last directory and last job e.g., 39901
     step: int
         The step size between each single point.
 
@@ -884,7 +886,7 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
     replicate_count = len(replicates)  # Report to user
 
     for replicate in replicates:
-        frames = 1  # Saved to report to the user
+        frames = 0  # Saved to report to the user
         os.chdir(replicate)
         # The location of the current qm job that we are appending
         secondary_dir = os.getcwd()
@@ -982,26 +984,28 @@ def combine_qm_replicates() -> None:
 
     # Create a new file to save charges
     with open(charge_file, "a") as new_charge_file:
-        first_charge_file = True
+        header_written = False
         for replicate in replicates:
             # There will always be an Analysis folder
             os.chdir(replicate)
             secondary_dir = os.getcwd()
             print(f"   > Adding {secondary_dir}")
 
+            # Get the replicate number from the folder name
+            replicate_number = os.path.basename(os.path.normpath(secondary_dir))
+
             # Add the header for the first replicate
             with open(charge_file, "r") as current_charge_file:
-                if first_charge_file:
-                    first_line = current_charge_file.readline()
-                    new_charge_file.writelines(first_line)
-                    first_charge_file = False
                 for index, line in enumerate(current_charge_file):
                     if index == 0:
+                        if not header_written:
+                            new_charge_file.writelines("replicate\t" + line)
+                            header_written = True
                         continue
                     elif "nan" in line:
                         print(f"      > Found nan values in {secondary_dir}.")
                     else:
-                        new_charge_file.writelines(line)
+                        new_charge_file.writelines(replicate_number + "\t" + line)
 
             os.chdir(primary_dir)
 
