@@ -964,7 +964,11 @@ def combine_qm_charges(first_job: int, last_job: int, step: int) -> None:
 
 def combine_qm_replicates() -> None:
     """
-    Combines the all_charges.xls files for replicates into a master charge file.
+    Combine the all_charges.xls files for replicates into a master charge file.
+
+    The combined file contains a single header with atom numbers as columns.
+    Each row represents a new charge instance.
+    The first column indicates which replicate the charge came from.
 
     """
     start_time = time.time()  # Used to report the executation speed
