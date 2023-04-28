@@ -31,6 +31,7 @@ import click
 @click.option("--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's.")
 @click.option("--plot_heme_distortion", "-v", is_flag=True, help="Plots heme distortion across replicates.")
 @click.option("--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling.")
+@click.option("--pairwise_distances", "-pw", is_flag=True, help="Compute pairwise distances.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -53,6 +54,7 @@ def cli(
     combine_sp_xyz,
     plot_heme_distortion,
     td_coupling,
+    pairwise_distances,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -284,6 +286,18 @@ def cli(
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
         charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="6")
+
+    elif pairwise_distances:
+        click.echo("> Compute pairwise distances features for a trajectory:")
+        click.echo("> Loading...")
+        import qa.process
+        import qa.manage
+        
+        # Compute the pairwise distances
+        pdb_traj_path = input("   > What is the name of your PDB? ")
+        print(f"   > Assuming the PDB trajectory has name {pdb_traj_path}")
+        qa.manage.check_file_exists(pdb_traj_path)
+        qa.process.pairwise_distances_csv(pdb_traj_path)
 
     else:
         click.echo("No functionality was requested.\nTry --help.")
