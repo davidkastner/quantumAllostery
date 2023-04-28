@@ -1053,6 +1053,56 @@ def string_to_list(str_list: List[str]) -> List[List[int]]:
 
     return number_list
 
+def pairwise_distances_csv(pdb_traj_path):
+    """
+    Generates a CSV containing all the pairwise distances for a PDB trajectory
+    and prints the total number of pairwise distances calculated, the number
+    of residue pairs, and the number of frames in the PDB trajectory.
+
+    Parameters
+    ----------
+    pdb_traj_path : str
+        The path to the PDB trajectory file.
+
+    See Also
+    --------
+    read_trajectory_pdb()
+    pairwise_distances()
+    trajectory_pairwise_distances()
+    """
+    start_time = time.time()  # Record the start time to report execution speed later
+
+    # Read and separate the PDB trajectory into frames
+    frames = read_trajectory_pdb(pdb_traj_path)
+
+    # Get the number of frames in the trajectory
+    frame_count = len(frames)
+
+    # Calculate pairwise distances for each frame and store them in a DataFrame
+    pairwise_distances_df = trajectory_pairwise_distances(frames)
+
+    # Get the number of residue pairs (columns in the DataFrame)
+    res_pairs_count = len(pairwise_distances_df.columns)
+
+    # Calculate the total number of pairwise distances across all frames
+    dist_count = frame_count * res_pairs_count
+
+    # Save the DataFrame to a CSV file
+    out_file_name = "pairwise_distances.csv"
+    pairwise_distances_df.to_csv(out_file_name, index=False)
+
+    # Calculate the total execution time and print the results
+    total_time = round(time.time() - start_time, 3)
+    print(
+        f"""
+           ------------------------PAIRWISE DISTANCES END------------------------
+           RESULT: {dist_count} distances for {res_pairs_count} residue pairs across {frame_count} frames.
+           OUTPUT: Pairwise distances saved to {out_file_name}.
+           TIME: Total execution time: {total_time} seconds.
+           --------------------------------------------------------------------\n
+        """
+    )
+
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
