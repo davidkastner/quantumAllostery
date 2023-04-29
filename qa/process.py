@@ -2,14 +2,18 @@
 
 import os
 import re
+import io
 import sys
 import glob
 import time
 import shutil
 import pandas as pd
+import numpy as np
+from itertools import combinations
 from collections import OrderedDict
 from typing import List, Tuple
 from biopandas.pdb import PandasPdb
+from Bio.PDB import PDBParser, Vector
 import qa.reference
 from typing import List
 
@@ -152,6 +156,10 @@ def get_charge_file() -> str:
     charge_file : str
         The path of a charge .xls file within the current directory.
 
+    Notes
+    -----
+    Starts in the directory containing all the directories
+
     """
 
     # Get the xls from the current directory
@@ -169,6 +177,58 @@ def get_charge_file() -> str:
 
     return charge_file
 
+def combine_sp_xyz():
+    """
+    Combines single point xyz's for all replicates.
+
+    The QM single points each of a geometry file.
+    Combines all those xyz files into.
+    Preferential to using the other geometry files to insure they are identical.
+
+    """
+    start_time = time.time()  # Used to report the executation speed
+
+    # Get the directories of each replicate
+    primary = os.getcwd()
+    replicates = sorted(glob.glob("*/"))
+    ignore = ["Analyze/", "Analysis/", "coordinates/", "inputfiles/", "opt-wfn/"]
+
+    xyz_count = 0
+
+    # Get the name of the structure
+    geometry_name = os.getcwd().split("/")[-1]
+    out_file = f"{geometry_name}_geometry.xyz"
+
+    with open(out_file, "w") as combined_sp:
+        for replicate in replicates:
+            if replicate in ignore:
+                continue
+            else:
+                print(f"   > Adding replicate {replicate} structures.")
+                os.chdir(replicate)
+                secondary = os.getcwd()
+                os.chdir("coordinates")
+
+                structures = sorted(glob.glob("*.xyz"))
+                for index, structure in enumerate(structures):
+                    with open(structure, "r") as file:
+                        # Write the header from the first file
+                        combined_sp.writelines(file.readlines())
+                        xyz_count += 1
+
+            # Go back and loop through all the other replicates
+            os.chdir(primary)
+
+    total_time = round(time.time() - start_time, 3)  # Time to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tOUTPUT: Combined {xyz_count} single point xyz files.
+        \tOUTPUT: Output file is {out_file}.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
 
 def combine_restarts(
     atom_count, all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
@@ -514,7 +574,7 @@ def xyz2pdb(xyz_list: List[str]) -> None:
     )
 
 
-def xyz2pdb_traj() -> None:
+def xyz2pdb_traj(outname) -> None:
     """
     Converts an xyz trajectory file into a pdb trajectory file.
 
@@ -529,12 +589,12 @@ def xyz2pdb_traj() -> None:
     start_time = time.time()  # Used to report the executation speed
 
     # Search for the XYZ and PDB files names
-    pdb_name = get_pdb()
-    xyz_name = get_xyz()
+    pdb_name = input("> What is the name of your pdb? ")
+    xyz_name = input("> What is the name of your trajectory? ")
 
     # Remove the extension to get the protein name to use as the PDB header
     protein_name = pdb_name.split("/")[-1][:-4]
-    new_pdb_name = f"all_coors.pdb"
+    new_pdb_name = outname
 
     # Open files for reading
     xyz_file = open(xyz_name, "r").readlines()
@@ -1052,6 +1112,105 @@ def string_to_list(str_list: List[str]) -> List[List[int]]:
         number_list.append(sub_list)
 
     return number_list
+
+
+def read_trajectory_pdb(file_path):
+    """
+    Read a PDB trajectory file and return a list of PDB structure objects.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the PDB trajectory file.
+
+    Returns
+    -------
+    list
+        A list of Bio.PDB.Structure.Structure objects, one for each frame in the trajectory.
+    """
+    with open(file_path, "r") as f:
+        pdb_string = f.read()
+    pdb_strings = pdb_string.split("END")
+    parser = PDBParser(QUIET=True)
+    frames = [
+        parser.get_structure("Frame", io.StringIO(pdb_string))
+        for pdb_string in pdb_strings
+        if pdb_string.strip()
+    ]
+    return frames
+
+
+def center_of_mass(residue):
+    """
+    Calculate the center of mass of a residue.
+
+    Parameters
+    ----------
+    residue : Bio.PDB.Residue.Residue
+        A residue object.
+
+    Returns
+    -------
+    Vector
+        A Vector object representing the (x, y, z) coordinates of the center of mass.
+    """
+    total_mass = 0
+    mass_center = Vector(0, 0, 0)
+    for atom in residue.get_atoms():
+        atom_mass = atom.mass
+        mass_center += Vector(*atom.coord) * Vector(
+            atom_mass, atom_mass, atom_mass
+        )  # Correctly multiply the Vector with the scalar
+        total_mass += atom_mass
+    return mass_center / total_mass
+
+
+def pairwise_distances(structure):
+    """
+    Calculate pairwise distances between the center of mass of amino acids in a PDB structure.
+
+    Parameters
+    ----------
+    structure : Bio.PDB.Structure.Structure
+        The PDB structure object.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys as tuples of residue pairs and values as their pairwise distances.
+    """
+    residues = list(structure.get_residues())
+    residue_pairs = combinations(residues, 2)
+    distances = {}
+    for r1, r2 in residue_pairs:
+        com1 = center_of_mass(r1)
+        com2 = center_of_mass(r2)
+        distance = np.linalg.norm(np.array(com1) - np.array(com2))
+        distances[(r1.get_resname(), r1.id[1], r2.get_resname(), r2.id[1])] = distance
+    return distances
+
+
+def trajectory_pairwise_distances(frames):
+    """
+    Calculate pairwise distances for all frames in a PDB trajectory.
+
+    Parameters
+    ----------
+    frames : list
+        A list of PDB structures representing individual frames.
+
+    Returns
+    -------
+    pd.DataFrame
+        Pandas DataFrame with rows as frames and columns as pairwise distances.
+
+    """
+    all_distances = [pairwise_distances(frame) for frame in frames]
+    df = pd.DataFrame(all_distances)
+    # Rename columns to better represent residue pairs
+    df.columns = [f"{col[0]}{col[1]}-{col[2]}{col[3]}" for col in df.columns]
+    return df
+
 
 def pairwise_distances_csv(pdb_traj_path):
     """

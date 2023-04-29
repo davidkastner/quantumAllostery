@@ -93,9 +93,10 @@ def cli(
         import qa.process
         xyz_type = input("> Process a trajectory (t) or frames (f)? ")
         if xyz_type == "t":
-            
-            qa.process.xyz2pdb_traj()
+            outname = "pdb_geometry.pdb"
+            qa.process.xyz2pdb_traj(outname)
         elif xyz_type == "f":
+            # You can process multiple frames at once
             qa.process.xyz2pdb(["0.xyz","10000.xyz","20000.xyz","30000.xyz","39900.xyz"])
     
     elif clean_frames:
@@ -250,8 +251,8 @@ def cli(
     elif combine_sp_xyz:
         click.echo("> Combine the xyz files from all the single points:")
         click.echo("> Loading...")
-        import qa.manage
-        qa.manage.combine_sp_xyz()
+        import qa.process
+        qa.process.combine_sp_xyz()
 
     elif plot_heme_distortion:
         click.echo("> Computes the RMSD for a structure across the trajectory:")
@@ -288,16 +289,27 @@ def cli(
         charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="6")
 
     elif pairwise_distances:
-        click.echo("> Compute pairwise distances features for a trajectory:")
+        click.echo("> Compute pairwise distances workflow:")
         click.echo("> Loading...")
         import qa.process
         import qa.manage
         
-        # Compute the pairwise distances
+        click.echo("> Combine the xyz files from all the single points:")
+        qa.process.combine_sp_xyz()
+
+        click.echo("> Convert an xyz to a pdb trajectory:")
+        outname = "pdb_geometry.pdb"
+        qa.process.xyz2pdb_traj(outname)
+
+        click.echo("> Compute pairwise distances features for a trajectory:")
         pdb_traj_path = input("   > What is the name of your PDB? ")
         print(f"   > Assuming the PDB trajectory has name {pdb_traj_path}")
         qa.manage.check_file_exists(pdb_traj_path)
         qa.process.pairwise_distances_csv(pdb_traj_path)
+
+
+
+
 
     else:
         click.echo("No functionality was requested.\nTry --help.")
