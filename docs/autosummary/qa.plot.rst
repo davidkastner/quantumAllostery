@@ -21,6 +21,7 @@
       heatmap
       plot_feature_importance
       plot_rmsd
+      time_coupling_plot
    
    
 

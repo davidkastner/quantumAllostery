@@ -21,6 +21,7 @@
       cpptraj_covars
       get_joint_qres
       get_rmsd
+      td_coupling
    
    
 
