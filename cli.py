@@ -8,6 +8,7 @@ print("Default programmed actions for the quantumAllostery package.")
 print("GitHub: https://github.com/davidkastner/quantumAllostery")
 print("Documenation: https://quantumallostery.readthedocs.io\n")
 
+import os
 import click
 
 @click.command()
@@ -298,17 +299,14 @@ def cli(
         qa.process.combine_sp_xyz()
 
         click.echo("> Convert an xyz to a pdb trajectory:")
-        outname = "pdb_geometry.pdb"
-        qa.process.xyz2pdb_traj(outname)
+        qa.process.xyz2pdb_traj()
 
         click.echo("> Compute pairwise distances features for a trajectory:")
-        pdb_traj_path = input("   > What is the name of your PDB? ")
-        print(f"   > Assuming the PDB trajectory has name {pdb_traj_path}")
-        qa.manage.check_file_exists(pdb_traj_path)
-        qa.process.pairwise_distances_csv(pdb_traj_path)
-
-
-
+        geometry_name = os.getcwd().split("/")[-1]
+        out_file = f"{geometry_name}_geometry.pdb"
+        print(f"   > Assuming the PDB trajectory has name {out_file}")
+        qa.manage.check_file_exists(out_file)
+        qa.process.pairwise_distances_csv(out_file)
 
 
     else:

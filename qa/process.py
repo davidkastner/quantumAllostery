@@ -574,7 +574,7 @@ def xyz2pdb(xyz_list: List[str]) -> None:
     )
 
 
-def xyz2pdb_traj(outname) -> None:
+def xyz2pdb_traj() -> None:
     """
     Converts an xyz trajectory file into a pdb trajectory file.
 
@@ -588,13 +588,11 @@ def xyz2pdb_traj(outname) -> None:
 
     start_time = time.time()  # Used to report the executation speed
 
-    # Search for the XYZ and PDB files names
-    pdb_name = input("> What is the name of your pdb? ")
-    xyz_name = input("> What is the name of your trajectory? ")
-
-    # Remove the extension to get the protein name to use as the PDB header
-    protein_name = pdb_name.split("/")[-1][:-4]
-    new_pdb_name = outname
+    # Get the name of the structure
+    pdb_name = "template.pdb"
+    geometry_name = os.getcwd().split("/")[-1]
+    xyz_name = f"{geometry_name}_geometry.xyz"
+    new_pdb_name = f"{geometry_name}_geometry.pdb"
 
     # Open files for reading
     xyz_file = open(xyz_name, "r").readlines()
