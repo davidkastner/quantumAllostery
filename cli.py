@@ -296,17 +296,17 @@ def cli(
         import qa.manage
         
         click.echo("> Combine the xyz files from all the single points:")
-        qa.process.combine_sp_xyz()
+        replicate_info = qa.process.combine_sp_xyz()
 
         click.echo("> Convert an xyz to a pdb trajectory:")
         qa.process.xyz2pdb_traj()
 
         click.echo("> Compute pairwise distances features for a trajectory:")
         geometry_name = os.getcwd().split("/")[-1]
-        out_file = f"{geometry_name}_geometry.pdb"
-        print(f"   > Assuming the PDB trajectory has name {out_file}")
-        qa.manage.check_file_exists(out_file)
-        qa.process.pairwise_distances_csv(out_file)
+        pdb_traj_path = f"{geometry_name}_geometry.pdb"
+        print(f"   > Assuming the PDB trajectory has name {pdb_traj_path}")
+        qa.manage.check_file_exists(pdb_traj_path)
+        qa.process.pairwise_distances_csv(pdb_traj_path, replicate_info)
 
 
     else:

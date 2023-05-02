@@ -185,6 +185,11 @@ def combine_sp_xyz():
     Combines all those xyz files into.
     Preferential to using the other geometry files to insure they are identical.
 
+    Returns
+    -------
+    replicate_info : List[tuple()]
+        List of tuples with replicate number and frame count for the replicates.
+
     """
     start_time = time.time()  # Used to report the executation speed
 
@@ -194,6 +199,7 @@ def combine_sp_xyz():
     ignore = ["Analyze/", "Analysis/", "coordinates/", "inputfiles/", "opt-wfn/"]
 
     xyz_count = 0
+    replicate_info = []  # Initialize an empty list to store replicate information
 
     # Get the name of the structure
     geometry_name = os.getcwd().split("/")[-1]
@@ -210,11 +216,15 @@ def combine_sp_xyz():
                 os.chdir("coordinates")
 
                 structures = sorted(glob.glob("*.xyz"))
+                frame_count = 0  # Initialize frame count for each replicate
                 for index, structure in enumerate(structures):
                     with open(structure, "r") as file:
                         # Write the header from the first file
                         combined_sp.writelines(file.readlines())
                         xyz_count += 1
+                        frame_count += 1
+
+                replicate_info.append((int(replicate[:-1]), frame_count))  # Append replicate information
 
             # Go back and loop through all the other replicates
             os.chdir(primary)
@@ -229,6 +239,9 @@ def combine_sp_xyz():
         \t--------------------------------------------------------------------\n
         """
     )
+
+    # Return the list of tuples with replicate information
+    return replicate_info 
 
 def combine_restarts(
     atom_count, all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
@@ -1210,7 +1223,7 @@ def trajectory_pairwise_distances(frames):
     return df
 
 
-def pairwise_distances_csv(pdb_traj_path):
+def pairwise_distances_csv(pdb_traj_path, replicate_info):
     """
     Generates a CSV containing all the pairwise distances for a PDB trajectory
     and prints the total number of pairwise distances calculated, the number
@@ -1245,7 +1258,8 @@ def pairwise_distances_csv(pdb_traj_path):
     dist_count = frame_count * res_pairs_count
 
     # Save the DataFrame to a CSV file
-    out_file_name = "pairwise_distances.csv"
+    geometry_name = os.getcwd().split("/")[-1]
+    out_file_name = f"{geometry_name}_pairwise_distances.csv"
     pairwise_distances_df.to_csv(out_file_name, index=False)
 
     # Calculate the total execution time and print the results
