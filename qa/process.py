@@ -1251,6 +1251,15 @@ def pairwise_distances_csv(pdb_traj_path, replicate_info):
     # Calculate pairwise distances for each frame and store them in a DataFrame
     pairwise_distances_df = trajectory_pairwise_distances(frames)
 
+    # Create a new "replicate" column with all zeros
+    pairwise_distances_df.insert(0, "replicate", 0)
+
+    # Use the replicate_info list to populate the "replicate" column
+    row_idx = 0
+    for replicate, frames_count in replicate_info:
+        pairwise_distances_df.loc[row_idx:row_idx+frames_count-1, "replicate"] = replicate
+        row_idx += frames_count
+
     # Get the number of residue pairs (columns in the DataFrame)
     res_pairs_count = len(pairwise_distances_df.columns)
 
