@@ -450,6 +450,42 @@ def combine_replicates(
     )
 
 
+def summed_residue_charge(charge_data: pd.DataFrame, template: str):
+    """
+    Sums the charges for all atoms by residue.
+
+    Reduces inaccuracies introduced by the limitations of Mulliken charges.
+
+    Parameters
+    ----------
+    charge_data: pd.DataFrame
+        A DataFrame containing the charge data.
+    template: str
+        The name of the template pdb for the protein of interest.
+
+    Returns
+    -------
+    sum_by_residues: pd.DataFrame
+        The charge data averaged by residue and stored as a pd.DataFrame.
+
+    """
+    # Extract the "replicate" column and remove it from the charge_data DataFrame
+    replicate_column = charge_data['replicate']
+    charge_data = charge_data.drop('replicate', axis=1)
+
+    # Get the residue identifiers (e.g., 1Ala) for each atom
+    residues_indentifier = get_residue_identifiers(template)
+
+    # Assign the residue identifiers as the column names of the charge DataFrame
+    charge_data.columns = residues_indentifier
+    sum_by_residues = charge_data.groupby(by=charge_data.columns, sort=False, axis=1).sum()
+
+    # Add the "replicate" column back to the sum_by_residues DataFrame
+    sum_by_residues['replicate'] = replicate_column
+
+    return sum_by_residues
+
+
 def get_residue_identifiers(template, by_atom=True) -> List[str]:
     """
     Gets the residue identifiers such as Ala1 or Cys24.
@@ -486,46 +522,6 @@ def get_residue_identifiers(template, by_atom=True) -> List[str]:
         residues_indentifier = list(OrderedDict.fromkeys(residues_indentifier))
 
     return residues_indentifier
-
-
-def average_charge_residues(charge_file, template):
-    """
-    Averages charge file by residue.
-
-    Reduces inaccuracies introduced by the limitations of Mulliken charges.
-
-    Parameters
-    ----------
-    charge_file: str
-        The name of the file containing the charges.
-    template: str
-        The name of the template pdb for the protein of interest.
-
-    Returns
-    -------
-    charge_df: pd.DataFrame
-        The charge file summed by residue and stored as a pd.DataFrame.
-
-    """
-    # Read in the charge data file as pd.DataFrame
-    charge_df = pd.read_table(charge_file, sep="\t")
-    # charge_df = charge_df.iloc[: , :-1]
-
-    # Get the residue identifiers (e.g., 1Ala) for each atom
-    residues_indentifier = get_residue_identifiers(template)
-
-    # Group of the charge data frame by the residue identifiers
-    try:
-        groups = charge_df.groupby(residues_indentifier, axis=1, sort=False)
-    except:
-        print("   > ERROR: You likely have an extra hanging column.")
-        charge_df = charge_df.iloc[:, :-1]
-        groups = charge_df.groupby(residues_indentifier, axis=1, sort=False)
-
-    # Compute the mean of all atoms in a residue
-    avg_by_residues = groups.mean()
-
-    return avg_by_residues
 
 
 def xyz2pdb(xyz_list: List[str]) -> None:
@@ -1074,13 +1070,13 @@ def combine_qm_replicates() -> None:
                 for index, line in enumerate(current_charge_file):
                     if index == 0:
                         if not header_written:
-                            new_charge_file.writelines("replicate\t" + line)
+                            new_charge_file.writelines(line.strip() + "\treplicate\n")
                             header_written = True
                         continue
                     elif "nan" in line:
                         print(f"      > Found nan values in {secondary_dir}.")
                     else:
-                        new_charge_file.writelines(replicate_number + "\t" + line)
+                        new_charge_file.writelines(line.strip() + "\t" + replicate_number + "\n")
 
             os.chdir(primary_dir)
 
@@ -1252,7 +1248,7 @@ def pairwise_distances_csv(pdb_traj_path, replicate_info):
     pairwise_distances_df = trajectory_pairwise_distances(frames)
 
     # Create a new "replicate" column with all zeros
-    pairwise_distances_df.insert(0, "replicate", 0)
+    pairwise_distances_df = pairwise_distances_df.assign(replicate=0)
 
     # Use the replicate_info list to populate the "replicate" column
     row_idx = 0
@@ -1282,6 +1278,7 @@ def pairwise_distances_csv(pdb_traj_path, replicate_info):
            --------------------------------------------------------------------\n
         """
     )
+
 
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ import click
 @click.option("--plot_heme_distortion", "-v", is_flag=True, help="Plots heme distortion across replicates.")
 @click.option("--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling.")
 @click.option("--pairwise_distances", "-pw", is_flag=True, help="Compute pairwise distances.")
+@click.option("--final_charge_dataset", "-fq", is_flag=True, help="Compute pairwise distances.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -56,6 +57,7 @@ def cli(
     plot_heme_distortion,
     td_coupling,
     pairwise_distances,
+    final_charge_dataset,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -308,6 +310,15 @@ def cli(
         qa.manage.check_file_exists(pdb_traj_path)
         qa.process.pairwise_distances_csv(pdb_traj_path, replicate_info)
 
+    elif final_charge_dataset:
+        click.echo("> Create final charge data set:")
+        click.echo("> Loading...")
+        import qa.predict
+        import qa.process
+
+        # Which amino acids to remove
+        mutations = [2,19,22]
+        charges_df = qa.predict.final_charge_dataset("all_charges.xls", "template.pdb", mutations)
 
     else:
         click.echo("No functionality was requested.\nTry --help.")

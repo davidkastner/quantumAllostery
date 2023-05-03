@@ -196,18 +196,42 @@ def run_ml(data_norm, labels, models=["RF", "MLP"], recompute=False):
             postprocessor.persist()
             postprocessors.append(postprocessor)
 
-        # visualization.visualize([postprocessors],
-        #                     show_importance=True,
-        #                     show_projected_data=True,
-        #                     show_performance=True,
-        #                     outfile=f"{working_dir}/importance-per-residue.png"
-        #                     )
+
+def final_charge_dataset(charge_file: str, template: str, mutations: List[int]) -> pd.DataFrame:
+    """
+    Create final charge data set.
+
+    The output from the combined charges is an .xls file with atoms as columns.
+    We will combine the atoms by residues and average the charges.
+
+    Returns
+    -------
+    charges_df: pd.DataFrame
+        The original charge data as a pandas dataframe.
+
+    """
+    print(f"   > Converting atoms to residues for {charge_file}.")
+    # Load the charge file as a DataFrame
+    charge_data = pd.read_csv(charge_file, sep='\t')
+    
+    # Average atoms by residue to minimize the inaccuracies of Mulliken charges
+    avg_by_residues = qa.process.summed_residue_charge(charge_data, template)
+
+    # Drop the residue columns that were mutated
+    # We can't compare these residues' charges as their atom counts differ
+    charges_df = avg_by_residues.drop(avg_by_residues.columns[[m for m in mutations]], axis=1)
+
+     # Save the individual dataframe to a CSV file
+    geometry_name = os.getcwd().split("/")[-1]
+    output_file = f"{geometry_name}_charges.csv"
+    charges_df.to_csv(output_file, index=False)
+    print(f"   > Saved {output_file}.")
+
+    return charges_df
 
 
 # Execute the script
 if __name__ == "__main__":
-    create_combined_csv(
-        ["mc6.xls", "mc6s.xls", "mc6sa.xls"],
-        ["mc6.pdb", "mc6s.pdb", "mc6sa.pdb"],
-        [0, 2, 15, 16, 19, 22, 27],
-    )
+    # Which amino acids to remove
+    mutations = [2,19,22]
+    charges_df = qa.predict.final_charge_dataset("all_charges.xls", "template.pdb", mutations)
