@@ -17,6 +17,9 @@ import select
 from typing import List
 import MDAnalysis as mda
 from scipy.spatial.transform import Rotation as R
+import io
+from MDAnalysis.analysis import distances
+from itertools import combinations
 
 
 def charge_matrix(pdbfile) -> None:
@@ -760,6 +763,43 @@ def td_coupling(res_x, res_y, replicate_dir):
 
     return joint_df
 
+def pairwise_distances_csv(pdb_traj_path, output_file):
+    """
+    Calculate pairwise distances between residue centers of mass and save the result to a CSV file.
+    
+    Parameters
+    ----------
+    pdb_traj_path : str
+        The file path of the PDB trajectory file.
+    output_file : str
+        The name of the output CSV file.
+    """
+
+    # Read the trajectory file and split it into models
+    with open(pdb_traj_path) as f:
+        models = f.read().split("END")
+    
+    # Create a list of StringIO objects for each model
+    frame_files = [io.StringIO(model) for model in models if model.strip()]
+    universes = [mda.Universe(frame_file, format="pdb") for frame_file in frame_files]
+
+    # Generate column names based on residue pairs
+    residue_names = [residue.resname + str(residue.resid) for residue in universes[0].residues]
+    residue_pairs = list(combinations(residue_names, 2))
+    column_names = [f"{pair[0]}-{pair[1]}" for pair in residue_pairs]
+
+    pairwise_distances = []
+    for universe in universes:
+        # Calculate the center of mass for each residue
+        residue_com = np.array([residue.atoms.center_of_mass() for residue in universe.residues])
+        
+        # Calculate the pairwise distance matrix
+        distance_matrix = distances.distance_array(residue_com, residue_com)
+        pairwise_distances.append(distance_matrix[np.triu_indices(len(residue_com), k=1)])
+
+    # Create a DataFrame with pairwise distances and column names
+    pairwise_distances_df = pd.DataFrame(pairwise_distances, columns=column_names)
+    pairwise_distances_df.to_csv(output_file, index=False)
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed

@@ -32,8 +32,6 @@ import click
 @click.option("--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's.")
 @click.option("--plot_heme_distortion", "-v", is_flag=True, help="Plots heme distortion across replicates.")
 @click.option("--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling.")
-@click.option("--pairwise_distances", "-pw", is_flag=True, help="Compute pairwise distances.")
-@click.option("--final_charge_dataset", "-fq", is_flag=True, help="Compute pairwise distances.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -56,8 +54,6 @@ def cli(
     combine_sp_xyz,
     plot_heme_distortion,
     td_coupling,
-    pairwise_distances,
-    final_charge_dataset,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -291,34 +287,6 @@ def cli(
         res_y = input("> What is the second residue (Gly2)? ")
         charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="6")
 
-    elif pairwise_distances:
-        click.echo("> Compute pairwise distances workflow:")
-        click.echo("> Loading...")
-        import qa.process
-        import qa.manage
-        
-        click.echo("> Combine the xyz files from all the single points:")
-        replicate_info = qa.process.combine_sp_xyz()
-
-        click.echo("> Convert an xyz to a pdb trajectory:")
-        qa.process.xyz2pdb_traj()
-
-        click.echo("> Compute pairwise distances features for a trajectory:")
-        geometry_name = os.getcwd().split("/")[-1]
-        pdb_traj_path = f"{geometry_name}_geometry.pdb"
-        print(f"   > Assuming the PDB trajectory has name {pdb_traj_path}")
-        qa.manage.check_file_exists(pdb_traj_path)
-        qa.process.pairwise_distances_csv(pdb_traj_path, replicate_info)
-
-    elif final_charge_dataset:
-        click.echo("> Create final charge data set:")
-        click.echo("> Loading...")
-        import qa.predict
-        import qa.process
-
-        # Which amino acids to remove
-        mutations = [2,19,22]
-        charges_df = qa.predict.final_charge_dataset("all_charges.xls", "template.pdb", mutations)
 
     else:
         click.echo("No functionality was requested.\nTry --help.")
