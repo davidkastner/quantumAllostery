@@ -59,22 +59,6 @@ Next, we will perform an development install:
 python -m pip install -e .
 ```
 
-### Install Machine Learning Dependencies
-If you are planning to use the ML functionality, then you will need to install Demystifying.
-Demystifying is a package that and demonstration of finding features in high-dimensional simulaitions.
-Unfortunately, it does not have a conda install so you can get it and install it from GitHub.
-We are currently building an inhouse package to replace this dependency: [molecuLearn](https://github.com/davidkastner/molecuLearn/).
-Demystifying doesn't have a proper install setup so you can just add it to your python path in your bashrc.
-
-```
-git clone git@github.com:delemottelab/demystifying.git
-export PYTHONPATH="${PYTHONPATH}:/my/path/to/demystifying-master" # Add to bashrc
-```
-
-*Citation:*
-**Fleetwood, Oliver, et al. "Molecular insights from conformational ensembles via machine learning." Biophysical Journal (2019).**
-
-
 ## 3. What is included?
 ### File structure
 This is the the package structure for reference and its included modules.
