@@ -13,8 +13,6 @@
 
    .. autosummary::
    
-      average_charge_residues
-      center_of_mass
       check_valid_resname
       clean_incomplete_xyz
       clean_qm_jobs
@@ -31,11 +29,8 @@
       get_res_atom_indices
       get_residue_identifiers
       get_xyz
-      pairwise_distances
-      pairwise_distances_csv
-      read_trajectory_pdb
       string_to_list
-      trajectory_pairwise_distances
+      summed_residue_charge
       xyz2pdb
       xyz2pdb_ensemble
       xyz2pdb_traj
