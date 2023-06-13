@@ -486,6 +486,32 @@ def time_coupling_plot(charge_df, out_file, res_x, res_y, ext) -> None:
     plt.close()
 
 
+def esp_dist_plot():
+    """
+    Creates a scatter plot for a distance and the corresponding ESP.
+    """
+    # Load in data
+    esp_df = pd.read_csv("Hirshfeld_esp.csv")
+    esp_data = esp_df.iloc[:, 2].values
+    dist_df = pd.read_csv("centroid_distance.csv")
+    dist_data = dist_df.iloc[:, 6].values
+
+    # Create color array
+    color_indices = np.repeat(np.arange(len(esp_data) // 400), 400)
+    color_indices = np.pad(color_indices, (0, len(esp_data) - len(color_indices)), mode='edge')
+    colors = plt.cm.viridis(color_indices / color_indices.max())
+
+    # Create the scatter plot
+    format_plot()
+    plt.figure(figsize=(5, 5))
+    scatter = plt.scatter(dist_data, esp_data, c=colors)
+    plt.xlabel("Arg27···Fe Distance (Å)", fontweight="bold")
+    plt.ylabel("ESP (kJ/(mol x e))", fontweight="bold")
+
+    ext = "png"
+    plt.savefig(f"esp_dist.{ext}", bbox_inches="tight", format=ext, dpi=300)
+
+
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
     esp_nomulliken_barchart()

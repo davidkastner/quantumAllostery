@@ -17,6 +17,7 @@ import select
 from typing import List
 import MDAnalysis as mda
 from scipy.spatial.transform import Rotation as R
+from scipy.spatial import distance
 import io
 from MDAnalysis.analysis import distances
 from itertools import combinations
@@ -25,6 +26,11 @@ from itertools import combinations
 def charge_matrix(pdbfile) -> None:
     """
     Generates mutual information and cross-correlation matrices.
+
+    Parameters
+    ----------
+    pdbfile : str
+        The name of the pdbfile
 
     """
 
@@ -127,7 +133,7 @@ def charge_matrix(pdbfile) -> None:
         chargematsc_string += "\n"
 
 
-    # Write out matrixes to csvs 
+    # Write out matrixes to CSV's 
     with open("mimatbb.csv", "w") as mimat:
         mimat.write(mimat_string)
 
@@ -170,7 +176,7 @@ def get_joint_qres(res_x, res_y):
     -----
     Big picture flow of function.
         1. Read charges.xls in as a pd dataframe
-        2. Get atom indices for requested atoms from get_res_indices()
+        2. Get atom indices for requested atoms from get_res_atom_indices()
         3. Extract and sum residue columns
         4. Save as a csv
         5. Return as a pandas dataframe
@@ -800,6 +806,131 @@ def pairwise_distances_csv(pdb_traj_path, output_file):
     # Create a DataFrame with pairwise distances and column names
     pairwise_distances_df = pd.DataFrame(pairwise_distances, columns=column_names)
     pairwise_distances_df.to_csv(output_file, index=False)
+
+def parse_components(components):
+    """
+    Parse the components input, handling range inputs (e.g., '253-424').
+
+    Parameters
+    ----------
+    components : list of lists
+        A list of components, each component being a list of strings representing atom numbers or ranges
+
+    Returns
+    -------
+    parsed_components : list of lists
+        A list of components, each component being a list of integers representing atom numbers
+    """
+    parsed_components = []
+    for component in components:
+        parsed_component = []
+        for atom in component:
+            if '-' in atom:  # Handle range input
+                start, end = map(int, atom.split('-'))
+                parsed_component.extend(list(range(start, end + 1)))
+            else:
+                parsed_component.append(int(atom))
+        parsed_components.append(parsed_component)
+    return parsed_components
+
+def centroid_distance(components):
+    """
+    Calculate the distance between two structural components.
+
+    This purpose of this script is to do more than calculate a simple distance.
+    It will take in two sets of amino acids.
+    This can be a single amino acid or an arbitrary number of amino acid.
+    It will then calculate the centroid of the two components,
+    and the distance between the centroids.
+
+    Parameters
+    ----------
+    components : List of lists
+        A list of two lists corresponding to two components with their atoms e.g., [[487],[253-424]]
+
+    Notes
+    -----
+    Examples of interesting components for mimochromes:
+
+        all : 1-487
+        lower : 1-252
+        upper : 253-424
+        lower-his : 1-86,104-252
+        heme : 425-486
+        his : 87-103
+
+    """
+    # Handle range inputs in components
+    components = parse_components(components)
+
+    start_time = time.time()  # Used to report the executation speed
+    ignore = ["Analysis/", "coordinates/", "inputfiles/"]
+    structure_count = 0
+
+    # Directory containing all replicates
+    primary_dir = os.getcwd()
+    directories = sorted(glob.glob("*/"))
+    replicates = [i for i in directories if i not in ignore]
+    replicate_count = len(replicates)  # Report to user
+
+    # Create a pandas dataframe to store the centroids and the distances
+    centroid_dist_df = pd.DataFrame(columns=["centroid_1x", "centroid_1y", "centroid_1z", 
+                                             "centroid_2x", "centroid_2y", "centroid_2z", 
+                                             "distance"])
+
+    for replicate in replicates:
+        os.chdir(replicate)
+        secondary_dir = os.getcwd()
+
+        # Change into the directory with the structures
+        os.chdir("coordinates")
+        structures = sorted(glob.glob("*.xyz"), key=lambda x: int(os.path.splitext(x)[0]))
+
+        for structure in structures:
+            with open(structure, "r") as structure_coords:
+                structure_lines = structure_coords.readlines()[2:]  # Skip the first two lines
+
+                centroids = []
+                for component in components:
+                    # Parse the XYZ coordinates for the selected atoms
+                    selected_atom_coords = [structure_lines[i-1].split()[1:] for i in component]
+                    selected_atom_coords = np.array(selected_atom_coords, dtype=float)
+
+                    # Calculate the centroid of each component
+                    centroid = np.mean(selected_atom_coords, axis=0)
+                    centroids.append(centroid)
+
+                # Calculate the distance between the two centroids
+                dist = distance.euclidean(centroids[0], centroids[1])
+
+                # Save the centroids and the distance to centroid_dist_df
+                new_row = pd.DataFrame({
+                    "centroid_1x": [centroids[0][0]], "centroid_1y": [centroids[0][1]], "centroid_1z": [centroids[0][2]],
+                    "centroid_2x": [centroids[1][0]], "centroid_2y": [centroids[1][1]], "centroid_2z": [centroids[1][2]],
+                    "distance": [dist]
+                })
+
+                centroid_dist_df = pd.concat([centroid_dist_df, new_row], ignore_index=True)
+                structure_count += 1
+
+        # Move back to the replicate directory
+        os.chdir(primary_dir)
+
+    # Save the dataframe to a csv file
+    centroid_dist_df.to_csv("centroid_distance.csv", index=False)
+
+    total_time = round(time.time() - start_time, 3)  # Time to run the function
+    print(
+        f"""
+        \t----------------------------ALL RUNS END----------------------------
+        \tRESULT: Performed operation on {replicate_count} replicates.
+        \tOUTPUT: Computed {structure_count} centroid distances.
+        \tTIME: Total execution time: {total_time} seconds.
+        \t--------------------------------------------------------------------\n
+        """
+    )
+
+
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
