@@ -32,6 +32,8 @@ import click
 @click.option("--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's.")
 @click.option("--plot_heme_distortion", "-v", is_flag=True, help="Plots heme distortion across replicates.")
 @click.option("--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling.")
+@click.option("--centroid_distance", "-cd", is_flag=True, help="Distance between two centroids.")
+@click.option("--distance_esp_plot", "-dep", is_flag=True, help="Plot distance vs. ESP.")
 @click.help_option('--help', '-h', is_flag=True, help='Exiting quantumAllostery.')
 def cli(
     combine_restarts,
@@ -54,6 +56,8 @@ def cli(
     combine_sp_xyz,
     plot_heme_distortion,
     td_coupling,
+    centroid_distance,
+    distance_esp_plot,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -287,6 +291,20 @@ def cli(
         res_y = input("> What is the second residue (Gly2)? ")
         charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="6")
 
+    elif centroid_distance:
+        click.echo("> Calculate the distance between two centroids:")
+        click.echo("> Loading...")
+        import qa.analyze
+        centroid1_atoms = input("What atoms are in component 1 (e.g., 487)? ")
+        centroid2_atoms = input("What atoms are in component 2 (e.g., 253-424)? ")
+        centroids = [[centroid1_atoms],[centroid2_atoms]]
+        qa.analyze.centroid_distance(centroids)
+
+    elif distance_esp_plot:
+        click.echo("> Plot the distance between two componenets vs. their ESP:")
+        click.echo("> Loading...")
+        import qa.plot
+        qa.plot.esp_dist_plot()
 
     else:
         click.echo("No functionality was requested.\nTry --help.")
