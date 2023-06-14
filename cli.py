@@ -304,7 +304,8 @@ def cli(
         click.echo("> Plot the distance between two componenets vs. their ESP:")
         click.echo("> Loading...")
         import qa.plot
-        qa.plot.esp_dist_plot()
+        esp_choice = int(input("0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? "))
+        qa.plot.esp_dist_plot(esp_choice)
 
     else:
         click.echo("No functionality was requested.\nTry --help.")

@@ -486,13 +486,13 @@ def time_coupling_plot(charge_df, out_file, res_x, res_y, ext) -> None:
     plt.close()
 
 
-def esp_dist_plot():
+def esp_dist_plot(esp_choice):
     """
     Creates a scatter plot for a distance and the corresponding ESP.
     """
     # Load in data
     esp_df = pd.read_csv("Hirshfeld_esp.csv")
-    esp_data = esp_df.iloc[:, 2].values
+    esp_data = esp_df.iloc[:, esp_choice].values
     dist_df = pd.read_csv("centroid_distance.csv")
     dist_data = dist_df.iloc[:, 6].values
 
