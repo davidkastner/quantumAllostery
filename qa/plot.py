@@ -508,7 +508,7 @@ def esp_dist_plot(esp_choice):
     plt.xlabel("Arg27···Fe Distance (Å)", fontweight="bold")
     plt.ylabel("ESP (kJ/(mol x e))", fontweight="bold")
 
-    ext = "png"
+    ext = "svg"
     plt.savefig(f"esp_dist.{ext}", bbox_inches="tight", format=ext, dpi=300)
 
 
