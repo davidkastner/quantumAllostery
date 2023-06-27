@@ -486,9 +486,20 @@ def time_coupling_plot(charge_df, out_file, res_x, res_y, ext) -> None:
     plt.close()
 
 
-def esp_dist_plot(esp_choice):
+def esp_dist_plot(esp_choice, xlim=None, ylim=None):
     """
     Creates a scatter plot for a distance and the corresponding ESP.
+
+    Parameters
+    ----------
+    esp_choice: int
+        Column index for the esp_data to be plotted.
+
+    xlim: tuple, optional
+        Limits for x-axis in the form (xmin, xmax). If not provided, defaults to None.
+
+    ylim: tuple, optional
+        Limits for y-axis in the form (ymin, ymax). If not provided, defaults to None.
     """
     # Load in data
     esp_df = pd.read_csv("Hirshfeld_esp.csv")
@@ -507,6 +518,16 @@ def esp_dist_plot(esp_choice):
     scatter = plt.scatter(dist_data, esp_data, c=colors)
     plt.xlabel("Arg27···Fe Distance (Å)", fontweight="bold")
     plt.ylabel("ESP (kJ/(mol x e))", fontweight="bold")
+    
+    # Set the x and y limits if specified
+    if xlim is not None:
+        plt.xlim(xlim)
+    if ylim is not None:
+        plt.ylim(ylim)
+
+    # Set the xticks to show every integer within xlim
+    if xlim is not None:
+        plt.xticks(np.arange(np.ceil(xlim[0]), np.floor(xlim[1])+1, 1))
 
     ext = "svg"
     plt.savefig(f"esp_dist.{ext}", bbox_inches="tight", format=ext, dpi=300)
