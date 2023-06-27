@@ -305,7 +305,7 @@ def cli(
         click.echo("> Loading...")
         import qa.plot
         esp_choice = int(input("0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? "))
-        qa.plot.esp_dist_plot(esp_choice)
+        qa.plot.esp_dist_plot(esp_choice, xlim=(4.1, 13.5), ylim=(-225, 375))
 
     else:
         click.echo("No functionality was requested.\nTry --help.")
