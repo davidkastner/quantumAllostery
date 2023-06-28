@@ -9,6 +9,7 @@ from matplotlib.ticker import MultipleLocator
 import matplotlib.ticker as ticker
 import numpy as np
 import qa.process
+from scipy.stats import pearsonr
 
 
 def format_plot() -> None:
@@ -166,7 +167,7 @@ def get_parity_plot(x: List[int], y: List[int]) -> None:
     )
 
 
-def get_charge_distributions(charge_df, out_file, res_x, res_y, ext) -> None:
+def get_charge_distributions(charge_df, out_file, res_x, res_y, ext, axes_range) -> None:
     """
     Creates a charge distribution plot with one residue on each axis.
 
@@ -187,17 +188,20 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext) -> None:
     x = charge_df[charge_df.columns[0]]
     y = charge_df[charge_df.columns[1]]
 
+    # Calculate the Pearson's correlation
+    corr, _ = pearsonr(x, y)
+
     # Create the plot
     fig, ax = plt.subplots()
-    # ax.hist2d(x, y, bins=(x_bins, y_bins))
-    ax.hist2d(x, y, bins=30, range=[[-0.2, 0.42], [-1.21, -0.6]])
+    ax.hist2d(x, y, bins=30, range=axes_range)
     ax.set_aspect("equal")
+    
+    # Add the Pearson's correlation to the plot
+    plt.text(0.55, 0.9, f"Pearson's r: {round(corr,2)}", transform=ax.transAxes, color='white')
+    
     plt.xlabel(res_x, fontweight="bold")
     plt.ylabel(res_y, fontweight="bold")
-    plt.savefig(
-        f"Analysis/3_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300
-    )
-    plt.close()
+    plt.savefig(f"Analysis/3_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300)
 
 
 def plot_feature_importance(
@@ -479,11 +483,7 @@ def time_coupling_plot(charge_df, out_file, res_x, res_y, ext) -> None:
     plt.xlabel("time (ps)", fontweight="bold")
     plt.ylabel("charge deviation from the mean", fontweight="bold")
     plt.legend()
-    plt.savefig(
-        f"Analysis/4_time_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300
-    )
-    print(os.getcwd())
-    plt.close()
+    plt.savefig(f"Analysis/4_time_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300)
 
 
 def esp_dist_plot(esp_choice, xlim=None, ylim=None):
@@ -528,6 +528,9 @@ def esp_dist_plot(esp_choice, xlim=None, ylim=None):
     # Set the xticks to show every integer within xlim
     if xlim is not None:
         plt.xticks(np.arange(np.ceil(xlim[0]), np.floor(xlim[1])+1, 1))
+    # If you want even numbers only
+        # start = np.ceil(xlim[0]) if np.ceil(xlim[0]) % 2 == 0 else np.ceil(xlim[0]) + 1
+        # plt.xticks(np.arange(start, np.floor(xlim[1])+1, 2))
 
     ext = "svg"
     plt.savefig(f"esp_dist.{ext}", bbox_inches="tight", format=ext, dpi=300)
@@ -535,4 +538,4 @@ def esp_dist_plot(esp_choice, xlim=None, ylim=None):
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
-    esp_nomulliken_barchart()
+    esp_dist_plot()

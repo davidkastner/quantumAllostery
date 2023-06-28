@@ -110,6 +110,7 @@ def cli(
     
     elif charge_coupling_plot:
         click.echo("> Generate a charge coupling plot for two residues:")
+        click.echo("> Run this from the replicate you are interested in.")
         click.echo("> Loading...")
         import qa.process
         import qa.analyze
@@ -117,7 +118,9 @@ def cli(
         import qa.manage
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
-        charge_df = qa.analyze.get_joint_qres(res_x, res_y)
+        axes_ranges = [[-0.39, 0.23], [-1.11, -0.45]]
+        df = qa.analyze.get_joint_qres(res_x, res_y, axes_ranges)
+        df.to_csv(f'{res_x}{res_y}.csv')
 
     elif find_stalled:
         click.echo("> Checking for stalled TeraChem jobs:")
@@ -281,7 +284,7 @@ def cli(
 
     elif td_coupling:
         click.echo("> Plot the fluctuations of two amino acids by time:")
-        click.echo("> Do yo need to update your replicate?")
+        click.echo("> Run from outside all replicates.")
         click.echo("> Loading...")
         import qa.process
         import qa.analyze
@@ -289,7 +292,7 @@ def cli(
         import qa.manage
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
-        charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="6")
+        charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="1")
 
     elif centroid_distance:
         click.echo("> Calculate the distance between two centroids:")
@@ -305,7 +308,9 @@ def cli(
         click.echo("> Loading...")
         import qa.plot
         esp_choice = int(input("0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? "))
-        qa.plot.esp_dist_plot(esp_choice, xlim=(4.1, 13.5), ylim=(-225, 375))
+        # qa.plot.esp_dist_plot(esp_choice, xlim=(4.1, 13.5), ylim=(-225, 375))
+        # qa.plot.esp_dist_plot(esp_choice, xlim=(7.6, 23), ylim=(-230, 375))
+        qa.plot.esp_dist_plot(esp_choice, xlim=(3.1, 12.7), ylim=(-230, 375))
 
     else:
         click.echo("No functionality was requested.\nTry --help.")

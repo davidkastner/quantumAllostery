@@ -156,7 +156,7 @@ def charge_matrix(pdbfile) -> None:
     )
 
 
-def get_joint_qres(res_x, res_y):
+def get_joint_qres(res_x, res_y, axes_range):
     """
     Calculates the joint net partial charge sum on each residue, q(RES).
 
@@ -215,9 +215,9 @@ def get_joint_qres(res_x, res_y):
     # Save out the dataframe
     joint_df.to_csv("charge_df.csv")
 
-    ext = "png"
+    ext = "svg"
     plot_name = f"{res_x}_{res_y}_dist.{ext}"
-    qa.plot.get_charge_distributions(joint_df, plot_name, res_x, res_y, ext)
+    qa.plot.get_charge_distributions(joint_df, plot_name, res_x, res_y, ext, axes_range)
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
@@ -752,7 +752,7 @@ def td_coupling(res_x, res_y, replicate_dir):
         # Add the summed residue to the new dataframe
         joint_df[res] = summed_charges
 
-    ext = "png"
+    ext = "svg"
     plot_name = f"{res_x}_{res_y}_td.{ext}"
     qa.plot.time_coupling_plot(joint_df, plot_name, res_x, res_y, ext)
 
