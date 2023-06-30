@@ -118,7 +118,7 @@ def cli(
         import qa.manage
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
-        axes_ranges = [[-0.39, 0.23], [-1.11, -0.45]]
+        axes_ranges = [[-0.20, 0.41], [-1.21, -0.61]]
         df = qa.analyze.get_joint_qres(res_x, res_y, axes_ranges)
         df.to_csv(f'{res_x}{res_y}.csv')
 
@@ -292,7 +292,7 @@ def cli(
         import qa.manage
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
-        charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="1")
+        charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="3")
 
     elif centroid_distance:
         click.echo("> Calculate the distance between two centroids:")
