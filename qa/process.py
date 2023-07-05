@@ -1122,7 +1122,7 @@ def string_to_list(str_list: List[str]) -> List[List[int]]:
 
 
 
-def simple_xyz_combine():
+def simple_combine_xyz_files():
     """
     Takes all xyz molecular structure files in the current directory
     and combines them to create a single xyz trajectory.
@@ -1132,10 +1132,13 @@ def simple_xyz_combine():
     The output xyz trajectory file will have no additional white space
     and will have each xyz concatenated after the next.
     The output xyz will be called combined.xyz
-
     """
+
     # Get a list of all xyz files in the current directory
     xyz_files = glob.glob("*.xyz")
+
+    # Sort the files based on the numerical part of the filename
+    xyz_files.sort(key=lambda x: int(os.path.splitext(x)[0]))
 
     # Open the output file in write mode
     with open("combined.xyz", "w") as outfile:
@@ -1148,8 +1151,9 @@ def simple_xyz_combine():
 
                 # Write the contents to the output file
                 outfile.write(contents)
+                outfile.write("\n")  # Add a newline to separate each file's contents
 
-    print(f"   > All .xyz files have been combined into combined.xyz")
+    print(f"All .xyz files have been combined into combined.xyz")
 
 
 if __name__ == "__main__":
