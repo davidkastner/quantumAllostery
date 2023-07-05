@@ -1121,7 +1121,37 @@ def string_to_list(str_list: List[str]) -> List[List[int]]:
     return number_list
 
 
+
+def simple_xyz_combine():
+    """
+    Takes all xyz molecular structure files in the current directory
+    and combines them to create a single xyz trajectory.
+
+    Notes
+    -----
+    The output xyz trajectory file will have no additional white space
+    and will have each xyz concatenated after the next.
+    The output xyz will be called combined.xyz
+
+    """
+    # Get a list of all xyz files in the current directory
+    xyz_files = glob.glob("*.xyz")
+
+    # Open the output file in write mode
+    with open("combined.xyz", "w") as outfile:
+        # Loop through each file
+        for file in xyz_files:
+            # Open each file in read mode
+            with open(file, "r") as infile:
+                # Read the contents of the file
+                contents = infile.read()
+
+                # Write the contents to the output file
+                outfile.write(contents)
+
+    print(f"   > All .xyz files have been combined into combined.xyz")
+
+
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
-    import qa.process
-    import qa.manage
+    simple_xyz_combine()
