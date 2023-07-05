@@ -14,6 +14,7 @@ import click
 @click.command()
 @click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate.")
 @click.option("--combine_replicates", "-c", is_flag=True, help="Combines combined replicates trajectories.")
+@click.option("--simple_xyz_combine", "-sc", is_flag=True, help="Combines xyz files.")
 @click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb.")
 @click.option("--clean_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
 @click.option("--charge_coupling_plot", "-f", is_flag=True, help="Charge coupling between two residues plot.")
@@ -58,6 +59,7 @@ def cli(
     td_coupling,
     centroid_distance,
     distance_esp_plot,
+    simple_xyz_combine,
     ):
     """
     The overall command-line interface (CLI) entry point.
@@ -311,6 +313,12 @@ def cli(
         # qa.plot.esp_dist_plot(esp_choice, xlim=(4.1, 13.5), ylim=(-225, 375))
         # qa.plot.esp_dist_plot(esp_choice, xlim=(7.6, 23), ylim=(-230, 375))
         qa.plot.esp_dist_plot(esp_choice, xlim=(3.1, 12.7), ylim=(-230, 375))
+
+    elif simple_xyz_combine:
+        click.echo("> Combine xyz files in the current working directory to create a trajectory:")
+        click.echo("> Loading...")
+        import qa.process
+        qa.process.simple_xyz_combine()
 
     else:
         click.echo("No functionality was requested.\nTry --help.")
