@@ -342,17 +342,14 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
         row_index = 0
         for replicate in replicates:
             os.chdir(replicate)
-
             # The location of the current qm job that we are appending
             secondary_dir = os.getcwd()
-
             # A list of all job directories assuming they are named as integers
             job_dirs = [str(dir) for dir in range(first_job, last_job, step)]
 
             # Change into one of the QM job directories
             for dir in job_dirs:
                 os.chdir(dir)
-                tertiary_dir = os.getcwd()
                 os.chdir("scr/")
                 row_index += 1
 

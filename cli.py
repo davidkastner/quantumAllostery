@@ -98,8 +98,10 @@ def cli(
         import qa.process
         xyz_type = input("> Process a trajectory (t) or frames (f)? ")
         if xyz_type == "t":
-            outname = "pdb_geometry.pdb"
-            qa.process.xyz2pdb_traj(outname)
+            pdb_template = "template.pdb"
+            orig_xyz_name = "mc6sa_geometry.xyz"
+            new_pdb_name = "mc6sa_geometry.pdb"
+            qa.process.xyz2pdb_traj(orig_xyz_name, new_pdb_name, pdb_template)
         elif xyz_type == "f":
             # You can process multiple frames at once
             qa.process.xyz2pdb(["0.xyz","10000.xyz","20000.xyz","30000.xyz","39900.xyz"])
