@@ -212,10 +212,9 @@ def combine_sp_xyz():
             else:
                 print(f"   > Adding replicate {replicate} structures.")
                 os.chdir(replicate)
-                secondary = os.getcwd()
                 os.chdir("coordinates")
 
-                structures = sorted(glob.glob("*.xyz"))
+                structures = sorted(glob.glob("*.xyz"), key=lambda x: int(re.findall(r'\d+', x)[0]))
                 frame_count = 0  # Initialize frame count for each replicate
                 for index, structure in enumerate(structures):
                     with open(structure, "r") as file:
@@ -583,7 +582,7 @@ def xyz2pdb(xyz_list: List[str]) -> None:
     )
 
 
-def xyz2pdb_traj() -> None:
+def xyz2pdb_traj(xyz_name, pdb_name, pdb_template) -> None:
     """
     Converts an xyz trajectory file into a pdb trajectory file.
 
@@ -597,17 +596,11 @@ def xyz2pdb_traj() -> None:
 
     start_time = time.time()  # Used to report the executation speed
 
-    # Get the name of the structure
-    pdb_name = "template.pdb"
-    geometry_name = os.getcwd().split("/")[-1]
-    xyz_name = f"{geometry_name}_geometry.xyz"
-    new_pdb_name = f"{geometry_name}_geometry.pdb"
-
     # Open files for reading
     xyz_file = open(xyz_name, "r").readlines()
-    pdb_file = open(pdb_name, "r").readlines()
+    pdb_file = open(pdb_template, "r").readlines()
     max_atom = int(pdb_file[len(pdb_file) - 3].split()[1])
-    new_file = open(new_pdb_name, "w")
+    new_file = open(pdb_name, "w")
 
     atom = -1  # Start at -1 to skip the XYZ header
     line_count = 0
@@ -634,8 +627,8 @@ def xyz2pdb_traj() -> None:
     print(
         f"""
         \t----------------------------ALL RUNS END----------------------------
-        \tRESULT: Converted {xyz_name} to {new_pdb_name}.
-        \tOUTPUT: Generated {new_pdb_name} in the current directory.
+        \tRESULT: Converted {xyz_name} to {pdb_name}.
+        \tOUTPUT: Generated {pdb_name} in the current directory.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """
@@ -1122,7 +1115,7 @@ def string_to_list(str_list: List[str]) -> List[List[int]]:
 
 
 
-def simple_combine_xyz_files():
+def simple_xyz_combine():
     """
     Takes all xyz molecular structure files in the current directory
     and combines them to create a single xyz trajectory.
@@ -1140,8 +1133,15 @@ def simple_combine_xyz_files():
     # Sort the files based on the numerical part of the filename
     xyz_files.sort(key=lambda x: int(os.path.splitext(x)[0]))
 
+    # Create the output directory if it doesn't exist
+    output_dir = "../Analysis/3_centroid"
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Create the full output file path
+    output_file_path = os.path.join(output_dir, "combined.xyz")
+
     # Open the output file in write mode
-    with open("combined.xyz", "w") as outfile:
+    with open(output_file_path, "w") as outfile:
         # Loop through each file
         for file in xyz_files:
             # Open each file in read mode
@@ -1151,9 +1151,8 @@ def simple_combine_xyz_files():
 
                 # Write the contents to the output file
                 outfile.write(contents)
-                outfile.write("\n")  # Add a newline to separate each file's contents
 
-    print(f"All .xyz files have been combined into combined.xyz")
+    print(f"   > All .xyz files have been combined into {output_file_path}")
 
 
 if __name__ == "__main__":
