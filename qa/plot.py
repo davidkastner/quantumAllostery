@@ -310,7 +310,7 @@ def esp_separate_barchart() -> None:
             ecolor="black",
             capsize=10,
         )
-        plt.xlabel("Components", weight="bold")
+        plt.xlabel("components", weight="bold")
         plt.ylabel(f"{scheme} ESP kJ/(mol x e)", weight="bold")
         plt.axhline(y=0, color="black", linestyle="--")
         ext = "png"
@@ -318,13 +318,18 @@ def esp_separate_barchart() -> None:
         plt.close()
 
 
-def esp_combined_barchart() -> None:
+def esp_combined_barchart(schemes, width=5, height=4.5) -> None:
     """
     Plots the ESP for all charge schemes as a barchart with error bars.
 
     The ESP analysis outputs multicolumn dataframes for components.
     This allows us to compare metal-centered ESP contributions for components.
     This combined version also allows us to compare different charge schemes.
+
+    Paramers
+    --------
+    schemes : List of strings
+        A list of the names of the files that you would like to plot.
 
     Notes
     -----
@@ -333,80 +338,45 @@ def esp_combined_barchart() -> None:
     Those files can then be moved to another directory and run this script.
 
     """
-    # Apply Kulik plotting format
-    qa.plot.format_plot()
-
     # Set the width of each bar
     bar_width = 0.2
-
-    schemes = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
-    df1 = pd.read_csv(f"{schemes[0]}_esp.csv")
-    df2 = pd.read_csv(f"{schemes[1]}_esp.csv")
-    df3 = pd.read_csv(f"{schemes[2]}_esp.csv")
-    df4 = pd.read_csv(f"{schemes[3]}_esp.csv")
-
+    
+    # Read the CSV files and store them in a list of dataframes
+    dfs = [pd.read_csv(scheme) for scheme in schemes]
+    
+    # Define a list of colors for the bars
+    qa.plot.format_plot()
+    colors = ["blue", "red", "green", "gray", "cyan", "magenta", "yellow", "orange"]
+    
     # Create a list of x-coordinates for each bar
-    r1 = range(len(df1.columns))
-    r2 = [x + bar_width for x in r1]
-    r3 = [x + bar_width for x in r2]
-    r4 = [x + bar_width for x in r3]
-
-    # create the bar chart with error bars
-    plt.bar(
-        r1,
-        df1.mean().values,
-        yerr=df1.std().values,
-        width=bar_width,
-        color="blue",
-        align="center",
-        ecolor="black",
-        capsize=10,
-        label=schemes[0],
-    )
-    plt.bar(
-        r2,
-        df2.mean().values,
-        yerr=df2.std().values,
-        width=bar_width,
-        color="red",
-        align="center",
-        ecolor="black",
-        capsize=10,
-        label=schemes[1],
-    )
-    plt.bar(
-        r3,
-        df3.mean().values,
-        yerr=df3.std().values,
-        width=bar_width,
-        color="green",
-        align="center",
-        ecolor="black",
-        capsize=10,
-        label=schemes[2],
-    )
-    plt.bar(
-        r4,
-        df4.mean().values,
-        yerr=df4.std().values,
-        width=bar_width,
-        color="gray",
-        align="center",
-        ecolor="black",
-        capsize=10,
-        label=schemes[3],
-    )
-
+    r_values = [range(len(dfs[0].columns))]
+    for i in range(1, len(dfs)):
+        r_values.append([x + bar_width for x in r_values[i-1]])
+    
+    # Plot the bars with error bars
+    plt.figure(figsize=(width, height))
+    for i, df in enumerate(dfs):
+        plt.bar(
+            r_values[i],
+            df.mean().values,
+            yerr=df.std().values,
+            width=bar_width,
+            color=colors[i % len(colors)],
+            align="center",
+            ecolor="black",
+            capsize=10,
+            label=schemes[i].split('.')[0]  # Using filename without extension as label
+        )
+    
     plt.xlabel("Components", weight="bold")
     plt.ylabel("ESP kJ/(mol x e)", weight="bold")
     plt.axhline(y=0, color="black", linestyle="--")
-
-    plt.xticks([r + bar_width * 1.5 for r in r1], df1.mean().index)
-    plt.legend(bbox_to_anchor=(0.6, 0.35))  # raise the legend by 20 pixels
-
-    ext = "svg"
-    plt.savefig(f"combined.{ext}", bbox_inches="tight", format=ext)
-    plt.close()
+    plt.xticks([r + bar_width * (len(dfs) / 2) for r in r_values[0]], dfs[0].mean().index)
+    plt.legend(bbox_to_anchor=(0.6, 0.35), frameon=False)  # raise the legend by 20 pixels
+    
+    extensions = ["png", "svg"]
+    for ext in extensions:
+        plt.savefig(f"combined.{ext}", bbox_inches="tight", dpi=300, format=ext)
 
 
 def plot_rmsd(rmsd_list, labels):
