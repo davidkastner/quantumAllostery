@@ -256,7 +256,9 @@ def cli(
         click.echo("> Plotting the ESP results:")
         click.echo("> Loading...")
         import qa.plot
-        qa.plot.esp_combined_barchart()
+        # schemes = ["ADCH_esp.csv", "Hirshfeld_esp.csv", "Mulliken_esp.csv", "Voronoi_esp.csv"]
+        schemes = ["mc6.csv", "mc6s.csv", "mc6sa.csv"]
+        qa.plot.esp_combined_barchart(schemes)
 
     elif combine_sp_xyz:
         click.echo("> Combine the xyz files from all the single points:")
