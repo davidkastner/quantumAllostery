@@ -368,7 +368,7 @@ def esp_combined_barchart(schemes, width=5, height=4.5) -> None:
             label=schemes[i].split('.')[0]  # Using filename without extension as label
         )
     
-    plt.xlabel("Components", weight="bold")
+    plt.xlabel("components", weight="bold")
     plt.ylabel("ESP kJ/(mol x e)", weight="bold")
     plt.axhline(y=0, color="black", linestyle="--")
     plt.xticks([r + bar_width * (len(dfs) / 2) for r in r_values[0]], dfs[0].mean().index)
@@ -502,8 +502,9 @@ def esp_dist_plot(esp_choice, xlim=None, ylim=None):
         # start = np.ceil(xlim[0]) if np.ceil(xlim[0]) % 2 == 0 else np.ceil(xlim[0]) + 1
         # plt.xticks(np.arange(start, np.floor(xlim[1])+1, 2))
 
-    ext = "svg"
-    plt.savefig(f"esp_dist.{ext}", bbox_inches="tight", format=ext, dpi=300)
+    extensions = ["svg","png"]
+    for ext in extensions:
+        plt.savefig(f"esp_dist.{ext}", bbox_inches="tight", format=ext, dpi=300)
 
 
 if __name__ == "__main__":
