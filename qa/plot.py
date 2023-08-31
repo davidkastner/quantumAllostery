@@ -38,8 +38,8 @@ def format_plot() -> None:
 def heatmap(
     data: str,
     residues: List[str],
-    delete: List[List[int]],
-    out_file: str = "heatmap.svg",
+    delete: List[List[int]] = [],
+    out_file: str = "heatmap",
     cmap="RdBu",
     v=[-0.4, 0.4],
 ) -> None:
@@ -70,7 +70,8 @@ def heatmap(
     dark_gray = "#7e7e7e"
 
     # Delete extra residues
-    residues = [item for index, item in enumerate(residues) if index not in delete[0]]
+    if len(delete) > 0:
+        residues = [item for index, item in enumerate(residues) if index not in delete[0]]
 
     # Identify matrix format and read in
     contents = open(data, "r").readlines()
@@ -122,9 +123,9 @@ def heatmap(
     ax.hlines([0, len(residues)], colors="k", *ax.get_xlim(), linewidth=3.5)
     ax.vlines([0, len(residues)], colors="k", *ax.get_ylim(), linewidth=3.5)
 
-    ext = out_file.split(".")[-1]  # Determine the output file type
-    plt.savefig(out_file, bbox_inches="tight", format=ext, dpi=300)
-    plt.close()
+    extensions = ["png", "svg"]
+    for ext in extensions:
+        plt.savefig(f"{out_file}.{ext}", bbox_inches="tight", format=ext, dpi=300)
 
 
 def get_parity_plot(x: List[int], y: List[int]) -> None:
