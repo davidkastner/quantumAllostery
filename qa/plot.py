@@ -10,6 +10,7 @@ import matplotlib.ticker as ticker
 import numpy as np
 import qa.process
 from scipy.stats import pearsonr
+import matplotlib.patches as mpatches
 
 
 def format_plot() -> None:
@@ -167,7 +168,9 @@ def get_parity_plot(x: List[int], y: List[int]) -> None:
     )
 
 
-def get_charge_distributions(charge_df, out_file, res_x, res_y, ext, axes_range) -> None:
+def get_charge_distributions(
+    charge_df, out_file, res_x, res_y, ext, axes_range
+) -> None:
     """
     Creates a charge distribution plot with one residue on each axis.
 
@@ -195,13 +198,21 @@ def get_charge_distributions(charge_df, out_file, res_x, res_y, ext, axes_range)
     fig, ax = plt.subplots()
     ax.hist2d(x, y, bins=30, range=axes_range)
     ax.set_aspect("equal")
-    
+
     # Add the Pearson's correlation to the plot
-    plt.text(0.55, 0.9, f"Pearson's r: {round(corr,2)}", transform=ax.transAxes, color='white')
-    
+    plt.text(
+        0.55,
+        0.9,
+        f"Pearson's r: {round(corr,2)}",
+        transform=ax.transAxes,
+        color="white",
+    )
+
     plt.xlabel(res_x, fontweight="bold")
     plt.ylabel(res_y, fontweight="bold")
-    plt.savefig(f"Analysis/3_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300)
+    plt.savefig(
+        f"Analysis/3_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300
+    )
 
 
 def plot_feature_importance(
@@ -340,19 +351,19 @@ def esp_combined_barchart(schemes, width=5, height=4.5) -> None:
     """
     # Set the width of each bar
     bar_width = 0.2
-    
+
     # Read the CSV files and store them in a list of dataframes
     dfs = [pd.read_csv(scheme) for scheme in schemes]
-    
+
     # Define a list of colors for the bars
     qa.plot.format_plot()
     colors = ["blue", "red", "green", "gray", "cyan", "magenta", "yellow", "orange"]
-    
+
     # Create a list of x-coordinates for each bar
     r_values = [range(len(dfs[0].columns))]
     for i in range(1, len(dfs)):
-        r_values.append([x + bar_width for x in r_values[i-1]])
-    
+        r_values.append([x + bar_width for x in r_values[i - 1]])
+
     # Plot the bars with error bars
     plt.figure(figsize=(width, height))
     for i, df in enumerate(dfs):
@@ -365,15 +376,19 @@ def esp_combined_barchart(schemes, width=5, height=4.5) -> None:
             align="center",
             ecolor="black",
             capsize=10,
-            label=schemes[i].split('.')[0]  # Using filename without extension as label
+            label=schemes[i].split(".")[0],  # Using filename without extension as label
         )
-    
+
     plt.xlabel("components", weight="bold")
     plt.ylabel("ESP kJ/(mol x e)", weight="bold")
     plt.axhline(y=0, color="black", linestyle="--")
-    plt.xticks([r + bar_width * (len(dfs) / 2) for r in r_values[0]], dfs[0].mean().index)
-    plt.legend(bbox_to_anchor=(0.6, 0.35), frameon=False)  # raise the legend by 20 pixels
-    
+    plt.xticks(
+        [r + bar_width * (len(dfs) / 2) for r in r_values[0]], dfs[0].mean().index
+    )
+    plt.legend(
+        bbox_to_anchor=(0.6, 0.35), frameon=False
+    )  # raise the legend by 20 pixels
+
     extensions = ["png", "svg"]
     for ext in extensions:
         plt.savefig(f"combined.{ext}", bbox_inches="tight", dpi=300, format=ext)
@@ -405,17 +420,25 @@ def plot_rmsd(rmsd_list, labels):
 
     # Generate a bar plot for each analog
     x_pos = np.arange(len(rmsd_list))
-    plt.bar(x_pos, rmsd_mean, yerr=rmsd_std_dev, align='center', alpha=0.5, capsize=10, color="grey")
+    plt.bar(
+        x_pos,
+        rmsd_mean,
+        yerr=rmsd_std_dev,
+        align="center",
+        alpha=0.5,
+        capsize=10,
+        color="grey",
+    )
 
     # Set the x-axis labels
     plt.xticks(x_pos, labels)
 
     # Set the plot labels and title
-    plt.ylabel('RMSD (Å)', weight="bold")
+    plt.ylabel("RMSD (Å)", weight="bold")
 
     # Save output as a 300 dpi PNG
     ext = "png"
-    plt.savefig(f'rmsd_plot.{ext}', bbox_inches="tight", dpi=300)
+    plt.savefig(f"rmsd_plot.{ext}", bbox_inches="tight", dpi=300)
 
 
 def time_coupling_plot(charge_df, out_file, res_x, res_y, ext) -> None:
@@ -438,25 +461,29 @@ def time_coupling_plot(charge_df, out_file, res_x, res_y, ext) -> None:
     # Extract the data from the dataframe and compute the rolling mean
     residue_1 = charge_df[charge_df.columns[0]].rolling(window=5).mean()
     residue_2 = charge_df[charge_df.columns[1]].rolling(window=5).mean()
-    
+
     # Calculate the mean and subtract it from the residue values to center the traces at zero
     residue_1_deviation = residue_1 - residue_1.mean()
     residue_2_deviation = residue_2 - residue_2.mean()
-    
+
     # Conversion factor: 200 single points = 1 picosecond
     frame_to_ps = 1 / 20
     x = np.arange(len(charge_df.index)) * frame_to_ps
 
     # Create the plot
-    plt.plot(x, residue_1_deviation, label=f"{res_x}", color='r')
-    plt.plot(x, residue_2_deviation, label=f"{res_y}", color='b')
+    plt.plot(x, residue_1_deviation, label=f"{res_x}", color="r")
+    plt.plot(x, residue_2_deviation, label=f"{res_y}", color="b")
     plt.xlabel("time (ps)", fontweight="bold")
     plt.ylabel("charge deviation from the mean", fontweight="bold")
     plt.legend()
-    plt.savefig(f"Analysis/4_time_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300)
+    plt.savefig(
+        f"Analysis/4_time_coupling/{out_file}", bbox_inches="tight", format=ext, dpi=300
+    )
 
 
-def esp_dist_plot(esp_choice, xlim=None, ylim=None):
+def esp_dist_plot(
+    esp_choice, xlim=None, ylim=None, color_map="viridis", custom_colors=None
+):
     """
     Creates a scatter plot for a distance and the corresponding ESP.
 
@@ -470,8 +497,15 @@ def esp_dist_plot(esp_choice, xlim=None, ylim=None):
 
     ylim: tuple, optional
         Limits for y-axis in the form (ymin, ymax). If not provided, defaults to None.
+
+    color_map: str, optional
+        Name of the Matplotlib color map. Defaults to 'viridis'.
+
+    custom_colors: list of str, optional
+        List of color hex codes for custom color map. If provided, will override color_map.
     """
     # Load in data
+    scale = 0.95  # Tune the color map darkness
     esp_df = pd.read_csv("Hirshfeld_esp.csv")
     esp_data = esp_df.iloc[:, esp_choice].values
     dist_df = pd.read_csv("centroid_distance.csv")
@@ -479,32 +513,63 @@ def esp_dist_plot(esp_choice, xlim=None, ylim=None):
 
     # Create color array
     color_indices = np.repeat(np.arange(len(esp_data) // 400), 400)
-    color_indices = np.pad(color_indices, (0, len(esp_data) - len(color_indices)), mode='edge')
-    colors = plt.cm.viridis(color_indices / color_indices.max())
+    color_indices = np.pad(
+        color_indices, (0, len(esp_data) - len(color_indices)), mode="edge"
+    )
+
+    if custom_colors is not None:
+        num_colors = len(custom_colors)
+        colors = [custom_colors[i % num_colors] for i in color_indices]
+    else:
+        cmap = plt.get_cmap(color_map)
+        colors = cmap(color_indices / color_indices.max() * scale)
 
     # Create the scatter plot
     format_plot()
     plt.figure(figsize=(5, 5))
     scatter = plt.scatter(dist_data, esp_data, c=colors)
-    plt.xlabel("Arg27···Fe Distance (Å)", fontweight="bold")
-    plt.ylabel("ESP (kJ/(mol x e))", fontweight="bold")
-    
+    plt.xlabel("D-chain···Fe distance (Å)", fontweight="bold")
+    plt.ylabel("D-chain ESP (kJ/(mol x e))", fontweight="bold")
+
+    # Code for the legend
+    legend_colors = None  # Initialize to None
+    add_legend = input("   > Would you like a legend (y/n)? ")
+
+    if add_legend == "y":
+        if custom_colors is not None:
+            legend_colors = custom_colors
+        else:
+            unique_color_indices = np.unique(color_indices)
+            cmap = plt.get_cmap(color_map)
+            legend_colors = cmap(
+                unique_color_indices / unique_color_indices.max() * scale
+            )
+
+        if legend_colors is not None:
+            patches = [
+                mpatches.Patch(color=legend_colors[i], label=f"{i+1}")
+                for i in range(len(legend_colors))
+            ]
+            plt.legend(handles=patches, title="trajectory", frameon=False)
+
     # Set the x and y limits if specified
     if xlim is not None:
         plt.xlim(xlim)
     if ylim is not None:
         plt.ylim(ylim)
 
-    # Set the xticks to show every integer within xlim
-    if xlim is not None:
-        plt.xticks(np.arange(np.ceil(xlim[0]), np.floor(xlim[1])+1, 1))
-    # If you want even numbers only
+        # Set the xticks to show every integer within xlim
+        if xlim is not None:
+            plt.xticks(np.arange(np.ceil(xlim[0]), np.floor(xlim[1]) + 1, 1))
+        # If you want even numbers only
         # start = np.ceil(xlim[0]) if np.ceil(xlim[0]) % 2 == 0 else np.ceil(xlim[0]) + 1
-        # plt.xticks(np.arange(start, np.floor(xlim[1])+1, 2))
+        # plt.xticks(np.arange(start, np.floor(xlim[1]) + 1, 2))
 
-    extensions = ["svg","png"]
+    extensions = ["svg", "png"]
     for ext in extensions:
-        plt.savefig(f"esp_dist.{ext}", bbox_inches="tight", format=ext, dpi=300)
+        plt.savefig(
+            f"esp_dist_{color_map}.{ext}", bbox_inches="tight", format=ext, dpi=300
+        )
 
 
 if __name__ == "__main__":
