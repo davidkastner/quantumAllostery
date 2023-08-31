@@ -13,87 +13,29 @@ import click
 
 
 @click.command()
-@click.option(
-    "--combine_restarts",
-    "-a",
-    is_flag=True,
-    help="Combines restarts within a single replicate.",
-)
-@click.option(
-    "--combine_replicates",
-    "-c",
-    is_flag=True,
-    help="Combines combined replicates trajectories.",
-)
+@click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate.",)
+@click.option("--combine_replicates","-c",is_flag=True,help="Combines combined replicates trajectories.",)
 @click.option("--simple_xyz_combine", "-sc", is_flag=True, help="Combines xyz files.")
 @click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb.")
 @click.option("--clean_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
-@click.option(
-    "--charge_coupling_plot",
-    "-f",
-    is_flag=True,
-    help="Charge coupling between two residues plot.",
-)
+@click.option("--charge_coupling_plot","-f",is_flag=True,help="Charge coupling between two residues plot.",)
 @click.option("--find_stalled", "-g", is_flag=True, help="Find TeraChem jobs stalled.")
-@click.option(
-    "--get_heatmap", "-i", is_flag=True, help="Heat map of amino acid correlations."
-)
-@click.option(
-    "--cpptraj_covars", "-j", is_flag=True, help="Use CPPTraj to calculate covariance."
-)
-@click.option(
-    "--charge_matrix_analysis",
-    "-k",
-    is_flag=True,
-    help="Create a matrix of charge couplings.",
-)
+@click.option("--get_heatmap", "-i", is_flag=True, help="Heat map of amino acid correlations.")
+@click.option("--cpptraj_covars", "-j", is_flag=True, help="Use CPPTraj to calculate covariance.")
+@click.option("--charge_matrix_analysis","-k",is_flag=True,help="Create a matrix of charge couplings.",)
 @click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs.")
-@click.option(
-    "--combine_qm_charges",
-    "-m",
-    is_flag=True,
-    help="Combine charge data across QM single points.",
-)
-@click.option(
-    "--predict",
-    "-p",
-    is_flag=True,
-    help="Uses simple ML models to predict key residues.",
-)
-@click.option(
-    "--multiwfn_charges",
-    "-q",
-    is_flag=True,
-    help="Calculates charge schemes from Multiwfn.",
-)
+@click.option("--combine_qm_charges","-m",is_flag=True,help="Combine charge data across QM single points.",)
+@click.option("--predict", "-p",is_flag=True,help="Uses simple ML models to predict key residues.",)
+@click.option("--multiwfn_charges","-q",is_flag=True,help="Calculates charge schemes from Multiwfn.",)
 @click.argument("multiwfn_charge_args", nargs=4, type=int, required=False)
-@click.option(
-    "--calc_esp", "-r", is_flag=True, help="Calculates ESP from Multiwfn output."
-)
-@click.option(
-    "--check_esp_failed", "-s", is_flag=True, help="Checks for unfinished ESP jobs."
-)
-@click.option(
-    "--plot_esp", "-t", is_flag=True, help="Plot the ESP of each scheme and component."
-)
-@click.option(
-    "--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's."
-)
-@click.option(
-    "--plot_heme_distortion",
-    "-v",
-    is_flag=True,
-    help="Plots heme distortion across replicates.",
-)
-@click.option(
-    "--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling."
-)
-@click.option(
-    "--centroid_distance", "-cd", is_flag=True, help="Distance between two centroids."
-)
-@click.option(
-    "--distance_esp_plot", "-dep", is_flag=True, help="Plot distance vs. ESP."
-)
+@click.option("--calc_esp", "-r", is_flag=True, help="Calculates ESP from Multiwfn output.")
+@click.option("--check_esp_failed", "-s", is_flag=True, help="Checks for unfinished ESP jobs.")
+@click.option("--plot_esp", "-t", is_flag=True, help="Plot the ESP of each scheme and component.")
+@click.option("--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's.")
+@click.option("--plot_heme_distortion","-v",is_flag=True,help="Plots heme distortion across replicates.",)
+@click.option("--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling.")
+@click.option("--centroid_distance", "-cd", is_flag=True, help="Distance between two centroids.")
+@click.option("--distance_esp_plot", "-dep", is_flag=True, help="Plot distance vs. ESP.")
 @click.help_option("--help", "-h", is_flag=True, help="Exiting quantumAllostery.")
 def cli(
     combine_restarts,
@@ -200,7 +142,6 @@ def cli(
         click.echo("> Checking for stalled TeraChem jobs:")
         click.echo("> Loading...")
         import qa.manage
-
         qa.manage.find_stalled()
 
     elif get_heatmap:
@@ -208,9 +149,17 @@ def cli(
         click.echo("> Loading...")
         import qa.plot
         import qa.manage
-
-        data_file = input("> What file would you like to plot? ")
-        qa.plot.heatmap(data=data_file, protein=protein, out_file="matrix_geom.png")
+        data = input("> What file would you like to plot? ")
+        out_file = input("> What would you like to call the plot? ")
+        delete = []
+        mimochrome = input("> Which mimochrome (e.g., mc6, mc6s mc6sa)? ")
+        low = int(input("What is your low value (e.g., -0.4) "))
+        high = int(input("What is your high value (e.g., 0.4) "))
+        mimochrome_mapping = {"mc6": mc6, "mc6s": mc6s, "mc6sa": mc6s}
+        if mimochrome in mimochrome_mapping:
+            qa.plot.heatmap(data, mimochrome_mapping[mimochrome], out_file=out_file, v=[low, high])
+        else:
+            click.echo(f"> Unknown mimochrome: {mimochrome}")
 
     elif cpptraj_covars:
         click.echo("> Generate geometric covariance using CPPTraj:")
@@ -218,10 +167,7 @@ def cli(
         import qa.manage
         import qa.plot
         import qa.analyze
-
-        compute_replicates = input(
-            "> Would you like this performed across replicates (y/n)? "
-        )
+        compute_replicates = input("> Would you like this performed across replicates (y/n)? ")
         delete = [[0, 15, 16, 27, 28, 29], []]
 
         if compute_replicates == "y":
@@ -460,6 +406,101 @@ def cli(
     else:
         click.echo("No functionality was requested.\nTry --help.")
 
+mc6 = ["ACE",
+       "ASP",
+       "GLU",
+       "GLN",
+       "GLN",
+       "LEU",
+       "HIS",
+       "SER",     
+       "GLN",
+       "LYS",
+       "ARG",
+       "LYS",
+       "ILE",
+       "THR",      
+       "LEU",
+       "NHE",
+       "ACE",
+       "ASP",
+       "GLU",
+       "GLN",     
+       "GLN",
+       "LEU",
+       "SER",
+       "SER",
+       "GLN",
+       "LYS",       
+       "ARG",
+       "NHE",
+       "HEME",
+       "FE",    
+       ]
+
+mc6s = ["ACE",
+       "ASP",
+       "LEU",
+       "GLN",
+       "GLN",
+       "LEU",
+       "HIS",
+       "SER",     
+       "GLN",
+       "LYS",
+       "ARG",
+       "LYS",
+       "ILE",
+       "THR",      
+       "LEU",
+       "NHE",
+       "ACE",
+       "ASP",
+       "GLU",
+       "GLN",     
+       "GLN",
+       "LEU",
+       "SER",
+       "SER",
+       "GLN",
+       "LYS",       
+       "ARG",
+       "NHE",
+       "HEME",
+       "FE",    
+       ]
+
+mc6s = ["ACE",
+       "ASP",
+       "LEU",
+       "GLN",
+       "GLN",
+       "LEU",
+       "HIS",
+       "SER",     
+       "GLN",
+       "LYS",
+       "ARG",
+       "LYS",
+       "ILE",
+       "THR",      
+       "LEU",
+       "NHE",
+       "ACE",
+       "ASP",
+       "GLU",
+       "AIB",     
+       "GLN",
+       "LEU",
+       "AIB",
+       "SER",
+       "GLN",
+       "LYS",       
+       "ARG",
+       "NHE",
+       "HEME",
+       "FE",    
+       ]
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
