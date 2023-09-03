@@ -215,9 +215,10 @@ def get_joint_qres(res_x, res_y, axes_range):
     # Save out the dataframe
     joint_df.to_csv("charge_df.csv")
 
-    ext = "svg"
-    plot_name = f"{res_x}_{res_y}_dist.{ext}"
-    qa.plot.get_charge_distributions(joint_df, plot_name, res_x, res_y, ext, axes_range)
+    extensions = ["png", "svg"]
+    for ext in extensions:
+        plot_name = f"{res_x}_{res_y}_dist.{ext}"
+        qa.plot.get_charge_distributions(joint_df, plot_name, res_x, res_y, ext, axes_range)
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run the function
     print(
