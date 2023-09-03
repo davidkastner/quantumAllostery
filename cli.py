@@ -134,8 +134,18 @@ def cli(
 
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
-        axes_ranges = [[-0.20, 0.41], [-1.21, -0.61]]
-        df = qa.analyze.get_joint_qres(res_x, res_y, axes_ranges)
+
+        asp18_aib20_ranges = [[-1.17, -0.70], [-0.20, 0.27]]
+        asp18_gln21_ranges = [[-1.11, -0.45], [-0.41, 0.25]]
+        gln9_lys12_ranges = [[0.71, 1.21], [-0.28, 0.26]]
+
+        if res_x == "Asp18" and res_y =="Aib20":
+            df = qa.analyze.get_joint_qres(res_x, res_y, asp18_aib20_ranges)
+        elif res_x == "Asp18" and res_y =="Gln21":
+            df = qa.analyze.get_joint_qres(res_x, res_y, asp18_gln21_ranges)        
+        elif res_x == "Gln9" and res_y =="Lys12":
+            df = qa.analyze.get_joint_qres(res_x, res_y, gln9_lys12_ranges)    
+
         df.to_csv(f"{res_x}{res_y}.csv")
 
     elif find_stalled:
