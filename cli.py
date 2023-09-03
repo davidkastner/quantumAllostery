@@ -149,15 +149,24 @@ def cli(
         click.echo("> Loading...")
         import qa.plot
         import qa.manage
-        data = input("> What file would you like to plot? ")
-        out_file = input("> What would you like to call the plot? ")
-        delete = []
+        data = input("> What file would you like to plot (default = chargematbb.csv)? ")
+        data = data if data else "chargematbb.csv"
+
+        out_file = input("> What would you like to name the output file (default = coupling)? ")
+        out_file = out_file if out_file else "coupling"
+
+        delete = [0,15,16,27]
         mimochrome = input("> Which mimochrome (e.g., mc6, mc6s mc6sa)? ")
-        low = int(input("What is your low value (e.g., -0.4) "))
-        high = int(input("What is your high value (e.g., 0.4) "))
-        mimochrome_mapping = {"mc6": mc6, "mc6s": mc6s, "mc6sa": mc6s}
+
+        low_input = input("> What is your low value (default = -0.4) ")
+        low = float(low_input) if low_input else -0.4
+
+        high_input = input("> What is your high value (default = 0.4) ")
+        high = float(high_input) if high_input else 0.4
+
+        mimochrome_mapping = {"mc6": mc6, "mc6s": mc6s, "mc6sa": mc6sa}
         if mimochrome in mimochrome_mapping:
-            qa.plot.heatmap(data, mimochrome_mapping[mimochrome], out_file=out_file, v=[low, high])
+            qa.plot.heatmap(data, mimochrome_mapping[mimochrome], delete = delete, out_file=out_file, v=[low, high])
         else:
             click.echo(f"> Unknown mimochrome: {mimochrome}")
 
@@ -470,37 +479,37 @@ mc6s = ["ACE",
        "FE",    
        ]
 
-mc6s = ["ACE",
-       "ASP",
-       "LEU",
-       "GLN",
-       "GLN",
-       "LEU",
-       "HIS",
-       "SER",     
-       "GLN",
-       "LYS",
-       "ARG",
-       "LYS",
-       "ILE",
-       "THR",      
-       "LEU",
-       "NHE",
-       "ACE",
-       "ASP",
-       "GLU",
-       "AIB",     
-       "GLN",
-       "LEU",
-       "AIB",
-       "SER",
-       "GLN",
-       "LYS",       
-       "ARG",
-       "NHE",
-       "HEME",
-       "FE",    
-       ]
+mc6sa = ["ACE",
+        "ASP",
+        "LEU",
+        "GLN",
+        "GLN",
+        "LEU",
+        "HIS",
+        "SER",     
+        "GLN",
+        "LYS",
+        "ARG",
+        "LYS",
+        "ILE",
+        "THR",      
+        "LEU",
+        "NHE",
+        "ACE",
+        "ASP",
+        "GLU",
+        "AIB",     
+        "GLN",
+        "LEU",
+        "AIB",
+        "SER",
+        "GLN",
+        "LYS",       
+        "ARG",
+        "NHE",
+        "HEME",
+        "FE",    
+        ]
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed

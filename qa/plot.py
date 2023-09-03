@@ -34,15 +34,9 @@ def format_plot() -> None:
     plt.rcParams["svg.fonttype"] = "none"
 
 
-# def heatmap(data, protein, delete, out_file, cmap) -> None:
-def heatmap(
-    data: str,
-    residues: List[str],
-    delete: List[List[int]] = [],
-    out_file: str = "heatmap",
-    cmap="RdBu",
-    v=[-0.4, 0.4],
-) -> None:
+def heatmap(data: str, residues: List[str], delete: List[int] = None, 
+            out_file: str = "heatmap", v=[-0.4, 0.4]) -> None:
+    
     """
     Generates formatted heat maps.
 
@@ -52,12 +46,10 @@ def heatmap(
     ----------
     data: str
         The name of the data file, which can be a data or a dat file.
-    delete: List[List[int]]
+    delete: List[int]
         A list of the amino acids you would like removed indexed at zero.
     out_file: str
         The name you would like the image saved as.
-    cmp: str
-        Your color map setting.
 
     Examples
     --------
@@ -69,9 +61,15 @@ def heatmap(
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
 
-    # Delete extra residues
-    if len(delete) > 0:
-        residues = [item for index, item in enumerate(residues) if index not in delete[0]]
+    # If 'delete' is None, initialize it as an empty list
+    if delete is None:
+        delete = []
+    
+    # Sort the delete list
+    delete.sort()
+    
+    # Delete residues
+    residues = [item for index, item in enumerate(residues) if index not in delete]
 
     # Identify matrix format and read in
     contents = open(data, "r").readlines()
@@ -89,14 +87,19 @@ def heatmap(
 
     df = pd.DataFrame(matrix)
     # Remove specific rows and columns from non-residues
-    if len(delete) > 0:
-        df = df.drop(df.columns[delete[1]], axis=0)
-        df = df.drop(df.columns[delete[1]], axis=1)
+
+    # Drop rows and columns
+    df = df.drop(delete, axis=0)
+    df = df.drop(delete, axis=1)
+
     df.columns = residues
     df.index = residues
 
     # Apply base Kulik plot parameters
     format_plot()
+
+    # Set cmap
+    cmap = "RdBu" if any(x < 0 for x in v) else "Blues"
 
     # Generate plot
     ax = sns.heatmap(
@@ -126,6 +129,7 @@ def heatmap(
     extensions = ["png", "svg"]
     for ext in extensions:
         plt.savefig(f"{out_file}.{ext}", bbox_inches="tight", format=ext, dpi=300)
+    plt.close()
 
 
 def get_parity_plot(x: List[int], y: List[int]) -> None:
