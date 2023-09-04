@@ -34,7 +34,7 @@ def format_plot() -> None:
     plt.rcParams["svg.fonttype"] = "none"
 
 
-def heatmap(data: str, residues: List[str], delete: List[int] = None, 
+def heatmap(data: str, residues: List[str], delete: List[int] = [], 
             out_file: str = "heatmap", v=[-0.4, 0.4]) -> None:
     
     """
@@ -60,10 +60,6 @@ def heatmap(data: str, residues: List[str], delete: List[int] = None,
     # General styling variables
     light_gray = "#8e8e8e"
     dark_gray = "#7e7e7e"
-
-    # If 'delete' is None, initialize it as an empty list
-    if delete is None:
-        delete = []
     
     # Sort the delete list
     delete.sort()
@@ -89,8 +85,9 @@ def heatmap(data: str, residues: List[str], delete: List[int] = None,
     # Remove specific rows and columns from non-residues
 
     # Drop rows and columns
-    df = df.drop(delete, axis=0)
-    df = df.drop(delete, axis=1)
+    if len(delete) > 0:
+        df = df.drop(delete, axis=0)
+        df = df.drop(delete, axis=1)
 
     df.columns = residues
     df.index = residues

@@ -338,14 +338,14 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
         or not os.path.exists(f"{prefix}{out_files[2]}")
     ):
         print("> Computing the charge matrix. Please wait...")
-        charge_matrix()
+        charge_matrix("./template.pdb")
         out_files = ["mimatbb.csv", "chargematbb.csv", "chargematsc.csv"]
         shutil.move(out_files[0], f"{analysis_dir}/{job_dir}/{out_files[0]}")
         shutil.move(out_files[1], f"{analysis_dir}/{job_dir}/{out_files[1]}")
         shutil.move(out_files[2], f"{analysis_dir}/{job_dir}/{out_files[2]}")
     elif recompute:
         print("> Computing the charge matrix. Please wait...")
-        charge_matrix()
+        charge_matrix("./template.pdb")
         out_files = ["mimatbb.csv", "chargematbb.csv", "chargematsc.csv"]
         shutil.move(out_files[0], f"{analysis_dir}/{job_dir}/{out_files[0]}")
         shutil.move(out_files[1], f"{analysis_dir}/{job_dir}/{out_files[1]}")
@@ -357,7 +357,7 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
     # plot the results
     pdb_path = f"{primary}/template.pdb"
     residues = qa.process.get_protein_sequence(pdb_path)
-    plot_name = "matrix_charge.png"
+    plot_name = "matrix_charge"
     data_name = "chargematbb.csv"
     if not os.path.exists(plot_name):
         qa.plot.heatmap(
@@ -368,8 +368,8 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
             data=data_name, residues=residues, delete=delete, out_file=plot_name
         )
 
-    # plot the mututal informatino results
-    plot_name = "mi_charge.png"
+    # plot the mututal information results
+    plot_name = "mi_charge"
     data_name = "mimatbb.csv"
     if not os.path.exists(plot_name):
         qa.plot.heatmap(
@@ -377,7 +377,6 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
             residues=residues,
             delete=delete,
             out_file=plot_name,
-            cmap="Blues",
             v=[0, 0.2],
         )
     elif recompute:
@@ -386,7 +385,6 @@ def charge_matrix_analysis(delete, recompute=False) -> None:
             residues=residues,
             delete=delete,
             out_file=plot_name,
-            cmap="Blues",
             v=[0, 0.2],
         )
 
