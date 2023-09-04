@@ -132,20 +132,42 @@ def cli(
         import qa.plot
         import qa.manage
 
+        mimochrome = input("> Which mimocrhome (mc6, mc6s, mc6sa)? ")
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
 
-        asp18_aib20_ranges = [[-1.17, -0.70], [-0.20, 0.27]]
-        asp18_gln21_ranges = [[-1.11, -0.45], [-0.41, 0.25]]
-        gln9_lys12_ranges = [[0.71, 1.21], [-0.28, 0.26]]
+        # Create a dictionary to map the pair of residues to their ranges
+        if mc6:
+            residue_ranges = {
+                ("Gln9", "Lys12"): [[0.71, 1.21], [-0.28, 0.26]], # repl. 
+                ("Asp18", "Aib20"): [[-1.17, -0.70], [-0.20, 0.27]], # repl. 
+                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl. 
+                ("Glu19", "Arg11"): [[-1.20, -0.60], [0.7, 1.2]], # repl. 
+                ("Arg27", "Ser23"): [[0.64, 1.26], [-0.31, 0.33]], # repl. 5
+            }
+        elif mc6s:
+            residue_ranges = {
+                ("Gln9", "Lys12"): [[0.71, 1.21], [-0.28, 0.26]], # repl. 
+                ("Asp18", "Aib20"): [[-1.17, -0.70], [-0.20, 0.27]], # repl. 
+                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl. 
+                ("Glu19", "Arg11"): [[-1.20, -0.60], [0.7, 1.2]], # repl. 
+                ("Arg27", "Ser23"): [[0.64, 1.26], [-0.31, 0.33]], # repl. 7
+            }
+        elif mc6sa:
+            residue_ranges = {
+                ("Gln9", "Lys12"): [[0.71, 1.21], [-0.28, 0.26]], # repl. 
+                ("Asp18", "Aib20"): [[-1.17, -0.70], [-0.20, 0.27]], # repl. 
+                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl. 
+                ("Glu19", "Arg11"): [[-1.20, -0.60], [0.7, 1.2]], # repl. 
+                ("Arg27", "Ser23"): [[0.64, 1.26], [-0.31, 0.33]], # repl. 
+            }
 
-        if res_x == "Asp18" and res_y =="Aib20":
-            df = qa.analyze.get_joint_qres(res_x, res_y, asp18_aib20_ranges)
-        elif res_x == "Asp18" and res_y =="Gln21":
-            df = qa.analyze.get_joint_qres(res_x, res_y, asp18_gln21_ranges)        
-        elif res_x == "Gln9" and res_y =="Lys12":
-            df = qa.analyze.get_joint_qres(res_x, res_y, gln9_lys12_ranges)    
-
+        # Retrieve the range from the dictionary
+        selected_range = residue_ranges.get((res_x, res_y))
+        if selected_range:
+            df = qa.analyze.get_joint_qres(res_x, res_y, selected_range)
+        else:
+            print(f"No range found for the pair: {res_x}, {res_y}")
         df.to_csv(f"{res_x}{res_y}.csv")
 
     elif find_stalled:
@@ -208,7 +230,7 @@ def cli(
         compute_replicates = input(
             "> Would you like this performed across replicates (y/n)? "
         )
-        delete = [[], []]
+        delete = []
         recompute = True
 
         # Perform the charge analysis and generate matrix files
