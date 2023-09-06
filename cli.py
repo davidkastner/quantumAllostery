@@ -132,34 +132,37 @@ def cli(
         import qa.plot
         import qa.manage
 
-        mimochrome = input("> Which mimocrhome (mc6, mc6s, mc6sa)? ")
+        mimochrome = input("> Which mimochrome (mc6, mc6s, mc6sa)? ")
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
 
         # Create a dictionary to map the pair of residues to their ranges
-        if mc6:
+        if mimochrome == "mc6":
             residue_ranges = {
-                ("Gln9", "Lys12"): [[0.71, 1.21], [-0.28, 0.26]], # repl. 
-                ("Asp18", "Aib20"): [[-1.17, -0.70], [-0.20, 0.27]], # repl. 
-                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl. 
-                ("Glu19", "Arg11"): [[-1.20, -0.60], [0.7, 1.2]], # repl. 
-                ("Arg27", "Ser23"): [[0.64, 1.26], [-0.31, 0.33]], # repl. 5
+                ("Lys12", "Gln9"): [[0.71, 1.24], [-0.30, 0.25]], # repl-1
+                ("Asp18", "Gln20"): [[-1.19, -0.55], [-0.32, 0.32]], # repl-1
+                ("Asp18", "Gln21"): [[-1.22, -0.58], [-0.35, 0.29]], # repl-8
+                ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
+                ("Ser23", "Hm129"): [[-0.22, 0.38], [-1.20, -0.60]], # repl-5
+                ("Arg27", "Ser23"): [[0.64, 1.28], [-0.28, 0.36]], # repl-5
             }
-        elif mc6s:
+        elif mimochrome == "mc6s":
             residue_ranges = {
-                ("Gln9", "Lys12"): [[0.71, 1.21], [-0.28, 0.26]], # repl. 
-                ("Asp18", "Aib20"): [[-1.17, -0.70], [-0.20, 0.27]], # repl. 
-                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl. 
-                ("Glu19", "Arg11"): [[-1.20, -0.60], [0.7, 1.2]], # repl. 
-                ("Arg27", "Ser23"): [[0.64, 1.26], [-0.31, 0.33]], # repl. 7
+                ("Lys12","Gln9"): [[0.66, 1.19], [-0.28, 0.27]], # repl-5
+                ("Asp18", "Gln20"): [[-1.1, -0.46], [-0.35, 0.29]], # repl-1
+                ("Asp18", "Gln21"): [[-1.13, -0.51], [-0.33, 0.29]], # repl-5
+                ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
+                ("Ser23", "Hm129"): [[-0.20, 0.41], [-1.21, -0.61]], # repl-3
+                ("Arg27", "Ser23"): [[0.64, 1.28], [-0.31, 0.33]], # repl-7
             }
-        elif mc6sa:
+        elif mimochrome == "mc6sa":
             residue_ranges = {
-                ("Gln9", "Lys12"): [[0.71, 1.21], [-0.28, 0.26]], # repl. 
-                ("Asp18", "Aib20"): [[-1.17, -0.70], [-0.20, 0.27]], # repl. 
-                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl. 
-                ("Glu19", "Arg11"): [[-1.20, -0.60], [0.7, 1.2]], # repl. 
-                ("Arg27", "Ser23"): [[0.64, 1.26], [-0.31, 0.33]], # repl. 
+                ("Lys12", "Gln9"): [[0.66, 1.19], [-0.28, 0.27]], # repl-4
+                ("Asp18", "Aib20"): [[-1.17, -0.70], [-0.20, 0.27]], # repl-3
+                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl-1
+                ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
+                ("Aib23", "Hm129"): [[-0.20, 0.40], [-1.17, -0.57]], # repl-4   
+                ("Arg27", "Aib23"): [[0.64, 1.28], [-0.24, 0.40]], # repl-5
             }
 
         # Retrieve the range from the dictionary
@@ -377,7 +380,8 @@ def cli(
 
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
-        charge_df = qa.analyze.td_coupling(res_x, res_y, replicate_dir="3")
+        replicate = int(input("> What replicate (e.g., 1,2,3)? "))
+        qa.analyze.td_coupling(res_x, res_y, replicate_dir=f"{replicate}/")
 
     elif centroid_distance:
         click.echo("> Calculate the distance between two centroids:")
