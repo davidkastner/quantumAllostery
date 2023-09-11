@@ -6,10 +6,12 @@ dependencies:
   - python=3.8
   - black
   - biopandas
+  - biopython
   - cookiecutter
   - click
   - jupyterlab
   - matplotlib
+  - mdanalaysis
   - numpy
   - pandas
   - pip
