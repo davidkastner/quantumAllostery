@@ -190,7 +190,8 @@ def cli(
         out_file = input("> What would you like to name the output file (default = coupling)? ")
         out_file = out_file if out_file else "coupling"
 
-        delete = [0,15,16,27]
+        # delete = [0,15,16,27]
+        delete = [0,15,16,27,28,29]
         mimochrome = input("> Which mimochrome (e.g., mc6, mc6s mc6sa)? ")
 
         low_input = input("> What is your low value (default = -0.4) ")
