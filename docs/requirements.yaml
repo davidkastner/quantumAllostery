@@ -2,7 +2,7 @@ name: docs
 channels:
 dependencies:
     # Base depends
-  - python
+  - python=3.8
   - pip
 
     # Package depends
