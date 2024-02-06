@@ -4,12 +4,8 @@ channels:
   - defaults
 dependencies:
   - python=3.8
-  - black
   - biopandas
   - biopython
-  - cookiecutter
-  - click
-  - jupyterlab
   - matplotlib
   - mdanalaysis
   - numpy
@@ -18,7 +14,3 @@ dependencies:
   - scikit-learn
   - scipy
   - seaborn
-  - sphinx-autoapi
-  - sphinx_rtd_theme
-  - pip:
-    - https://github.com/revitron/revitron-sphinx-theme/archive/master.zip
