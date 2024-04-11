@@ -331,7 +331,7 @@ def esp_separate_barchart() -> None:
         plt.close()
 
 
-def esp_combined_barchart(schemes, width=5, height=4.5) -> None:
+def esp_combined_barchart(schemes, width=6.5, height=4) -> None:
     """
     Plots the ESP for all charge schemes as a barchart with error bars.
 
@@ -352,7 +352,7 @@ def esp_combined_barchart(schemes, width=5, height=4.5) -> None:
 
     """
     # Set the width of each bar
-    bar_width = 0.2
+    bar_width = 0.15
 
     # Read the CSV files and store them in a list of dataframes
     dfs = [pd.read_csv(scheme) for scheme in schemes]

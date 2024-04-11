@@ -337,8 +337,8 @@ def cli(
         click.echo("> Loading...")
         import qa.plot
 
-        # schemes = ["ADCH_esp.csv", "Hirshfeld_esp.csv", "Mulliken_esp.csv", "Voronoi_esp.csv"]
-        schemes = ["mc6.csv", "mc6*.csv", "mc6*a.csv"]
+        schemes = ["ADCH_esp.csv", "Hirshfeld_esp.csv", "Mulliken_esp.csv", "Voronoi_esp.csv"]
+        # schemes = ["mc6.csv", "mc6*.csv", "mc6*a.csv"]
         qa.plot.esp_combined_barchart(schemes)
 
     elif combine_sp_xyz:
