@@ -382,7 +382,7 @@ def esp_combined_barchart(schemes, width=6.5, height=4) -> None:
         )
 
     plt.xlabel("components", weight="bold")
-    plt.ylabel("ESP kJ/(mol x e)", weight="bold")
+    plt.ylabel("ESP kJ/(mol · e)", weight="bold")
     plt.axhline(y=0, color="black", linestyle="--")
     plt.xticks(
         [r + bar_width * (len(dfs) / 2) for r in r_values[0]], dfs[0].mean().index
