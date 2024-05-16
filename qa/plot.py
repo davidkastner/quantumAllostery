@@ -324,7 +324,7 @@ def esp_separate_barchart() -> None:
             capsize=10,
         )
         plt.xlabel("components", weight="bold")
-        plt.ylabel(f"{scheme} ESP kJ/(mol x e)", weight="bold")
+        plt.ylabel(f"{scheme} ESP kJ/(mol · e)", weight="bold")
         plt.axhline(y=0, color="black", linestyle="--")
         ext = "png"
         plt.savefig(f"{scheme}.{ext}", bbox_inches="tight", format=ext, dpi=300)
@@ -573,6 +573,50 @@ def esp_dist_plot(
             f"esp_dist_{color_map}.{ext}", bbox_inches="tight", format=ext, dpi=300
         )
 
+def esp_kde_dist_plot(esp_choice, xlim=None, ylim=None, color_map="viridis"):
+    """
+    Creates a KDE plot for a distance and the corresponding ESP.
+
+    Parameters
+    ----------
+    esp_choice: int
+        Column index for the esp_data to be plotted.
+
+    xlim: tuple, optional
+        Limits for x-axis in the form (xmin, xmax). If not provided, defaults to None.
+
+    ylim: tuple, optional
+        Limits for y-axis in the form (ymin, ymax). If not provided, defaults to None.
+
+    color_map: str, optional
+        Name of the Matplotlib color map. Defaults to 'viridis'.
+    """
+    # Load in data
+    esp_df = pd.read_csv("Hirshfeld_esp.csv")
+    esp_data = esp_df.iloc[:, esp_choice].values
+    dist_df = pd.read_csv("centroid_distance.csv")
+    dist_data = dist_df.iloc[:, 6].values
+
+    # Create the KDE plot
+    format_plot()
+    plt.figure(figsize=(5, 5))
+    sns.kdeplot(x=dist_data, y=esp_data, cmap=color_map)
+    
+    plt.xlabel("D-chain···Fe distance (Å)", fontweight="bold")
+    plt.ylabel("D-chain ESP (kJ/(mol x e))", fontweight="bold")
+    
+    # Set the x and y limits if specified
+    if xlim is not None:
+        plt.xlim(xlim)
+    if ylim is not None:
+        plt.ylim(ylim)
+
+    # Save the figure
+    extensions = ["svg", "png"]
+    for ext in extensions:
+        plt.savefig(
+            f"kde_esp_dist_{color_map}.{ext}", bbox_inches="tight", format=ext, dpi=300
+        )
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed

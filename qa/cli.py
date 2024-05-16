@@ -36,6 +36,7 @@ import click
 @click.option("--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling.")
 @click.option("--centroid_distance", "-cd", is_flag=True, help="Distance between two centroids.")
 @click.option("--distance_esp_plot", "-dep", is_flag=True, help="Plot distance vs. ESP.")
+@click.option("--kde_dist_esp_plot", "-kdep", is_flag=True, help="Plot distance vs. ESP as a KDE.")
 @click.help_option("--help", "-h", is_flag=True, help="Exiting quantumAllostery.")
 def cli(
     combine_restarts,
@@ -61,6 +62,7 @@ def cli(
     centroid_distance,
     distance_esp_plot,
     simple_xyz_combine,
+    kde_dist_esp_plot,
 ):
     """
     The overall command-line interface (CLI) entry point.
@@ -389,6 +391,11 @@ def cli(
         click.echo("> Loading...")
         import qa.analyze
 
+        print("\nExample mimochrome values:")
+        print("MC6: {upper-helix: 253-424, Fe: 487, Asp18: 259-270}")
+        print("MC6*: {upper-helix: 257-428, Fe: 491, Asp18: 263-274}")
+        print("MC6*a: {upper-helix: 257-426, Fe: 489, Asp18: 263-274}\n")
+
         centroid1_atoms = input("What atoms are in component 1 (e.g., 487)? ")
         centroid2_atoms = input("What atoms are in component 2 (e.g., 253-424)? ")
         centroids = [[centroid1_atoms], [centroid2_atoms]]
@@ -402,16 +409,6 @@ def cli(
         esp_choice = int(
             input("   > 0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? ")
         )
-        kulik_colors = [
-            "#000000",
-            "#0000FF",
-            "#FF0000",
-            "#008000",
-            "#FFA500",
-            "#808080",
-            "#800080",
-            "#FFFF00",
-        ]
 
         colormap = input(
             "   > What colormap would you like (e.g., inferno, jet, turbo, viridis)? "
@@ -438,6 +435,39 @@ def cli(
         #     ylim=(-230, 375),
         #     color_map=colormap,
         #     custom_colors=None,
+        # )
+
+    elif kde_dist_esp_plot:
+        click.echo("> Plot the distance between two componenets vs. their ESP:")
+        click.echo("> Loading...")
+        import qa.plot
+
+        esp_choice = int(
+            input("   > 0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? ")
+        )
+
+        colormap = input(
+            "   > What colormap would you like (e.g., inferno, jet, turbo, viridis, Blues)? "
+        )
+        # qa.plot.esp_kde_dist_plot(
+        #     esp_choice,
+        #     xlim=(4.1, 13.5),
+        #     ylim=(-225, 375),
+        #     color_map=colormap,
+        # )
+
+        qa.plot.esp_kde_dist_plot(
+            esp_choice,
+            xlim=(7.6, 23),
+            ylim=(-230, 375),
+            color_map=colormap,
+        )
+
+        # qa.plot.esp_kde_dist_plot(
+        #     esp_choice,
+        #     xlim=(3.1, 12.7),
+        #     ylim=(-230, 375),
+        #     color_map=colormap,
         # )
 
     elif simple_xyz_combine:
