@@ -33,7 +33,7 @@ Routine tasks can be easily automated using the functionality contained in the l
 ## 2. Quick start
 ![Welcome screen help options](docs/_static/welcome_help_demo.png)
 
-To get started, once `qa` has been installed run `qa --help` or `qa -h` to see the available actions.
+To get started, once `qa` has been installed, run `qa --help` or `qa -h` to see the available actions.
 
 ## 3. Installation
 Install the package by running the follow commands inside the repository.
