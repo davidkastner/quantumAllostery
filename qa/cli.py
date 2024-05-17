@@ -1,4 +1,4 @@
-"""Command-line interface (CLI) entry point."""
+"""Command-line interface (CLI) entry point and complete reference of qa functionality."""
 
 import click
 
@@ -32,30 +32,30 @@ welcome()
 
 @click.command()
 @click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate.",)
-@click.option("--combine_replicates","-c",is_flag=True,help="Combines combined replicates trajectories.",)
-@click.option("--simple_xyz_combine", "-sc", is_flag=True, help="Combines xyz files.")
+@click.option("--combine_replicates","-b",is_flag=True,help="Combines combined replicates trajectories.",)
+@click.option("--simple_xyz_combine", "-c", is_flag=True, help="Combines xyz files.")
 @click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb.")
 @click.option("--clean_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
 @click.option("--charge_coupling_plot","-f",is_flag=True,help="Charge coupling between two residues plot.",)
 @click.option("--find_stalled", "-g", is_flag=True, help="Find TeraChem jobs stalled.")
+@click.help_option("--help", "-h", is_flag=True, help="Exiting quantumAllostery.")
 @click.option("--get_heatmap", "-i", is_flag=True, help="Heat map of amino acid correlations.")
 @click.option("--cpptraj_covars", "-j", is_flag=True, help="Use CPPTraj to calculate covariance.")
 @click.option("--charge_matrix_analysis","-k",is_flag=True,help="Create a matrix of charge couplings.",)
 @click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs.")
 @click.option("--combine_qm_charges","-m",is_flag=True,help="Combine charge data across QM single points.",)
-@click.option("--predict", "-p",is_flag=True,help="Uses simple ML models to predict key residues.",)
-@click.option("--multiwfn_charges","-q",is_flag=True,help="Calculates charge schemes from Multiwfn.",)
+@click.option("--predict", "-n",is_flag=True,help="Uses simple ML models to predict key residues.",)
+@click.option("--multiwfn_charges","-o",is_flag=True,help="Calculates charge schemes from Multiwfn.",)
 @click.argument("multiwfn_charge_args", nargs=4, type=int, required=False)
-@click.option("--calc_esp", "-r", is_flag=True, help="Calculates ESP from Multiwfn output.")
-@click.option("--check_esp_failed", "-s", is_flag=True, help="Checks for unfinished ESP jobs.")
-@click.option("--plot_esp", "-t", is_flag=True, help="Plot the ESP of each scheme and component.")
-@click.option("--combine_sp_xyz", "-u", is_flag=True, help="Combine single point xyz's.")
-@click.option("--plot_heme_distortion","-v",is_flag=True,help="Plots heme distortion across replicates.",)
-@click.option("--td_coupling", "-w", is_flag=True, help="Time-dependent charge coupling.")
-@click.option("--centroid_distance", "-cd", is_flag=True, help="Distance between two centroids.")
-@click.option("--distance_esp_plot", "-dep", is_flag=True, help="Plot distance vs. ESP.")
-@click.option("--kde_dist_esp_plot", "-kdep", is_flag=True, help="Plot distance vs. ESP as a KDE.")
-@click.help_option("--help", "-h", is_flag=True, help="Exiting quantumAllostery.")
+@click.option("--calc_esp", "-p", is_flag=True, help="Calculates ESP from Multiwfn output.")
+@click.option("--check_esp_failed", "-q", is_flag=True, help="Checks for unfinished ESP jobs.")
+@click.option("--plot_esp", "-r", is_flag=True, help="Plot the ESP of each scheme and component.")
+@click.option("--combine_sp_xyz", "-s", is_flag=True, help="Combine single point xyz's.")
+@click.option("--plot_heme_distortion","-t",is_flag=True,help="Plots heme distortion across replicates.",)
+@click.option("--td_coupling", "-u", is_flag=True, help="Time-dependent charge coupling.")
+@click.option("--centroid_distance", "-v", is_flag=True, help="Distance between two centroids.")
+@click.option("--distance_esp_plot", "-w", is_flag=True, help="Plot distance vs. ESP.")
+@click.option("--kde_dist_esp_plot", "-x", is_flag=True, help="Plot distance vs. ESP as a KDE.")
 def cli(
     combine_restarts,
     combine_replicates,
@@ -82,16 +82,6 @@ def cli(
     simple_xyz_combine,
     kde_dist_esp_plot,
 ):
-    """
-    The overall command-line interface (CLI) entry point.
-    The CLI interacts with the rest of the package.
-
-    A complete reference of quantumAllostery functionality.
-    This is advantagous because it quickly introduces so quantumAllostery.
-    Specificaly, to the complete scope of available functionality.
-    It also improves long-term maintainability and readability.
-
-    """
 
     if combine_restarts:
         click.echo("> Combine restarts:")
