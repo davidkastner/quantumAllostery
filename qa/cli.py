@@ -1,16 +1,34 @@
 """Command-line interface (CLI) entry point."""
 
-# Print first to welcome the user while it waits to load the modules
-print("\n.-------------------------------------------.")
-print("| WELCOME TO THE QUANTUM ALLOSTERY (QA) CLI |")
-print(".-------------------------------------------.")
-print("Default programmed actions for the quantumAllostery package.")
-print("GitHub: https://github.com/davidkastner/quantumAllostery")
-print("Documenation: https://quantumallostery.readthedocs.io\n")
-
-import os
 import click
 
+def welcome():
+    """Print first to welcome the user while it waits to load the modules"""
+    print("\n")
+    print("              ╔═══════════════════════════════╗           ")
+    print("              ║    _________  ________        ║           ")
+    print("              ║   |\   ___  \|\   __  \       ║           ")
+    print("              ║   \ \  \ |\  \ \  \|\  \      ║           ")
+    print("              ║    \ \  \  \  \ \   __  \     ║           ")
+    print("              ║     \ \  \__\  \ \  \ \  \    ║           ")
+    print("              ║      \ \______  \ \__\ \__\   ║           ")
+    print("              ║       \|____| \__\|__|\|__|   ║           ")
+    print("              ║              \|__|            ║           ")
+    print("              ║                               ║           ")
+    print("              ║       QUANTUMALLOSTERY        ║           ")
+    print("              ║  [quantumallostery.rtfd.io]   ║           ")
+    print("              ╚═══════════════╗╔══════════════╝           ")
+    print("                      ╔═══════╝╚═══════╗                  ")
+    print("                      ║ THE KULIK LAB  ║                  ")
+    print("                      ╚═══════╗╔═══════╝                  ")
+    print("  ╔═══════════════════════════╝╚═══════════════════════╗ ")
+    print("  ║   Code: github.com/davidkastner/quantumAllostery   ║ ")
+    print("  ║   Docs: quantumallostery.readthedocs.io            ║ ")
+    print("  ║      - Usage: qa --help                            ║ ")
+    print("  ╚════════════════════════════════════════════════════╝ \n")
+
+# Greet the user with the welcome screen
+welcome()
 
 @click.command()
 @click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate.",)
@@ -609,4 +627,5 @@ mc6sa = ["ACE",
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
+    welcome()
     cli()
