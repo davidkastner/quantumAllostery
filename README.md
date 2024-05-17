@@ -13,8 +13,6 @@ quantumAllostery
 3. **Installation**
     * Creating python environment
     * Install pyQMMM package
-    * Install machine learning dependencies
-    * Setup developing environment
 4. **What is included?**
     * File structure
     * Command line interface
