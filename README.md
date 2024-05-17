@@ -8,18 +8,20 @@ quantumAllostery
 
 ## Table of Contents
 1. **Overview**
-2. **Installation**
+2. **Quick Start**
+    * Accessing QA functions
+3. **Installation**
     * Creating python environment
     * Install pyQMMM package
     * Install machine learning dependencies
     * Setup developing environment
-3. **What is included?**
+4. **What is included?**
     * File structure
     * Command line interface
-4. **Documentation**
+5. **Documentation**
     * Update documentation
     * Examples
-5. **Developer Guide**
+6. **Developer Guide**
     * GitHub refresher
 
 
@@ -27,7 +29,13 @@ quantumAllostery
 The quantumAllostery (QA) package automates the identification of charge coupling interactions in ab-initio molecular dynamics (AIMD) simulations.
 Routine tasks can be easily automated using the functionality contained in the library.
 
-## 2. Installation
+
+## 2. Quick start
+![Welcome screen help options](docs/_static/welcome_help_demo.png)
+
+To get started, once `qa` has been installed run `qa --help` or `qa -h` to see the available actions.
+
+## 3. Installation
 Install the package by running the follow commands inside the repository.
 This will perform a developmental version install.
 It is good practice to do this inside of a virtual environment.
@@ -59,7 +67,7 @@ Next, we will perform an development install:
 python -m pip install -e .
 ```
 
-## 3. What is included?
+## 4. What is included?
 ### File structure
 This is the the package structure for reference and its included modules.
 
@@ -91,7 +99,7 @@ qa
 ```
 
 
-## 4. Documentation
+## 5. Documentation
 ### Update documentation
 Run the following commands to update the ReadTheDocs site:
 
@@ -101,7 +109,7 @@ make html
 ```
 
 
-## 5. Developer guide
+## 6. Developer guide
 ### GitHub refresher for those who would like to contribute
 #### Push new changes
 

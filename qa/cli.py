@@ -31,31 +31,31 @@ def welcome():
 welcome()
 
 @click.command()
-@click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate.",)
-@click.option("--combine_replicates","-b",is_flag=True,help="Combines combined replicates trajectories.",)
-@click.option("--simple_xyz_combine", "-c", is_flag=True, help="Combines xyz files.")
-@click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb.")
+@click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate",)
+@click.option("--combine_replicates","-b",is_flag=True,help="Combines combined replicates trajectories",)
+@click.option("--simple_xyz_combine", "-c", is_flag=True, help="Combines xyz files")
+@click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb")
 @click.option("--clean_frames", "-e", is_flag=True, help="Cleans incomplete frames.")
-@click.option("--charge_coupling_plot","-f",is_flag=True,help="Charge coupling between two residues plot.",)
-@click.option("--find_stalled", "-g", is_flag=True, help="Find TeraChem jobs stalled.")
-@click.help_option("--help", "-h", is_flag=True, help="Exiting quantumAllostery.")
-@click.option("--get_heatmap", "-i", is_flag=True, help="Heat map of amino acid correlations.")
-@click.option("--cpptraj_covars", "-j", is_flag=True, help="Use CPPTraj to calculate covariance.")
-@click.option("--charge_matrix_analysis","-k",is_flag=True,help="Create a matrix of charge couplings.",)
-@click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs.")
-@click.option("--combine_qm_charges","-m",is_flag=True,help="Combine charge data across QM single points.",)
-@click.option("--predict", "-n",is_flag=True,help="Uses simple ML models to predict key residues.",)
-@click.option("--multiwfn_charges","-o",is_flag=True,help="Calculates charge schemes from Multiwfn.",)
+@click.option("--charge_coupling_plot","-f",is_flag=True,help="Charge coupling between two residues plot",)
+@click.option("--find_stalled", "-g", is_flag=True, help="Find TeraChem jobs stalled")
+@click.help_option("--help", "-h", is_flag=True, help="List of all quantumAllostery key words")
+@click.option("--get_heatmap", "-i", is_flag=True, help="Heat map of amino acid correlations")
+@click.option("--cpptraj_covars", "-j", is_flag=True, help="Use CPPTraj to calculate covariance")
+@click.option("--charge_matrix_analysis","-k",is_flag=True,help="Create a matrix of charge couplings",)
+@click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs")
+@click.option("--combine_qm_charges","-m",is_flag=True,help="Combine charge data across QM single points",)
+@click.option("--predict", "-n",is_flag=True,help="Uses ML models to predict key residues",)
+@click.option("--multiwfn_charges","-o",is_flag=True,help="Calculates charge schemes from Multiwfn",)
 @click.argument("multiwfn_charge_args", nargs=4, type=int, required=False)
-@click.option("--calc_esp", "-p", is_flag=True, help="Calculates ESP from Multiwfn output.")
-@click.option("--check_esp_failed", "-q", is_flag=True, help="Checks for unfinished ESP jobs.")
-@click.option("--plot_esp", "-r", is_flag=True, help="Plot the ESP of each scheme and component.")
-@click.option("--combine_sp_xyz", "-s", is_flag=True, help="Combine single point xyz's.")
-@click.option("--plot_heme_distortion","-t",is_flag=True,help="Plots heme distortion across replicates.",)
-@click.option("--td_coupling", "-u", is_flag=True, help="Time-dependent charge coupling.")
-@click.option("--centroid_distance", "-v", is_flag=True, help="Distance between two centroids.")
-@click.option("--distance_esp_plot", "-w", is_flag=True, help="Plot distance vs. ESP.")
-@click.option("--kde_dist_esp_plot", "-x", is_flag=True, help="Plot distance vs. ESP as a KDE.")
+@click.option("--calc_esp", "-p", is_flag=True, help="Calculates ESP from Multiwfn output")
+@click.option("--check_esp_failed", "-q", is_flag=True, help="Checks for unfinished ESP jobs")
+@click.option("--plot_esp", "-r", is_flag=True, help="Plot the ESP of each scheme and component")
+@click.option("--combine_sp_xyz", "-s", is_flag=True, help="Combine single point xyz's")
+@click.option("--plot_heme_distortion","-t",is_flag=True,help="Plots heme distortion across replicates",)
+@click.option("--td_coupling", "-u", is_flag=True, help="Time-dependent charge coupling")
+@click.option("--centroid_distance", "-v", is_flag=True, help="Distance between two centroids")
+@click.option("--distance_esp_plot", "-w", is_flag=True, help="Plot distance vs. ESP")
+@click.option("--kde_dist_esp_plot", "-x", is_flag=True, help="Plot distance vs. ESP as a KDE")
 def cli(
     combine_restarts,
     combine_replicates,
@@ -490,130 +490,11 @@ def cli(
     else:
         click.echo("No functionality was requested.\nTry --help.")
 
-mc6 = ["ACE",
-       "ASP",
-       "GLU",
-       "GLN",
-       "GLN",
-       "LEU",
-       "HIS",
-       "SER",     
-       "GLN",
-       "LYS",
-       "ARG",
-       "LYS",
-       "ILE",
-       "THR",      
-       "LEU",
-       "NHE",
-       "ACE",
-       "ASP",
-       "GLU",
-       "GLN",     
-       "GLN",
-       "LEU",
-       "SER",
-       "SER",
-       "GLN",
-       "LYS",       
-       "ARG",
-       "NHE",
-       "HEME",
-       "FE",    
-       ]
 
-mc6s = ["ACE",
-       "ASP",
-       "LEU",
-       "GLN",
-       "GLN",
-       "LEU",
-       "HIS",
-       "SER",     
-       "GLN",
-       "LYS",
-       "ARG",
-       "LYS",
-       "ILE",
-       "THR",      
-       "LEU",
-       "NHE",
-       "ACE",
-       "ASP",
-       "GLU",
-       "GLN",     
-       "GLN",
-       "LEU",
-       "SER",
-       "SER",
-       "GLN",
-       "LYS",       
-       "ARG",
-       "NHE",
-       "HEME",
-       "FE",    
-       ]
 
-mc6sa = ["ACE",
-        "ASP",
-        "LEU",
-        "GLN",
-        "GLN",
-        "LEU",
-        "HIS",
-        "SER",     
-        "GLN",
-        "LYS",
-        "ARG",
-        "LYS",
-        "ILE",
-        "THR",      
-        "LEU",
-        "NHE",
-        "ACE",
-        "ASP",
-        "GLU",
-        "AIB",     
-        "GLN",
-        "LEU",
-        "AIB",
-        "SER",
-        "GLN",
-        "LYS",       
-        "ARG",
-        "NHE",
-        "HEME",
-        "FE",    
-        ]
-
-# # Create a dictionary to map the pair of residues to their ranges
-# if mimochrome == "mc6":
-#     residue_ranges = {
-#         ("Lys12", "Gln9"): [[0.71, 1.24], [-0.30, 0.25]], # repl-1
-#         ("Asp18", "Gln20"): [[-1.19, -0.55], [-0.32, 0.32]], # repl-1
-#         ("Asp18", "Gln21"): [[-1.22, -0.58], [-0.35, 0.29]], # repl-8
-#         ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
-#         ("Ser23", "Hm129"): [[-0.22, 0.38], [-1.20, -0.60]], # repl-5
-#         ("Arg27", "Ser23"): [[0.64, 1.28], [-0.28, 0.36]], # repl-5
-#     }
-# elif mimochrome == "mc6s":
-#     residue_ranges = {
-#         ("Lys12","Gln9"): [[0.66, 1.19], [-0.28, 0.27]], # repl-5
-#         ("Asp18", "Gln20"): [[-1.1, -0.46], [-0.35, 0.29]], # repl-1
-#         ("Asp18", "Gln21"): [[-1.13, -0.51], [-0.33, 0.29]], # repl-5
-#         ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
-#         ("Ser23", "Hm129"): [[-0.20, 0.41], [-1.21, -0.61]], # repl-3
-#         ("Arg27", "Ser23"): [[0.64, 1.28], [-0.31, 0.33]], # repl-7
-#     }
-# elif mimochrome == "mc6sa":
-#     residue_ranges = {
-#         ("Lys12", "Gln9"): [[0.66, 1.19], [-0.28, 0.27]], # repl-4
-#         ("Asp18", "Aib20"): [[-1.17, -0.70], [-0.20, 0.27]], # repl-3
-#         ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl-1
-#         ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
-#         ("Aib23", "Hm129"): [[-0.20, 0.40], [-1.17, -0.57]], # repl-4   
-#         ("Arg27", "Aib23"): [[0.64, 1.28], [-0.24, 0.40]], # repl-5
-#     }
+mc6 = ["ACE","ASP","GLU","GLN","GLN","LEU","HIS","SER","GLN","LYS","ARG","LYS","ILE","THR","LEU","NHE","ACE","ASP","GLU","GLN","GLN","LEU","SER","SER","GLN","LYS","ARG","NHE","HEME","FE"]
+mc6s = ["ACE","ASP","LEU","GLN","GLN","LEU","HIS","SER","GLN","LYS","ARG","LYS","ILE","THR","LEU","NHE","ACE","ASP","GLU","GLN","GLN","LEU","SER","SER","GLN","LYS","ARG","NHE","HEME","FE"]
+mc6sa = ["ACE","ASP","LEU","GLN","GLN","LEU","HIS","SER","GLN","LYS","ARG","LYS","ILE","THR","LEU","NHE","ACE","ASP","GLU","AIB","GLN","LEU","AIB","SER","GLN","LYS""ARG","NHE","HEME","FE"]
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed
