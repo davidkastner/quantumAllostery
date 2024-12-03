@@ -412,11 +412,11 @@ def calculate_charge_schemes():
     else:
         raise Exception("More than one molden was found.")
 
-    # If installed correctly, Multiwfn can be called with Multiwfn
-    threads = 4
     # Setting the threads too high can cause peformance problems
-    command = f"Multiwfn {molden}.molden -nt {threads}"
-    print(f"> Using {threads} threads for Multiwfn")
+    path_to_ini_file = "/home/gridsan/dkastner/src/pyEF/pyef/resources/settings.ini"
+    command = f"Multiwfn {molden}.molden -set {path_to_ini_file}"
+
+    print(f"> {command}")
 
     start_time = time.time()  # Used to report the executation speed
     job_count = 0  # Keep track of the number of calculations to inform user
@@ -427,6 +427,16 @@ def calculate_charge_schemes():
 
     for scheme in charge_schemes:
         print(f"> Current charge scheme: {scheme}")
+
+        if scheme == "Hirshfeld" and glob.glob("*_Hirshfeld.txt"):
+            continue
+        if scheme == "Voronoi" and glob.glob("*_Voronoi.txt"):
+            continue
+        if scheme == "Mulliken" and glob.glob("*_Mulliken.txt"):
+            continue
+        if scheme == "ADCH" and glob.glob("*_ADCH.txt"):
+            continue
+
         proc = subprocess.Popen(
             command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True
         )
@@ -929,6 +939,39 @@ def centroid_distance(components):
         """
     )
 
+
+def combine_qm_charges_replicates():
+    # Prompt user for directories to combine
+    user_input = input("Enter the directories to combine (comma-separated, e.g., '1,2,3'), or press Enter to combine all: ").strip()
+
+    # Parse user input or default to all numeric directories
+    if user_input:
+        dirs = [d.strip() for d in user_input.split(',') if os.path.isdir(d.strip()) and d.strip().isdigit()]
+    else:
+        dirs = sorted([d for d in os.listdir('.') if os.path.isdir(d) and d.isdigit()], key=int)
+
+    # Ensure directories list is not empty
+    if not dirs:
+        print("No valid directories to process. Exiting.")
+    else:
+        output_file = 'all_charges.xls'
+        with open(output_file, 'w') as outfile:
+            first_file = True
+            for dir_name in dirs:
+                file_path = os.path.join(dir_name, 'all_charges.xls')
+                if os.path.isfile(file_path):
+                    print(f"Processing: {file_path}")  # Print the path of the file being processed
+                    with open(file_path, 'r') as infile:
+                        if first_file:
+                            # Write the header and data from the first file
+                            outfile.write(infile.read())
+                            first_file = False
+                        else:
+                            # Skip the header line for subsequent files
+                            next(infile)
+                            outfile.write(infile.read())
+
+        print(f"Combined file written to: {os.path.abspath(output_file)}")
 
 
 if __name__ == "__main__":

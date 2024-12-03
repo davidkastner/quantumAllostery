@@ -44,6 +44,7 @@ welcome()
 @click.option("--charge_matrix_analysis","-k",is_flag=True,help="Create a matrix of charge couplings",)
 @click.option("--clean_qm", "-l", is_flag=True, help="Cleans QM single point jobs")
 @click.option("--combine_qm_charges","-m",is_flag=True,help="Combine charge data across QM single points",)
+@click.option("--combine_rep_qm_charges","-ma",is_flag=True,help="Combine charge data across QM replicates",)
 @click.option("--predict", "-n",is_flag=True,help="Uses ML models to predict key residues",)
 @click.option("--multiwfn_charges","-o",is_flag=True,help="Calculates charge schemes from Multiwfn",)
 @click.argument("multiwfn_charge_args", nargs=4, type=int, required=False)
@@ -68,6 +69,7 @@ def cli(
     charge_matrix_analysis,
     clean_qm,
     combine_qm_charges,
+    combine_rep_qm_charges,
     predict,
     multiwfn_charges,
     multiwfn_charge_args,
@@ -87,6 +89,7 @@ def cli(
         click.echo("> Combine restarts:")
         click.echo("> Loading...")
         import qa.process
+        import qa.manage
 
         compute_replicates = input(
             "> Would you like this performed across replicates (y/n)? "
@@ -142,7 +145,7 @@ def cli(
         import qa.plot
         import qa.manage
 
-        mimochrome = input("> Which mimochrome (mc6, mc6s, mc6sa)? ")
+        mimochrome = input("> Which mimochrome (mc6, mc6s, mc6sa, mc7)? ")
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
 
@@ -200,9 +203,9 @@ def cli(
         out_file = input("> What would you like to name the output file (default = coupling)? ")
         out_file = out_file if out_file else "coupling"
 
-        # delete = [0,15,16,27]
-        delete = [0,15,16,27,28,29]
-        mimochrome = input("> Which mimochrome (e.g., mc6, mc6s mc6sa)? ")
+        # delete = [0,15,16,27,28,29]
+        delete = [0,15,16,27]
+        mimochrome = input("> Which mimochrome (e.g., mc6, mc6s, mc6sa, mc7)? ")
 
         low_input = input("> What is your low value (default = -0.4) ")
         low = float(low_input) if low_input else -0.4
@@ -210,7 +213,7 @@ def cli(
         high_input = input("> What is your high value (default = 0.4) ")
         high = float(high_input) if high_input else 0.4
 
-        mimochrome_mapping = {"mc6": mc6, "mc6s": mc6s, "mc6sa": mc6sa}
+        mimochrome_mapping = {"mc6": mc6, "mc6s": mc6s, "mc6sa": mc6sa, "mc7": mc7}
         if mimochrome in mimochrome_mapping:
             qa.plot.heatmap(data, mimochrome_mapping[mimochrome], delete = delete, out_file=out_file, v=[low, high])
         else:
@@ -281,6 +284,12 @@ def cli(
         else:
             print(f"> {compute_replicates} is not a valid response.")
 
+
+    elif combine_rep_qm_charges:
+        import qa.analyze
+        qa.analyze.combine_qm_charges_replicates()
+        
+
     elif predict:
         click.echo("> Making predictions:")
         click.echo("> Loading...")
@@ -312,11 +321,14 @@ def cli(
     elif multiwfn_charges:
         # I had to pass multiwfn_charge_args as an arg although it was ugly
         click.echo("> Computed charge schemes with Multiwfn:")
+        click.echo("> Example usage: qa -o 1 0 39901 100")
+        click.echo("> Load Multiwfn: module load multiwfn/noGUI_3.7")
         click.echo("> Loading...")
+        
         import qa.analyze
         import qa.manage
 
-        # replicate = 1, first = 0, last = 39901, step = 100
+        #replicate = 1, first = 0, last = 39901, step = 100
         replicate = str(multiwfn_charge_args[0])
         first = multiwfn_charge_args[1]
         last = multiwfn_charge_args[2]
@@ -333,7 +345,41 @@ def cli(
         first = 0
         last = 39901
         step = 100
-        qa.manage.collect_esp_components(first, last, step)
+
+        which_mimochrome = input("   > Which mimochrome would you like this computed for (e.g., mc6, mc6s, mc6sa)? ")
+
+        if which_mimochrome == "mc6":
+            components = {
+            "all": "1-487",
+            "lower": "1-252",
+            "upper": "253-424",
+            "lower-his": "1-86,104-252",
+            "heme": "425-486",
+            "his": "87-103",
+            "asp-glu": "259-285",
+            "asp-glu-arg": "259-285,398-421"}
+        elif which_mimochrome == "mc6s":
+            components = {
+            "all": "1-491", 
+            "lower": "1-256",
+            "upper": "257-428",
+            "lower-his": "1-90,108-256",
+            "heme": "429-490",
+            "his": "91-107",
+            "asp-glu": "263-289",
+            "asp-glu-arg": "263-289,402-425"}
+        elif which_mimochrome == "mc6sa":
+            components = {
+            "all": "1-489",
+            "lower": "1-256",
+            "upper": "257-426",
+            "lower-his": "1-90,108-256",
+            "heme": "427-488",
+            "his": "91-107",
+            "asp-glu": "263-289",
+            "asp-glu-arg": "263-289,400-423",
+            "asp-glu-aib-arg": "263-289,337-353,400-423"}
+        qa.manage.collect_esp_components(components, first, last, step)
 
     elif check_esp_failed:
         click.echo("> Checking for unfinished ESP jobs:")
@@ -400,9 +446,9 @@ def cli(
         import qa.analyze
 
         print("\nExample mimochrome values:")
-        print("MC6: {upper-helix: 253-424, Fe: 487, Asp18: 259-270}")
-        print("MC6*: {upper-helix: 257-428, Fe: 491, Asp18: 263-274}")
-        print("MC6*a: {upper-helix: 257-426, Fe: 489, Asp18: 263-274}\n")
+        print("MC6: {upper-helix: 253-424, Fe: 487, Asp18: 259-270, Arg27: 398-420}")
+        print("MC6*: {upper-helix: 257-428, Fe: 491, Asp18: 263-274, Arg27: 402-425}")
+        print("MC6*a: {upper-helix: 257-426, Fe: 489, Asp18: 263-274, Arg27: 400-423}\n")
 
         centroid1_atoms = input("What atoms are in component 1 (e.g., 487)? ")
         centroid2_atoms = input("What atoms are in component 2 (e.g., 253-424)? ")
@@ -414,69 +460,66 @@ def cli(
         click.echo("> Loading...")
         import qa.plot
 
-        esp_choice = int(
-            input("   > 0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? ")
-        )
+        esp_choice = int(input("   > 0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? "))
+        colormap = input("   > What colormap would you like (e.g., inferno, jet, turbo, viridis)? ")
+        residues = input("   > Which residues (e.g., Asp18, Arg27, D-chain)? ")
+        
 
-        colormap = input(
-            "   > What colormap would you like (e.g., inferno, jet, turbo, viridis)? "
-        )
-        qa.plot.esp_dist_plot(
-            esp_choice,
-            xlim=(4.1, 13.5),
-            ylim=(-225, 375),
-            color_map=colormap,
-            custom_colors=None,
-        )
-
-        # qa.plot.esp_dist_plot(
-        #     esp_choice,
-        #     xlim=(7.6, 23),
-        #     ylim=(-230, 375),
-        #     color_map=colormap,
-        #     custom_colors=None,
-        # )
-
-        # qa.plot.esp_dist_plot(
-        #     esp_choice,
-        #     xlim=(3.1, 12.7),
-        #     ylim=(-230, 375),
-        #     color_map=colormap,
-        #     custom_colors=None,
-        # )
+        if residues == "Asp18":
+            qa.plot.esp_dist_plot(
+                esp_choice,
+                xlim=(7.6, 23),
+                ylim=(-230, 375),
+                color_map=colormap,
+                custom_colors=None,
+            )
+        if residues == "Arg27":
+            qa.plot.esp_dist_plot(
+                esp_choice,
+                xlim=(3.1, 12.7),
+                ylim=(-230, 375),
+                color_map=colormap,
+                custom_colors=None,
+            )
+        if residues == "D-chain":
+            qa.plot.esp_dist_plot(
+                esp_choice,
+                xlim=(4.1, 13.5),
+                ylim=(-225, 375),
+                color_map=colormap,
+                custom_colors=None,
+            )
 
     elif kde_dist_esp_plot:
         click.echo("> Plot the distance between two componenets vs. their ESP:")
         click.echo("> Loading...")
         import qa.plot
 
-        esp_choice = int(
-            input("   > 0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? ")
-        )
+        esp_choice = int(input("   > 0-all, 1-lower, 2-upper, 3-lower-his, 4-heme, 5-his? "))
+        colormap = input("   > What colormap would you like (e.g., inferno, jet, turbo, viridis, Blues)? ")
+        residues = input("   > Which residues (e.g., Asp18, Arg27, D-chain)? ")
 
-        colormap = input(
-            "   > What colormap would you like (e.g., inferno, jet, turbo, viridis, Blues)? "
-        )
-        # qa.plot.esp_kde_dist_plot(
-        #     esp_choice,
-        #     xlim=(4.1, 13.5),
-        #     ylim=(-225, 375),
-        #     color_map=colormap,
-        # )
-
-        qa.plot.esp_kde_dist_plot(
-            esp_choice,
-            xlim=(7.6, 23),
-            ylim=(-230, 375),
-            color_map=colormap,
-        )
-
-        # qa.plot.esp_kde_dist_plot(
-        #     esp_choice,
-        #     xlim=(3.1, 12.7),
-        #     ylim=(-230, 375),
-        #     color_map=colormap,
-        # )
+        if residues == "Asp18":
+            qa.plot.esp_kde_dist_plot(
+                esp_choice,
+                xlim=(7.6, 23),
+                ylim=(-230, 375),
+                color_map=colormap,
+            )
+        if residues == "Arg27":
+            qa.plot.esp_kde_dist_plot(
+                esp_choice,
+                xlim=(3.1, 12.7),
+                ylim=(-230, 375),
+                color_map=colormap,
+            )
+        if residues == "D-chain":
+            qa.plot.esp_kde_dist_plot(
+                esp_choice,
+                xlim=(4.1, 13.5),
+                ylim=(-225, 375),
+                color_map=colormap,
+            )
 
     elif simple_xyz_combine:
         click.echo(
@@ -494,7 +537,8 @@ def cli(
 
 mc6 = ["ACE","ASP","GLU","GLN","GLN","LEU","HIS","SER","GLN","LYS","ARG","LYS","ILE","THR","LEU","NHE","ACE","ASP","GLU","GLN","GLN","LEU","SER","SER","GLN","LYS","ARG","NHE","HEME","FE"]
 mc6s = ["ACE","ASP","LEU","GLN","GLN","LEU","HIS","SER","GLN","LYS","ARG","LYS","ILE","THR","LEU","NHE","ACE","ASP","GLU","GLN","GLN","LEU","SER","SER","GLN","LYS","ARG","NHE","HEME","FE"]
-mc6sa = ["ACE","ASP","LEU","GLN","GLN","LEU","HIS","SER","GLN","LYS","ARG","LYS","ILE","THR","LEU","NHE","ACE","ASP","GLU","AIB","GLN","LEU","AIB","SER","GLN","LYS""ARG","NHE","HEME","FE"]
+mc6sa = ["ACE","ASP","LEU","GLN","GLN","LEU","HIS","SER","GLN","LYS","ARG","LYS","ILE","THR","LEU","NHE","ACE","ASP","GLU","AIB","GLN","LEU","SER","AIB","GLN","LYS","ARG","NHE","HEME","FE"]
+mc7 = ["ACE","ASP","LEU","GLN","GLN","LEU","HIS","SER","GLN","LYS","ARG","LYS","ILE","THR","LEU","NHE","ACE","ASP","GLU","AIB","GLN","LEU","AIB","SER","GLN","LYS","ARG","NHE","HEME","FE"]
 
 if __name__ == "__main__":
     # Run the command-line interface when this script is executed

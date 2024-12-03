@@ -242,128 +242,130 @@ def combine_sp_xyz():
     # Return the list of tuples with replicate information
     return replicate_info 
 
+
+
+import os
+import glob
+import time
+
+
 def combine_restarts(
     atom_count, all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
 ) -> None:
     """
     Collects all charges or coordinates into single xls and xyz files.
 
-    Likely the first executed function after generating the raw AIMD data.
-    Trajectories were likely generated over multiple runs.
-    This function combines all coordinate and charge data for each run.
+    This version determines overlaps by parsing the frame numbers in the title lines
+    of `coors.xyz` and adjusts the corresponding lines in `charges.xls`.
 
     Parameters
     ----------
     all_charges : str
         The name of the file containing all charges in xls format.
-    all_coors.xyz : str
+    all_coors : str
         The name of the file containing the coordinates in xyz format.
     atom_count : int
-        The number of atoms in the structure
+        The number of atoms in the structure.
 
     Notes
     -----
     Run from the directory that contains the run fragments.
-
-    See Also
-    --------
-    combine_replicates: Combines all the combined trajectories of each replicate into one.
-
     """
+    start_time = time.time()  # Clock execution speed
 
-    start_time = time.time()  # Clock executation speed
+    # Locate all directories containing coordinate and charge files
+    directories = sorted(glob.glob("./**/scr*", recursive=True))
 
-    # Collect all qmscript.out files
-    out_files = glob.glob("./**/qmscript.out", recursive=True)
-    out_files_count = len(out_files)  # Will report this to user
-    # run_info: The MD restart step, the outfile name, and its scr directory
-    run_info: list[list[int, str, str]] = []
+    if not directories:
+        print("No directories found matching the pattern './**/scr*'. Exiting.")
+        return
 
-    # Get the first MD step from out_files to identify where each job restarted
-    # Note: Restarting occurs from the last restart point not the last frame
-    for out_file in out_files:
-        out_content = open(out_file, "r").readlines()
-        for line in out_content:
-            if "MD STEP" in line:
-                # A list of info about each run [start step, file, scr dir]
-                md_step = int(line.split()[4])
-                run_info.append([md_step, out_file])
-                break
-
-    # Get the src directory locations for the restart attempt to generate paths
-    scrdir = glob.glob("./**/scr*/", recursive=True)
-    scrdir.sort()  # Sort by modification date
-    run_info.sort()  # Sort by MD step
-    for index, step in enumerate(run_info):
-        # Add the name of the scr directory location to the run_info list
-        step.append(scrdir[index])
-
-    # Delete so we don't append to a previous version when rerunning
+    # Delete existing combined files if they exist
     if os.path.exists(all_charges):
         os.remove(all_charges)
     if os.path.exists(all_coors):
         os.remove(all_coors)
 
-    # Use the run_info to open the charge and coordinate files
-    first_run = True
-    for index, run in enumerate(run_info):
-        coors_file = open(f"{run[2]}coors.xyz", "r").readlines()
-        charge_file = open(f"{run[2]}charge.xls", "r").readlines()
-        # Create combined charge and coors files
-        all_coors_file = open(all_coors, "a")
-        all_charges_file = open(all_charges, "a")
+    # Variables to keep track of the last processed frame
+    last_frame = 0
+    total_frames = 0
 
-        # First run
-        if first_run:
-            coor_run_end = (run_info[index + 1][0] - 1) * (atom_count + 2)
-            all_coors_file.writelines(coors_file[:coor_run_end])
-            # The first charges line is a special header line that we add once
-            # so we don't need to substract one because it cancels with the index offset
-            charge_run_end = run_info[index + 1][0]
-            all_charges_file.writelines(charge_file[:charge_run_end])
-            first_run = False
+    # Process each directory
+    for dir_idx, directory in enumerate(directories):
+        coors_file_path = os.path.join(directory, "coors.xyz")
+        charge_file_path = os.path.join(directory, "charge.xls")
 
-        # Last run
-        elif index == len(run_info) - 1:
-            # Go all the way to the end so a frame isn't left off
-            all_coors_file.writelines(coors_file)
-            all_charges_file.writelines(charge_file[1:])
+        if not os.path.exists(coors_file_path) or not os.path.exists(charge_file_path):
+            print(f"Skipping {directory}: Missing coors.xyz or charge.xls.")
+            continue
 
-        # Other run
-        else:
-            # To get the number of frames in run two,
-            # substract the restart number from the frames in run 1
-            coor_run_end = ((run_info[index + 1][0] - 1) - (run[0] - 1)) * (
-                atom_count + 2
-            )
-            all_coors_file.writelines(coors_file[:coor_run_end])
-            charge_run_end = (run_info[index + 1][0]) - (run[0] - 1)
-            all_charges_file.writelines(charge_file[1:charge_run_end])
+        # Read coordinate and charge files
+        with open(coors_file_path, "r") as coors_file:
+            coors_lines = coors_file.readlines()
 
-    # Close files
-    all_coors_file.close()
-    all_charges_file.close()
+        with open(charge_file_path, "r") as charge_file:
+            charge_lines = charge_file.readlines()
 
-    # Check the number of frames in the combined xyz trajectory and print for user
-    coors_frame_count = 0
+        # Determine the number of atoms per frame
+        lines_per_frame = atom_count + 2
+
+        # Extract frame numbers and their indices from the title lines
+        frame_numbers = []
+        frame_indices = []
+        for i in range(1, len(coors_lines), lines_per_frame):
+            title_line = coors_lines[i]
+            try:
+                frame_number = int(title_line.split()[2])  # Extract frame number
+                frame_numbers.append(frame_number)
+                frame_indices.append(i - 1)  # Index of the atom count line
+            except (IndexError, ValueError):
+                print(f"Warning: Could not parse frame number from line: {title_line.strip()}")
+
+        # Identify the starting frame of this run and exclude overlaps
+        valid_start_idx = 0
+        for idx, frame in enumerate(frame_numbers):
+            if frame > last_frame:
+                valid_start_idx = idx
+                break
+
+        # Update the last processed frame
+        if frame_numbers:
+            last_frame = frame_numbers[-1]
+
+        # Write the valid frames and charges to the combined files
+        with open(all_coors, "a") as all_coors_file:
+            for idx in range(valid_start_idx, len(frame_numbers)):
+                start = frame_indices[idx]
+                end = start + lines_per_frame
+                all_coors_file.writelines(coors_lines[start:end])
+
+        with open(all_charges, "a") as all_charges_file:
+            if dir_idx == 0:
+                # Include header line only once
+                all_charges_file.write(charge_lines[0])
+            all_charges_file.writelines(charge_lines[valid_start_idx + 1 : len(frame_numbers) + 1])
+
+        # Update the total number of frames
+        total_frames += len(frame_numbers) - valid_start_idx
+
+        print(
+            f"Processed {directory}: Added frames {frame_numbers[valid_start_idx]} "
+            f"to {frame_numbers[-1]} ({len(frame_numbers) - valid_start_idx} frames)."
+        )
+
+    # Validate the combined files
+    combined_frame_count = 0
     with open(all_coors, "r") as coors:
         for line in coors:
             if "frame" in line:
-                coors_frame_count += 1
-
-    # Check number of charge frames and print for user
-    charge_frame_count = -1
-    with open(all_charges, "r") as charges:
-        for line in charges:
-            charge_frame_count += 1
+                combined_frame_count += 1
 
     total_time = round(time.time() - start_time, 3)  # Seconds to run
     print(
         f"""
         \t----------------------------ALL RUNS END----------------------------
-        \tRESULT: {coors_frame_count} frames and {charge_frame_count} charges from {out_files_count} runs.
+        \tRESULT: {combined_frame_count} frames and {total_frames} charges combined.
         \tOUTPUT: Generated {all_charges} and {all_coors}.
-        \tOUTPUT: {os.path.abspath(os.getcwd())}.
         \tTIME: Total execution time: {total_time} seconds.
         \t--------------------------------------------------------------------\n
         """
@@ -448,6 +450,132 @@ def combine_replicates(
         """
     )
 
+# def combine_restarts(
+#     atom_count, all_charges: str = "all_charges.xls", all_coors: str = "all_coors.xyz"
+# ) -> None:
+#     """
+#     Collects all charges or coordinates into single xls and xyz files.
+
+#     Likely the first executed function after generating the raw AIMD data.
+#     Trajectories were likely generated over multiple runs.
+#     This function combines all coordinate and charge data for each run.
+
+#     Parameters
+#     ----------
+#     all_charges : str
+#         The name of the file containing all charges in xls format.
+#     all_coors.xyz : str
+#         The name of the file containing the coordinates in xyz format.
+#     atom_count : int
+#         The number of atoms in the structure
+
+#     Notes
+#     -----
+#     Run from the directory that contains the run fragments.
+
+#     See Also
+#     --------
+#     combine_replicates: Combines all the combined trajectories of each replicate into one.
+
+#     """
+
+#     start_time = time.time()  # Clock executation speed
+
+#     # Collect all qmscript.out files
+#     out_files = glob.glob("./**/qmscript.out", recursive=True)
+#     out_files_count = len(out_files)  # Will report this to user
+#     # run_info: The MD restart step, the outfile name, and its scr directory
+#     run_info: list[list[int, str, str]] = []
+
+#     # Get the first MD step from out_files to identify where each job restarted
+#     # Note: Restarting occurs from the last restart point not the last frame
+#     for out_file in out_files:
+#         out_content = open(out_file, "r").readlines()
+#         for line in out_content:
+#             if "MD STEP" in line:
+#                 # A list of info about each run [start step, file, scr dir]
+#                 md_step = int(line.split()[4])
+#                 run_info.append([md_step, out_file])
+#                 break
+
+#     # Get the src directory locations for the restart attempt to generate paths
+#     scrdir = glob.glob("./**/scr*/", recursive=True)
+#     scrdir.sort()  # Sort by modification date
+#     run_info.sort()  # Sort by MD step
+#     for index, step in enumerate(run_info):
+#         # Add the name of the scr directory location to the run_info list
+#         step.append(scrdir[index])
+
+#     # Delete so we don't append to a previous version when rerunning
+#     if os.path.exists(all_charges):
+#         os.remove(all_charges)
+#     if os.path.exists(all_coors):
+#         os.remove(all_coors)
+
+#     # Use the run_info to open the charge and coordinate files
+#     first_run = True
+#     for index, run in enumerate(run_info):
+#         coors_file = open(f"{run[2]}coors.xyz", "r").readlines()
+#         charge_file = open(f"{run[2]}charge.xls", "r").readlines()
+#         # Create combined charge and coors files
+#         all_coors_file = open(all_coors, "a")
+#         all_charges_file = open(all_charges, "a")
+
+#         # First run
+#         if first_run:
+#             coor_run_end = (run_info[index + 1][0] - 1) * (atom_count + 2)
+#             all_coors_file.writelines(coors_file[:coor_run_end])
+#             # The first charges line is a special header line that we add once
+#             # so we don't need to substract one because it cancels with the index offset
+#             charge_run_end = run_info[index + 1][0]
+#             all_charges_file.writelines(charge_file[:charge_run_end])
+#             first_run = False
+
+#         # Last run
+#         elif index == len(run_info) - 1:
+#             # Go all the way to the end so a frame isn't left off
+#             all_coors_file.writelines(coors_file)
+#             all_charges_file.writelines(charge_file[1:])
+
+#         # Other run
+#         else:
+#             # To get the number of frames in run two,
+#             # substract the restart number from the frames in run 1
+#             coor_run_end = ((run_info[index + 1][0] - 1) - (run[0] - 1)) * (
+#                 atom_count + 2
+#             )
+#             all_coors_file.writelines(coors_file[:coor_run_end])
+#             charge_run_end = (run_info[index + 1][0]) - (run[0] - 1)
+#             all_charges_file.writelines(charge_file[1:charge_run_end])
+
+#     # Close files
+#     all_coors_file.close()
+#     all_charges_file.close()
+
+#     # Check the number of frames in the combined xyz trajectory and print for user
+#     coors_frame_count = 0
+#     with open(all_coors, "r") as coors:
+#         for line in coors:
+#             if "frame" in line:
+#                 coors_frame_count += 1
+
+#     # Check number of charge frames and print for user
+#     charge_frame_count = -1
+#     with open(all_charges, "r") as charges:
+#         for line in charges:
+#             charge_frame_count += 1
+
+#     total_time = round(time.time() - start_time, 3)  # Seconds to run
+#     print(
+#         f"""
+#         \t----------------------------ALL RUNS END----------------------------
+#         \tRESULT: {coors_frame_count} frames and {charge_frame_count} charges from {out_files_count} runs.
+#         \tOUTPUT: Generated {all_charges} and {all_coors}.
+#         \tOUTPUT: {os.path.abspath(os.getcwd())}.
+#         \tTIME: Total execution time: {total_time} seconds.
+#         \t--------------------------------------------------------------------\n
+#         """
+#     )
 
 def summed_residue_charge(charge_data: pd.DataFrame, template: str):
     """

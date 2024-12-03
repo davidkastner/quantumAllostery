@@ -293,7 +293,7 @@ def copy_script(script_name) -> None:
     shutil.copyfile(script_loc, destination)
 
 
-def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
+def collect_esp_components(components, first_job: int, last_job: int, step: int) -> None:
     """
     Loops over replicates and single points and collects metal-centered ESPs.
 
@@ -317,14 +317,6 @@ def collect_esp_components(first_job: int, last_job: int, step: int) -> None:
     start_time = time.time()  # Used to report the executation speed
     ignore = ["Analysis/", "coordinates/", "inputfiles/"]
     charge_schemes = ["ADCH", "Hirshfeld", "Mulliken", "Voronoi"]
-    components = {
-        "all": "1-487",
-        "lower": "1-252",
-        "upper": "253-424",
-        "lower-his": "1-86,104-252",
-        "heme": "425-486",
-        "his": "87-103",
-    }
     qm_job_count = 0
 
     # Directory containing all replicates
