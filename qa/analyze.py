@@ -111,7 +111,7 @@ def charge_matrix(pdbfile) -> None:
         print(f"   > rowMI {i}")
         # mutual_info_regression with the transpose matrix of 3k+ charges to 30 residues
         # and the associated row of residues
-        rowMI = mutual_info_regression(all_chargearray, all_chargemutinf[i])
+        rowMI = mutual_info_regression(all_chargearray, all_chargemutinf[i], n_neighbors=3)
         MI_mat.append(rowMI)
 
     corrcoef = np.corrcoef(all_chargemutinf)
@@ -946,9 +946,9 @@ def combine_qm_charges_replicates():
 
     # Parse user input or default to all numeric directories
     if user_input:
-        dirs = [d.strip() for d in user_input.split(',') if os.path.isdir(d.strip()) and d.strip().isdigit()]
+        dirs = [d.strip() for d in user_input.split(',') if os.path.isdir(d.strip())]
     else:
-        dirs = sorted([d for d in os.listdir('.') if os.path.isdir(d) and d.isdigit()], key=int)
+        dirs = sorted([d for d in os.listdir('.') if os.path.isdir(d)])
 
     # Ensure directories list is not empty
     if not dirs:

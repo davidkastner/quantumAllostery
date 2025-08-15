@@ -31,7 +31,8 @@ def welcome():
 welcome()
 
 @click.command()
-@click.option("--combine_restarts", "-a", is_flag=True, help="Combines restarts within a single replicate",)
+@click.option("--combine_restarts_new", "-anew", is_flag=True, help="Combines SQM restarts from Terachem v1.9-2023.11-dev",)
+@click.option("--combine_restarts_old", "-aold", is_flag=True, help="Combines SQM restarts from Terachem v1.9-2021.10-dev",)
 @click.option("--combine_replicates","-b",is_flag=True,help="Combines combined replicates trajectories",)
 @click.option("--simple_xyz_combine", "-c", is_flag=True, help="Combines xyz files")
 @click.option("--xyz2pdb", "-d", is_flag=True, help="Converts an xyz to a pdb")
@@ -58,7 +59,8 @@ welcome()
 @click.option("--distance_esp_plot", "-w", is_flag=True, help="Plot distance vs. ESP")
 @click.option("--kde_dist_esp_plot", "-x", is_flag=True, help="Plot distance vs. ESP as a KDE")
 def cli(
-    combine_restarts,
+    combine_restarts_new,
+    combine_restarts_old,
     combine_replicates,
     xyz2pdb,
     clean_frames,
@@ -85,7 +87,7 @@ def cli(
     kde_dist_esp_plot,
 ):
 
-    if combine_restarts:
+    if combine_restarts_new:
         click.echo("> Combine restarts:")
         click.echo("> Loading...")
         import qa.process
@@ -98,10 +100,30 @@ def cli(
 
         if compute_replicates == "y":
             qa.manage.run_all_replicates(
-                lambda: qa.process.combine_restarts(atom_count)
+                lambda: qa.process.combine_restarts_new(atom_count)
             )
         elif compute_replicates == "n":
-            qa.process.combine_restarts(atom_count)
+            qa.process.combine_restarts_new(atom_count)
+        else:
+            print(f"> {compute_replicates} is not a valid response.")
+
+    if combine_restarts_old:
+        click.echo("> Combine restarts:")
+        click.echo("> Loading...")
+        import qa.process
+        import qa.manage
+
+        compute_replicates = input(
+            "> Would you like this performed across replicates (y/n)? "
+        )
+        atom_count = qa.process.get_atom_count()
+
+        if compute_replicates == "y":
+            qa.manage.run_all_replicates(
+                lambda: qa.process.combine_restarts_old(atom_count)
+            )
+        elif compute_replicates == "n":
+            qa.process.combine_restarts_old(atom_count)
         else:
             print(f"> {compute_replicates} is not a valid response.")
 
@@ -120,8 +142,8 @@ def cli(
         xyz_type = input("> Process a trajectory (t) or frames (f)? ")
         if xyz_type == "t":
             pdb_template = "template.pdb"
-            orig_xyz_name = "mc6sa_geometry.xyz"
-            new_pdb_name = "mc6sa_geometry.pdb"
+            orig_xyz_name = "mc6_geometry.xyz"
+            new_pdb_name = "mc6_geometry.pdb"
             qa.process.xyz2pdb_traj(orig_xyz_name, new_pdb_name, pdb_template)
         elif xyz_type == "f":
             # You can process multiple frames at once
@@ -152,30 +174,36 @@ def cli(
         # Create a dictionary to map the pair of residues to their ranges
         if mimochrome == "mc6":
             residue_ranges = {
-                ("Asp18", "Gln20"): [[-1.16, -0.52], [-0.35, 0.29]], # repl-1
-                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl-8
-                ("Lys12", "Gln9"): [[0.71, 1.22], [-0.26, 0.25]], # repl-1
-                ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
-                ("Ser23", "Hm129"): [[-0.20, 0.41], [-1.21, -0.61]], # repl-5
-                ("Arg27", "Ser23"): [[0.64, 1.28], [-0.28, 0.36]], # repl-5
+                ("Glu19", "Arg27"): [[-1.13, -0.59], [0.62, 1.16]], # All
+                ("Glu19", "Arg11"): [[-1.13, -0.59], [0.62, 1.16]],  # rep-4
+                ("Ser23", "Hm129"): [[-0.24, 0.37], [-1.21, -0.61]], # rep-
+                ("Arg27", "Ser23"): [[0.64, 1.28], [-0.28, 0.36]], # rep-
+                ("Arg27", "Glu19"): [[0.64, 1.28], [-1.25, -0.75]], # rep- 
+                ("Arg27", "Glu3"): [[0.64, 1.28], [-0.35, 0.29]], # rep- 
+                ("Glu19", "Lys12"): [[-1.2, -0.5], [0.5, 1.2]], # All
+                ("Lys12", "Glu3"): [[0.64, 1.28], [-0.35, 0.29]], # rep- 
             }
         elif mimochrome == "mc6s":
             residue_ranges = {
-                ("Asp18", "Gln20"): [[-1.16, -0.52], [-0.35, 0.29]], # repl-1
-                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl-5
-                ("Lys12","Gln9"): [[0.71, 1.22], [-0.26, 0.25]], # repl-5
-                ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
-                ("Ser23", "Hm129"): [[-0.20, 0.41], [-1.21, -0.61]], # repl-3
-                ("Arg27", "Ser23"): [[0.64, 1.28], [-0.28, 0.36]], # repl-7
+                ("Glu19", "Arg27"): [[-1.13, -0.59], [0.62, 1.16]], # All
+                ("Glu19", "Arg11"): [[-1.13, -0.59], [0.62, 1.16]], # rep-6
+                ("Ser23", "Hm129"): [[-0.24, 0.37], [-1.21, -0.61]], # rep-
+                ("Arg27", "Ser23"): [[0.64, 1.28], [-0.28, 0.36]], # rep-
+                ("Arg27", "Glu19"): [[0.64, 1.28], [-1.25, -0.75]], # rep- 
+                ("Arg27", "Leu3"): [[0.64, 1.28], [-0.35, 0.29]], # rep- 
+                ("Glu19", "Lys12"): [[-1.2, -0.5], [0.5, 1.2]], # All
+                ("Lys12", "Leu3"): [[0.64, 1.28], [-0.35, 0.29]], # rep- 
             }
         elif mimochrome == "mc6sa":
             residue_ranges = {
-                ("Asp18", "Aib20"): [[-1.16, -0.52], [-0.35, 0.29]], # repl-3
-                ("Asp18", "Gln21"): [[-1.11, -0.45], [-0.41, 0.25]], # repl-1
-                ("Lys12", "Gln9"): [[0.71, 1.22], [-0.26, 0.25]], # repl-4
-                ("Glu19", "Arg11"): [[-1.05, -0.55], [0.58, 1.08]], # repl-1
-                ("Aib23", "Hm129"): [[-0.20, 0.41], [-1.21, -0.61]], # repl-4   
-                ("Arg27", "Aib23"): [[0.64, 1.28], [-0.28, 0.36]], # repl-5
+                ("Glu19", "Arg27"): [[-1.15, -0.55], [0.65, 1.25]], # All
+                ("Glu19", "Arg11"): [[-1.13, -0.59], [0.62, 1.16]], # rep-22
+                ("Ser23", "Hm129"): [[-0.24, 0.37], [-1.21, -0.61]], # rep-
+                ("Arg27", "Ser23"): [[0.64, 1.28], [-0.28, 0.36]], # rep-
+                ("Arg27", "Glu19"): [[0.64, 1.28], [-1.25, -0.75]], # rep- 
+                ("Arg27", "Leu3"): [[0.64, 1.28], [-0.35, 0.29]], # rep- 
+                ("Glu19", "Lys12"): [[-1.2, -0.5], [0.5, 1.2]], # All
+                ("Lys12", "Leu3"): [[0.64, 1.28], [-0.35, 0.29]], # rep- 
             }
 
         # Retrieve the range from the dictionary
@@ -247,7 +275,7 @@ def cli(
         compute_replicates = input(
             "> Would you like this performed across replicates (y/n)? "
         )
-        delete = []
+        delete = [0,15,16,27]
         recompute = True
 
         # Perform the charge analysis and generate matrix files
@@ -437,7 +465,7 @@ def cli(
 
         res_x = input("> What is the first residue (Asp1)? ")
         res_y = input("> What is the second residue (Gly2)? ")
-        replicate = int(input("> What replicate (e.g., 1,2,3)? "))
+        replicate = input("> What replicate (e.g., 1,2,3)? ")
         qa.analyze.td_coupling(res_x, res_y, replicate_dir=f"{replicate}/")
 
     elif centroid_distance:
